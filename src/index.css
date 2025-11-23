@@ -9,18 +9,39 @@
   * 使用标准CSS自定义属性代替@theme规则以提高兼容性
   */
 :root {
+  /* 主色调 - 绿色系 */
   --color-primary: #8faa8f;
   --color-primary-light: #a8c4a8;
   --color-primary-soft: #c8d6c8;
+  --color-primary-lighter: #e8f0e8;
+  
+  /* 背景色 */
   --color-primary-white: #fefefe;
   --color-primary-gray: #f5f7f5;
+  --color-background-gradient: linear-gradient(135deg, #f5f7f5 0%, #e8f0e8 100%);
+  
+  /* 文本色 */
   --color-text-primary: #2d3a2d;
   --color-text-secondary: #5a6b5a;
   --color-text-tertiary: #7a8a7a;
+  --color-text-light: #9aab9a;
+  
+  /* 状态色 */
   --color-status-success: #8faa8f;
   --color-status-warning: #e0c15b;
   --color-status-danger: #d48a8a;
+  
+  /* 边框和阴影 */
   --color-border: #d4ddd4;
+  --color-border-light: #e8f0e8;
+  --shadow-soft: 0 4px 20px rgba(143, 170, 143, 0.1);
+  --shadow-hover: 0 8px 30px rgba(143, 170, 143, 0.15);
+  --shadow-card: 0 2px 8px rgba(143, 170, 143, 0.08);
+  
+  /* 动画 */
+  --transition-fast: 0.2s ease-in-out;
+  --transition-medium: 0.3s ease-in-out;
+  --transition-slow: 0.5s ease-in-out;
 }
 
 /*
@@ -28,9 +49,11 @@
   */
 @layer base {
   body {
-    background-color: var(--color-primary-gray);
+    background: var(--color-background-gradient);
     color: var(--color-text-primary);
     font-family: Inter, system-ui, sans-serif;
+    min-height: 100vh;
+    line-height: 1.6;
   }
   
   /*
@@ -59,15 +82,35 @@
 @layer components {
   .analysis-card {
     background-color: white;
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    border: 1px solid #e5e7eb;
+    border-radius: 1rem;
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--color-border-light);
     overflow: hidden;
-    transition: all 0.2s ease-in-out;
+    transition: all var(--transition-medium);
+    position: relative;
+    backdrop-filter: blur(10px);
+  }
+  
+  .analysis-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
+    opacity: 0;
+    transition: opacity var(--transition-fast);
   }
   
   .analysis-card:hover {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+    border-color: var(--color-primary-soft);
+  }
+  
+  .analysis-card:hover::before {
+    opacity: 1;
   }
   
   .tab-button {
@@ -146,33 +189,86 @@
   }
   
   .file-dropzone {
-    border: 2px dashed #d1d5db;
-    border-radius: 0.75rem;
-    padding: 2rem;
+    border: 2px dashed var(--color-border);
+    border-radius: 1rem;
+    padding: 2.5rem;
     text-align: center;
-    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+    transition: all var(--transition-medium);
     cursor: pointer;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .file-dropzone::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent, rgba(143, 170, 143, 0.02));
+    opacity: 0;
+    transition: opacity var(--transition-medium);
   }
   
   .file-dropzone:hover {
     border-color: var(--color-primary);
-    background-color: rgba(143, 170, 143, 0.05);
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+  }
+  
+  .file-dropzone:hover::before {
+    opacity: 1;
+  }
+  
+  .file-dropzone.drag-over {
+    border-color: var(--color-primary);
+    background-color: rgba(143, 170, 143, 0.1);
+    box-shadow: var(--shadow-hover);
   }
   
   .action-button {
-    padding: 0.75rem 1.5rem;
-    background-color: var(--color-primary);
+    padding: 0.875rem 1.75rem;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
     color: white;
-    font-weight: 500;
-    border-radius: 0.5rem;
+    font-weight: 600;
+    border-radius: 0.75rem;
+    border: none;
     outline: 2px solid transparent;
     outline-offset: 2px;
-    transition: background-color 0.2s ease-in-out;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    transition: all var(--transition-medium);
+    box-shadow: var(--shadow-soft);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .action-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left var(--transition-slow);
   }
   
   .action-button:hover {
-    background-color: #7a9a7a;
+    background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-1px);
+  }
+  
+  .action-button:hover::before {
+    left: 100%;
+  }
+  
+  .action-button:active {
+    transform: translateY(0);
   }
   
   .action-button:focus {
@@ -181,23 +277,129 @@
   }
   
   .action-button:focus-visible {
-    box-shadow: 0 0 0 2px white, 0 0 0 4px var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(143, 170, 143, 0.3);
   }
   
   .secondary-button {
-    padding: 0.75rem 1.5rem;
+    padding: 0.875rem 1.75rem;
     background-color: white;
     color: var(--color-primary);
-    font-weight: 500;
-    border-radius: 0.5rem;
-    border: 1px solid var(--color-primary);
+    font-weight: 600;
+    border-radius: 0.75rem;
+    border: 2px solid var(--color-primary);
     outline: 2px solid transparent;
     outline-offset: 2px;
-    transition: background-color 0.2s ease-in-out;
+    transition: all var(--transition-medium);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .secondary-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+    opacity: 0;
+    transition: opacity var(--transition-medium);
+    z-index: -1;
   }
   
   .secondary-button:hover {
-    background-color: rgba(143, 170, 143, 0.05);
+    color: white;
+    border-color: transparent;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-soft);
+  }
+  
+  .secondary-button:hover::before {
+    opacity: 1;
+  }
+  
+  .secondary-button:active {
+    transform: translateY(0);
+  }
+  
+  /* 加载动画 */
+  .loading-spinner {
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 2px solid var(--color-border-light);
+    border-top: 2px solid var(--color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* 进度条增强 */
+  .progress-bar {
+    width: 100%;
+    height: 0.5rem;
+    background-color: var(--color-border-light);
+    border-radius: 9999px;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
+    border-radius: 9999px;
+    transition: width var(--transition-slow) cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+  }
+  
+  .progress-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    animation: shimmer 2s infinite;
+  }
+  
+  @keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+  
+  /* 状态指示器 */
+  .status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all var(--transition-fast);
+  }
+  
+  .status-indicator.success {
+    background-color: rgba(143, 170, 143, 0.1);
+    color: var(--color-status-success);
+    border: 1px solid rgba(143, 170, 143, 0.2);
+  }
+  
+  .status-indicator.warning {
+    background-color: rgba(224, 193, 91, 0.1);
+    color: var(--color-status-warning);
+    border: 1px solid rgba(224, 193, 91, 0.2);
+  }
+  
+  .status-indicator.danger {
+    background-color: rgba(212, 138, 138, 0.1);
+    color: var(--color-status-danger);
+    border: 1px solid rgba(212, 138, 138, 0.2);
   }
   
   .secondary-button:focus {
@@ -209,17 +411,28 @@
     box-shadow: 0 0 0 2px white, 0 0 0 4px var(--color-primary);
   }
   
+  /* 基础按钮样式 - 优化触摸操作 */
   .btn-primary {
     background-color: var(--color-primary);
     color: white;
-    padding: 0.5rem 1rem;
+    border: none;
+    padding: 1rem 1.5rem;
     border-radius: 0.5rem;
     font-weight: 500;
     transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 48px;
+    min-width: 80px;
+    touch-action: manipulation;
+    user-select: none;
+    cursor: pointer;
   }
   
   .btn-primary:hover {
     background-color: rgba(143, 170, 143, 0.9);
+  }
+  
+  .btn-primary:active {
+    transform: scale(0.98);
   }
   
   .btn-primary:focus {
@@ -235,14 +448,23 @@
     background-color: var(--color-primary-white);
     color: var(--color-primary);
     border: 1px solid var(--color-border);
-    padding: 0.5rem 1rem;
+    padding: 1rem 1.5rem;
     border-radius: 0.5rem;
     font-weight: 500;
     transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 48px;
+    min-width: 80px;
+    touch-action: manipulation;
+    user-select: none;
+    cursor: pointer;
   }
   
   .btn-secondary:hover {
     background-color: rgba(143, 170, 143, 0.05);
+  }
+  
+  .btn-secondary:active {
+    transform: scale(0.98);
   }
   
   .btn-secondary:focus {
@@ -276,10 +498,64 @@
   
   .form-input {
     width: 100%;
-    padding: 0.5rem 1rem;
+    padding: 1rem 1rem;
     border-radius: 0.5rem;
     border: 1px solid var(--color-border);
     transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 16px; /* 防止iOS缩放 */
+    min-height: 48px;
+    touch-action: manipulation;
+    user-select: none;
+    line-height: 1.5;
+    letter-spacing: 0.02em;
+  }
+  
+  .form-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(143, 170, 143, 0.2);
+  }
+  
+  /* 复选框和单选框样式优化 */
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    cursor: pointer;
+  }
+  
+  /* 触摸友好的标签样式 */
+  label {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+    padding: 8px 4px;
+  }
+  
+  /* 触摸优化的链接样式 */
+  a {
+    touch-action: manipulation;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  
+  /* 全局触摸优化 */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  button, input, select, textarea {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* 防止双击缩放 */
+  button, a, label {
+    touch-action: manipulation;
   }
   
   .form-input:focus {

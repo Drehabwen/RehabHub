@@ -1,0 +1,105 @@
+name: Component Release
+
+on:
+  push:
+    branches: [ feature/* ]
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  component-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run component tests
+      run: |
+        # 检测变更的组件目录
+        CHANGED_COMPONENTS=$(git diff --name-only HEAD~1 HEAD | grep "^src/components/" | cut -d'/' -f3 | sort | uniq)
+        
+        if [ -n "$CHANGED_COMPONENTS" ]; then
+          echo "Testing changed components: $CHANGED_COMPONENTS"
+          for component in $CHANGED_COMPONENTS; do
+            if [ -d "src/components/$component" ]; then
+              echo "Testing component: $component"
+              npm test -- src/components/$component/
+            fi
+          done
+        else
+          echo "No component changes detected"
+        fi
+    
+    - name: Run Storybook build
+      run: |
+        if [ -f "package.json" ] && grep -q "storybook" package.json; then
+          npm run build-storybook --quiet
+        fi
+
+  component-lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Lint component files
+      run: |
+        CHANGED_COMPONENTS=$(git diff --name-only HEAD~1 HEAD | grep "^src/components/" | cut -d'/' -f3 | sort | uniq)
+        
+        if [ -n "$CHANGED_COMPONENTS" ]; then
+          for component in $CHANGED_COMPONENTS; do
+            if [ -d "src/components/$component" ]; then
+              echo "Linting component: $component"
+              npx eslint src/components/$component/ --ext .ts,.tsx
+            fi
+          done
+        fi
+
+  component-docs:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Generate component documentation
+      run: |
+        if [ -f "package.json" ] && grep -q "typedoc" package.json; then
+          npm run docs
+        fi
+    
+    - name: Upload documentation
+      uses: actions/upload-artifact@v4
+      with:
+        name: component-docs
+        path: docs/
+        retention-days: 30

@@ -23,7 +23,7 @@ export interface AnalysisResponse {
 
 // API基础配置
 const API_CONFIG = {
-  baseUrl: 'http://localhost:8000', // 默认API地址
+  baseUrl: 'http://localhost:5000', // 默认API地址
   timeout: 30000,
   defaultHeaders: {
     'Content-Type': 'application/json',
@@ -32,8 +32,11 @@ const API_CONFIG = {
 };
 
 // 检查是否在浏览器环境中运行
-if (typeof process !== 'undefined' && process.env && process.env.VITE_API_URL) {
-  API_CONFIG.baseUrl = process.env.VITE_API_URL;
+// 设置基础URL
+if (import.meta.env.VITE_BACKEND_URL) {
+  API_CONFIG.baseUrl = import.meta.env.VITE_BACKEND_URL;
+} else if (import.meta.env.VITE_API_URL) {
+  API_CONFIG.baseUrl = import.meta.env.VITE_API_URL;
 }
 
 // 模块API配置接口

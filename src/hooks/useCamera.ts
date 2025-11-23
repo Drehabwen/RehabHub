@@ -37,14 +37,20 @@ export const useCamera = (): UseCameraReturn => {
         return false;
       }
 
-      // 获取摄像头权限
+      console.log('请求摄像头权限...');
+      // 获取摄像头权限，添加更具体的约束
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
+        video: {
+          facingMode: 'user',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        },
         audio: false
       });
 
       streamRef.current = stream;
       setHasPermission(true);
+      console.log('摄像头权限获取成功，流已创建');
       return true;
     } catch (error: any) {
       console.error('摄像头权限请求失败:', error);
@@ -71,11 +77,13 @@ export const useCamera = (): UseCameraReturn => {
   const initCamera = useCallback(async () => {
     setStatus('loading');
     setErrorMessage('');
+    console.log('开始初始化摄像头...');
 
     try {
       const granted = await requestPermission();
       
       if (granted && videoRef.current && streamRef.current) {
+        console.log('权限已授予，设置视频源...');
         // 设置视频源
         videoRef.current.srcObject = streamRef.current;
         videoRef.current.autoplay = true;
@@ -84,8 +92,18 @@ export const useCamera = (): UseCameraReturn => {
         
         // 等待视频加载
         videoRef.current.onloadeddata = () => {
+          console.log('视频加载完成，摄像头激活');
           setStatus('active');
         };
+        
+        // 添加错误处理
+        videoRef.current.onerror = (error) => {
+          console.error('视频元素错误:', error);
+          setStatus('error');
+          setErrorMessage('视频元素初始化失败');
+        };
+      } else {
+        console.warn('摄像头初始化条件不满足:', { granted, hasVideoRef: !!videoRef.current, hasStream: !!streamRef.current });
       }
     } catch (error: any) {
       console.error('摄像头初始化失败:', error);

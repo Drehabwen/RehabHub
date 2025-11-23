@@ -144,7 +144,7 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-4 min-h-[70vh] flex flex-col">
+    <div className="w-full p-4 min-h-[70vh] flex flex-col" data-testid="video-analysis-container">
       <div className="text-center mb-6">
         <h1 className="text-[clamp(1.5rem,4vw,2.5rem)] font-bold text-emerald-700 mb-3">
           {movementName} 动作分析
@@ -156,10 +156,10 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
       </div>
       
       <div className="mb-6 grow">
-        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-emerald-100">
-          <div className="flex border-b border-emerald-100 mb-4" role="tablist">
+        <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 border border-gray-100 overflow-hidden">
+          <div className="flex w-full bg-gray-100 rounded-lg overflow-hidden mb-4" role="tablist">
             <button
-              className={`py-3 px-4 font-medium text-sm sm:text-base flex-1 text-center ${activeTab === 'upload' ? 'border-b-2 border-emerald-500 text-emerald-600 font-semibold' : 'text-gray-500'}`}
+              className={`flex-1 px-4 py-3 rounded-md transition-all text-sm sm:text-base font-medium min-h-[48px] flex items-center justify-center ${activeTab === 'upload' ? 'bg-white text-emerald-600 font-semibold shadow-sm' : 'text-gray-500'}`}
               onClick={() => setActiveTab('upload')}
               role="tab"
               aria-selected={activeTab === 'upload'}
@@ -169,7 +169,7 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
               上传视频
             </button>
             <button
-              className={`py-3 px-4 font-medium text-sm sm:text-base flex-1 text-center ${activeTab === 'camera' ? 'border-b-2 border-emerald-500 text-emerald-600 font-semibold' : 'text-gray-500'}`}
+              className={`flex-1 px-4 py-3 rounded-md transition-all text-sm sm:text-base font-medium min-h-[48px] flex items-center justify-center ${activeTab === 'camera' ? 'bg-white text-emerald-600 font-semibold shadow-sm' : 'text-gray-500'}`}
               onClick={() => setActiveTab('camera')}
               role="tab"
               aria-selected={activeTab === 'camera'}
@@ -180,13 +180,17 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
             </button>
           </div>
           
-          <div className="mt-4">
+          <div className="mt-4 aspect-video bg-black rounded-xl overflow-hidden">
             {activeTab === 'upload' ? (
               <FileDropzone onFileSelect={handleFileSelect} />
             ) : (
               // CameraCapture组件现在会处理实时姿态估计
               <CameraCapture 
                 onCapture={handleCapture} 
+                onError={(errorMsg) => {
+                  console.error('Camera error:', errorMsg);
+                  setError(`摄像头错误: ${errorMsg}`);
+                }}
                 keypoints={poseKeypoints}
                 onVideoFrame={processVideoFrame}
                 showSkeleton={true}
@@ -216,10 +220,10 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
               </div>
             </div>
             <button
-              onClick={handleAnalyze}
-              disabled={isAnalyzing}
-              className="mt-2 w-full sm:w-auto px-6 py-3 bg-emerald-500 text-white font-medium rounded-lg hover:bg-emerald-600 disabled:opacity-50 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-emerald-300 focus:ring-opacity-50 shadow-sm hover:shadow"
-            >
+                  onClick={handleAnalyze}
+                  disabled={isAnalyzing}
+                  className="mt-2 w-full sm:w-auto px-6 py-3 bg-emerald-500 text-white font-medium rounded-lg hover:bg-emerald-600 disabled:opacity-50 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-emerald-300 focus:ring-opacity-50 shadow-md min-h-[48px]"
+                >
               <span className="flex items-center justify-center">
                 🔄 重新分析
               </span>
@@ -261,30 +265,30 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
       )}
 
       {movementEvaluation && activeTab === 'camera' && (
-        <div className="mt-8 p-6 bg-white rounded-xl shadow-md border border-emerald-100">
+        <div className="mt-8 p-4 sm:p-6 bg-white rounded-xl shadow-md border border-emerald-100 overflow-auto">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
               ✅
             </div>
-            <h3 className="text-lg font-semibold text-emerald-700">姿态评估结果</h3>
+            <h3 className="text-base sm:text-lg font-semibold text-emerald-700">姿态评估结果</h3>
           </div>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-              <span className="text-gray-700 font-medium">综合评分</span>
-              <span className="text-2xl font-bold text-emerald-600">{movementEvaluation.score}/100</span>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+              <span className="text-xs sm:text-sm font-medium text-gray-700">综合评分</span>
+              <span className="text-lg sm:text-xl font-bold text-emerald-600">{movementEvaluation.score}/100</span>
             </div>
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <p className="text-gray-700 font-medium mb-2">评估反馈</p>
-              <p className="text-gray-600">{movementEvaluation.feedback}</p>
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <p className="text-sm font-medium mb-2">评估反馈</p>
+              <p className="text-xs sm:text-sm text-gray-600">{movementEvaluation.feedback}</p>
             </div>
             {movementEvaluation.angles && Object.keys(movementEvaluation.angles).length > 0 && (
-              <div className="p-3 bg-gray-50 rounded-lg">
-                <p className="text-gray-700 font-medium mb-2">关节角度</p>
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <p className="text-sm font-medium mb-2">关节角度</p>
                 <div className="grid grid-cols-2 gap-2">
                   {Object.entries(movementEvaluation.angles).map(([joint, angle]) => (
-                    <div key={joint} className="flex justify-between">
-                      <span className="text-gray-600">{joint}:</span>
-                      <span className="font-medium">{angle}°</span>
+                    <div key={joint} className="flex justify-between text-xs sm:text-sm">
+                      <span className="font-medium text-gray-700">{joint}:</span>
+                      <span className="font-medium text-emerald-600">{angle}°</span>
                     </div>
                   ))}
                 </div>
@@ -295,7 +299,7 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
       )}
 
       {analysisResult && (
-        <div className="mt-8">
+        <div className="mt-8 overflow-auto">
           <ExampleAnalysis 
             movementType={movementType}
             movementName={movementName}

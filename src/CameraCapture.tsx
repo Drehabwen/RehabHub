@@ -5,6 +5,7 @@ import { usePermissions } from './hooks/usePermissions.ts';
 
 interface CameraCaptureProps {
   onCapture: (image: string) => void;
+  onError?: (error: string) => void; // 错误处理回调
   keypoints?: Keypoint[]; // 关键点数据
   onVideoFrame?: (videoElement: HTMLVideoElement) => void; // 视频帧回调
   showSkeleton?: boolean; // 是否显示骨骼点，默认true
@@ -14,6 +15,7 @@ interface CameraCaptureProps {
 
 const CameraCapture: React.FC<CameraCaptureProps> = ({ 
   onCapture, 
+  onError,
   keypoints = [], 
   onVideoFrame,
   showSkeleton = true,
@@ -351,6 +353,16 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
       console.log('使用模拟姿态数据');
     }
   }, [isModelLoading, usingMockData]);
+  
+  // 错误处理
+  useEffect(() => {
+    if (status === 'error' || status === 'permission_denied' || status === 'not_supported') {
+      console.error('摄像头状态错误:', status, errorMessage);
+      if (onError) {
+        onError(errorMessage || '摄像头启动失败');
+      }
+    }
+  }, [status, errorMessage, onError]);
 
   // 添加连续绘制机制，使用requestAnimationFrame优化性能
   // 移除了基于关键点变化的绘制机制，避免与requestAnimationFrame冲突
@@ -455,31 +467,31 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-4">
-      {/* 摄像头预览区域 */}
-      <div className="relative bg-black rounded-xl overflow-hidden mb-6 shadow-lg border border-gray-200 transition-all hover:shadow-xl aspect-[16/9] max-h-[480px]">
+    <div className="w-full p-4">
+      {/* 摄像头预览区域 - 移动端优化 */}
+      <div className="relative bg-black rounded-xl overflow-hidden mb-6 shadow-lg border border-gray-200 transition-all hover:shadow-xl aspect-[16/9]">
         {status === 'loading' && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
-            <div className="text-white text-center space-y-6">
+            <div className="text-white text-center space-y-4 p-4">
               <div className="relative">
                 <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-400 mx-auto"></div>
                 <div className="animate-ping absolute inset-0 rounded-full h-16 w-16 bg-blue-500 opacity-20 mx-auto"></div>
               </div>
-              <h3 className="text-xl font-medium tracking-wide">正在启动摄像头...</h3>
-              <p className="text-gray-300 max-w-xs mx-auto">请确保您的设备已授予摄像头访问权限</p>
+              <h3 className="text-base sm:text-xl font-medium tracking-wide">正在启动摄像头...</h3>
+              <p className="text-gray-300 text-sm">请确保您的设备已授予摄像头访问权限</p>
             </div>
           </div>
         )}
         
         {(status === 'error' || status === 'not_supported') && (
-          <div className="absolute inset-0 flex items-center justify-center bg-red-50">
-            <div className="text-center p-8 rounded-xl bg-white shadow-lg max-w-md mx-4">
-              <div className="text-red-500 text-5xl mb-5 animate-pulse">❌</div>
-              <h3 className="text-xl font-bold text-red-700 mb-3">摄像头启动失败</h3>
-              <p className="text-red-600 mb-5">{errorMessage}</p>
+          <div className="absolute inset-0 flex items-center justify-center bg-red-50 p-4">
+            <div className="text-center p-6 rounded-xl bg-white shadow-lg w-full max-w-md">
+              <div className="text-red-500 text-5xl mb-4 animate-pulse">❌</div>
+              <h3 className="text-base sm:text-xl font-bold text-red-700 mb-2">摄像头启动失败</h3>
+              <p className="text-red-600 mb-4 text-sm">{errorMessage}</p>
               <button 
                 onClick={reloadCamera}
-                className="px-8 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-red-300 focus:ring-opacity-50 shadow-md"
+                className="w-full px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-red-300 focus:ring-opacity-50 shadow-md min-h-[48px]"
               >
                 🔄 重新加载
               </button>
@@ -488,27 +500,27 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
         )}
         
         {status === 'permission_denied' && (
-          <div className="absolute inset-0 flex items-center justify-center bg-yellow-50">
-            <div className="text-center p-8 rounded-xl bg-white shadow-lg max-w-md mx-4">
-              <div className="text-yellow-500 text-5xl mb-5 animate-bounce">⚠️</div>
-              <h3 className="text-xl font-bold text-yellow-700 mb-3">摄像头权限被拒绝</h3>
-              <p className="text-yellow-600 mb-6">{errorMessage}</p>
-              <div className="flex flex-col gap-4 max-w-xs mx-auto">
+          <div className="absolute inset-0 flex items-center justify-center bg-yellow-50 p-4">
+            <div className="text-center p-6 rounded-xl bg-white shadow-lg w-full max-w-md">
+              <div className="text-yellow-500 text-5xl mb-4 animate-bounce">⚠️</div>
+              <h3 className="text-base sm:text-xl font-bold text-yellow-700 mb-2">摄像头权限被拒绝</h3>
+              <p className="text-yellow-600 mb-4 text-sm">{errorMessage}</p>
+              <div className="flex flex-col gap-3 w-full">
                 <button 
                   onClick={handleRequestPermission}
-                  className="px-8 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-yellow-300 focus:ring-opacity-50 shadow-md"
+                  className="w-full px-6 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-yellow-300 focus:ring-opacity-50 shadow-md min-h-[48px]"
                 >
                   🔒 请求权限
                 </button>
                 <button 
                   onClick={openAppSettings}
-                  className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50 shadow-md"
+                  className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50 shadow-md min-h-[48px]"
                 >
                   ⚙️ 应用设置
                 </button>
                 <button 
                   onClick={reloadCamera}
-                  className="px-8 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-300 focus:ring-opacity-50 shadow-md"
+                  className="w-full px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-300 focus:ring-opacity-50 shadow-md min-h-[48px]"
                 >
                   🔄 重新加载
                 </button>
@@ -519,7 +531,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
         
         <video
         ref={videoRef}
-        className={status === 'active' ? 'w-full h-auto max-h-96 object-cover block' : 'w-full h-auto max-h-96 object-cover hidden'}
+        className={status === 'active' ? 'w-full h-full object-cover block' : 'w-full h-full object-cover hidden'}
       />
         
         {/* 覆盖层Canvas用于绘制骨骼点 - 确保定位正确 */}
@@ -531,12 +543,12 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
       )}
       </div>
 
-      {/* 拍照按钮 */}
+      {/* 拍照按钮 - 移动端优化 */}
       {status === 'active' && (
         <div className="text-center">
           <button
               onClick={takePhoto}
-              className="px-10 py-4 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50 shadow-md hover:shadow-lg min-w-[160px]"
+              className="w-full max-w-xs px-10 py-4 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50 shadow-md hover:shadow-lg min-h-[56px]"
             >
               <span className="flex items-center justify-center">
                 📊 开始评估
