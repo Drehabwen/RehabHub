@@ -107,7 +107,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onError }) => 
         )}
         
         <video
-          ref={videoRef}
+          ref={videoRef as React.RefObject<HTMLVideoElement>}
           className={`w-full h-auto max-h-96 object-contain ${status === 'active' ? 'block' : 'hidden'}`}
           autoPlay
           playsInline

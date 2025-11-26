@@ -7,8 +7,9 @@ import Dashboard from './components/pages/Dashboard';
 import StatusIndicatorExample from './components/pages/StatusIndicatorExample';
 import ComponentTestPage from './components/pages/ComponentTestPage';
 import StatusIndicator from './components/ui/StatusIndicator';
+import { colors, components, typography } from './theme/MedicalTheme';
 
-// 健康检查状态组件
+// 健康检查状态组件 - 移动端适配
 const HealthStatusIndicator: React.FC = () => {
   const { isHealthy, isChecking, hasError, checkHealth } = useHealthCheck();
   
@@ -22,12 +23,14 @@ const HealthStatusIndicator: React.FC = () => {
     <div 
       style={{
         position: 'fixed',
-        top: '10px',
-        right: '10px',
+        top: '16px',
+        right: '16px',
         zIndex: 1000,
-        cursor: 'pointer'
+        cursor: 'pointer',
+        padding: '4px' // 增加触摸目标大小
       }} 
       onClick={checkHealth}
+      className="active:scale-95 transition-transform" // 添加触摸反馈
     >
       <StatusIndicator status={getStatus()} size="small" />
     </div>
@@ -97,45 +100,120 @@ const fmsMovements: FmsMovement[] = [
   }
 ];
 
-// 动作评估系统组件
+// 动作评估系统组件 - 医疗风格设计和移动端适配
 const MovementSelection = ({ onSelectMovement }: { onSelectMovement: (movement: FmsMovement) => void }) => {
   return (
-    <div className="space-y-8 p-8 bg-white min-h-screen">
-      <div className="flex items-center justify-between mb-8">
+    <div className="space-y-6 p-4 md:p-8 min-h-screen" style={{ backgroundColor: colors.background.default }}>
+      {/* 返回按钮和顶部装饰 - 移动端适配 */}
+      <div className="flex items-center justify-between mb-6">
         <button 
           onClick={() => window.dispatchEvent(new CustomEvent('setActiveModule', { detail: 'dashboard' }))}
-          className="flex items-center text-emerald-600 hover:text-emerald-800 transition-colors"
+          className="flex items-center transition-all duration-300 rounded-full shadow-sm hover:shadow active:scale-95" 
+          style={{ 
+            color: colors.primary[600], 
+            backgroundColor: colors.neutral[100], 
+            padding: '12px 16px', // 增加触摸目标大小
+            minHeight: '48px' // 确保足够的高度
+          }}
         >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
           返回首页
         </button>
+        <div className="hidden sm:block text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: colors.primary[100], color: colors.primary[800], fontWeight: typography.fontWeight.semibold }}>
+          医疗专业版 v1.0
+        </div>
       </div>
       
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-emerald-700 mb-3">功能性动作评估 (FMS)</h2>
-        <p className="text-gray-600 text-lg">请选择要分析的动作类型</p>
+      {/* 页面标题和描述 - 医疗风格设计和移动端适配 */}
+      <div className="text-center mb-8 sm:mb-10">
+        <div className="inline-block p-2 rounded-full mb-4 mx-auto" style={{ backgroundColor: colors.primary[100] }}>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: colors.primary[600] }}>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        </div>
+        <h2 className="text-2xl md:text-3xl font-bold mb-3" style={{ 
+          color: colors.primary[800], 
+          fontWeight: typography.fontWeight.bold,
+          // 响应式调整
+          fontSize: 'clamp(1.5rem, 5vw, 2.5rem)'
+        }}>功能性动作评估 (FMS)</h2>
+        <p className="text-base md:text-lg max-w-2xl mx-auto" style={{ color: colors.text.secondary }}>
+          选择需要进行评估的动作类型，系统将通过AI技术分析动作质量和规范性
+        </p>
+        <div className="mt-4 text-sm" style={{ color: colors.text.secondary }}>
+          <span className="flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            提示: 确保拍摄环境光线充足，穿着便于观察动作的衣物
+          </span>
+        </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {fmsMovements.map(movement => (
+      {/* 动作卡片网格 - 医疗风格、增强UI和移动端适配 */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 auto-rows-auto">
+        {fmsMovements.map((movement, index) => (
           <div 
             key={movement.id}
             onClick={() => onSelectMovement(movement)}
-            className="bg-white rounded-xl shadow-md p-6 cursor-pointer hover:bg-emerald-50 transition-all hover:shadow-lg border-2 border-transparent hover:border-emerald-200 h-full flex flex-col"
+            className="p-5 cursor-pointer transition-all duration-300 transform hover:-translate-y-1 h-full flex flex-col active:scale-98" // 添加触摸反馈
             style={{
-              borderRadius: '16px',
-              boxShadow: '0 4px 20px rgba(143, 170, 143, 0.1)',
-              transition: 'all 0.3s ease'
+              backgroundColor: colors.neutral[100],
+              borderRadius: components.card.borderRadius,
+              boxShadow: components.card.boxShadow,
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              borderColor: colors.primary[50],
+              border: `1px solid ${colors.primary[50]}`,
+              // 移动端适配
+              padding: '14px',
+              minHeight: '220px' // 确保卡片高度一致
             }}
           >
-            <div className="flex items-center mb-3 text-emerald-600">
-              <div style={{ width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f5f7f5', borderRadius: '50%' }}>
-                •
+            {/* 序号和图标 - 医疗风格设计和移动端适配 */}
+            <div className="flex items-center mb-4">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: colors.primary[100], color: colors.primary[700], fontWeight: typography.fontWeight.semibold }}>
+                {index + 1}
               </div>
-              <h3 className="text-lg font-semibold ml-3">{movement.name}</h3>
+              <h3 className="text-lg ml-3" style={{ 
+                color: colors.primary[800], 
+                fontWeight: typography.fontWeight.semibold,
+                fontSize: 'clamp(1rem, 3vw, 1.25rem)'
+              }}>{movement.name}</h3>
             </div>
-            <p className="text-gray-600 text-sm mt-auto">{movement.description}</p>
+            
+            {/* 描述文本 - 移动端适配 */}
+            <p className="text-sm mt-auto mb-4" style={{ color: colors.text.secondary, fontSize: 'clamp(0.875rem, 2vw, 1rem)' }}>{movement.description}</p>
+            
+            {/* 动作图示 - 移动端适配 */}
+            <div className="w-full h-32 sm:h-40 rounded-lg mb-4 flex items-center justify-center overflow-hidden" style={{ backgroundColor: colors.primary[50] }}>
+              <div className="text-5xl opacity-70">
+                {index === 0 && '🏋️'}
+                {index === 1 && '🚶'}
+                {index === 2 && '🦿'}
+                {index === 3 && '👐'}
+                {index === 4 && '🦵'}
+                {index === 5 && '👨‍💻'}
+                {index === 6 && '🔄'}
+              </div>
+            </div>
+            
+            {/* 医疗风格的底部标签 */}
+            <div className="flex justify-between items-center mt-auto">
+              <span className="text-xs" style={{ color: colors.primary[500], fontWeight: typography.fontWeight.medium }}>FMS 标准动作</span>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: colors.primary[400] }}>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </div>
           </div>
         ))}
+      </div>
+      
+      {/* 医疗风格页脚 - 移动端适配 */}
+      <div className="mt-10 pt-6 border-t text-center text-sm" style={{ borderColor: colors.neutral[200] }}>
+        <p style={{ color: colors.text.secondary }}>© 2024 医疗康复评估系统 - 专业版</p>
+        <p className="mt-1" style={{ color: colors.text.secondary }}>使用AI技术辅助康复评估，提高治疗效率</p>
       </div>
     </div>
   );
@@ -196,9 +274,13 @@ const App: React.FC = () => {
             <div className="flex flex-col min-h-screen">
               <button 
                 onClick={() => setActiveModule('movement-selection')}
-                className="flex items-center text-emerald-600 hover:text-emerald-800 transition-colors p-4"
+                className="flex items-center transition-colors p-4 active:scale-95" 
+                style={{ 
+                  color: colors.success[700], 
+                  minHeight: '48px' // 增加触摸目标大小
+                }}
               >
-                ←
+                <span className="mr-2">←</span>
                 返回动作选择
               </button>
               <div className="flex-1">
@@ -213,9 +295,13 @@ const App: React.FC = () => {
             <div className="flex flex-col min-h-screen">
               <button 
                 onClick={() => setActiveModule('movement-selection')}
-                className="flex items-center text-emerald-600 hover:text-emerald-800 transition-colors p-4"
+                className="flex items-center transition-colors p-4 active:scale-95" 
+                style={{ 
+                color: colors.success[700], 
+                minHeight: '48px'
+              }}
               >
-                ←
+                <span className="mr-2">←</span>
                 返回动作选择
               </button>
               <div className="flex-1">
@@ -230,9 +316,13 @@ const App: React.FC = () => {
             <div className="flex flex-col min-h-screen">
               <button 
                 onClick={() => setActiveModule('movement-selection')}
-                className="flex items-center text-emerald-600 hover:text-emerald-800 transition-colors p-4"
+                className="flex items-center transition-colors p-4 active:scale-95" 
+                style={{ 
+                  color: colors.success[700], 
+                  minHeight: '48px'
+                }}
               >
-                ←
+                <span className="mr-2">←</span>
                 返回动作选择
               </button>
               <div className="flex-1">
@@ -247,9 +337,13 @@ const App: React.FC = () => {
             <div className="flex flex-col min-h-screen">
               <button 
                 onClick={() => setActiveModule('movement-selection')}
-                className="flex items-center text-emerald-600 hover:text-emerald-800 transition-colors p-4"
+                className="flex items-center transition-colors p-4 active:scale-95" 
+                style={{ 
+                  color: colors.success[700], 
+                  minHeight: '48px'
+                }}
               >
-                ←
+                <span className="mr-2">←</span>
                 返回动作选择
               </button>
               <div className="flex-1">
@@ -264,9 +358,13 @@ const App: React.FC = () => {
             <div className="flex flex-col min-h-screen">
               <button 
                 onClick={() => setActiveModule('movement-selection')}
-                className="flex items-center text-emerald-600 hover:text-emerald-800 transition-colors p-4"
+                className="flex items-center transition-colors p-4 active:scale-95" 
+                style={{ 
+                color: colors.success[700], 
+                minHeight: '48px'
+              }}
               >
-                ←
+                <span className="mr-2">←</span>
                 返回动作选择
               </button>
               <div className="flex-1">
@@ -281,9 +379,13 @@ const App: React.FC = () => {
             <div className="flex flex-col min-h-screen">
               <button 
                 onClick={() => setActiveModule('movement-selection')}
-                className="flex items-center text-emerald-600 hover:text-emerald-800 transition-colors p-4"
+                className="flex items-center transition-colors p-4 active:scale-95" 
+                style={{ 
+                  color: colors.success[700], 
+                  minHeight: '48px'
+                }}
               >
-                ←
+                <span className="mr-2">←</span>
                 返回动作选择
               </button>
               <div className="flex-1">
@@ -298,9 +400,13 @@ const App: React.FC = () => {
             <div className="flex flex-col min-h-screen">
               <button 
                 onClick={() => setActiveModule('movement-selection')}
-                className="flex items-center text-emerald-600 hover:text-emerald-800 transition-colors p-4"
+                className="flex items-center transition-colors p-4 active:scale-95" 
+                style={{ 
+                  color: colors.success[700], 
+                  minHeight: '48px'
+                }}
               >
-                ←
+                <span className="mr-2">←</span>
                 返回动作选择
               </button>
               <div className="flex-1">
@@ -315,9 +421,13 @@ const App: React.FC = () => {
             {selectedMovement && (
               <button 
                 onClick={() => setActiveModule('movement-selection')}
-                className="flex items-center text-emerald-600 hover:text-emerald-800 transition-colors p-4"
+                className="flex items-center transition-colors p-4 active:scale-95" 
+                style={{ 
+                  color: colors.success[700], 
+                  minHeight: '48px'
+                }}
               >
-                ←
+                <span className="mr-2">←</span>
                 返回动作选择
               </button>
             )}

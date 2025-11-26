@@ -10,7 +10,7 @@ interface UseCameraReturn {
 }
 
 export const useCamera = (): UseCameraReturn => {
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const [status, setStatus] = useState<'loading' | 'active' | 'error' | 'permission_denied' | 'not_supported'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
   const [hasPermission, setHasPermission] = useState(false);

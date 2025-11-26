@@ -44,7 +44,7 @@ class PythonBackendApi {
   
   constructor() {
     // 使用更安全的方式访问环境变量，避免TypeScript错误
-    this.baseUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+    this.baseUrl = process.env.VITE_BACKEND_URL || 'http://localhost:8000';
     this.loadToken();
   }
   

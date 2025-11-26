@@ -11,7 +11,7 @@ interface UseCameraReturn {
 }
 
 export const useCamera = (): UseCameraReturn => {
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const [status, setStatus] = useState<CameraStatus>('loading');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const streamRef = useRef<MediaStream | null>(null);

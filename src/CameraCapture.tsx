@@ -530,7 +530,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
         )}
         
         <video
-        ref={videoRef}
+        ref={videoRef as React.RefObject<HTMLVideoElement>}
         className={status === 'active' ? 'w-full h-full object-cover block' : 'w-full h-full object-cover hidden'}
       />
         

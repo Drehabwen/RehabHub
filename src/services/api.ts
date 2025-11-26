@@ -33,10 +33,10 @@ const API_CONFIG = {
 
 // 检查是否在浏览器环境中运行
 // 设置基础URL
-if (import.meta.env.VITE_BACKEND_URL) {
-  API_CONFIG.baseUrl = import.meta.env.VITE_BACKEND_URL;
-} else if (import.meta.env.VITE_API_URL) {
-  API_CONFIG.baseUrl = import.meta.env.VITE_API_URL;
+if (process.env.VITE_BACKEND_URL) {
+  API_CONFIG.baseUrl = process.env.VITE_BACKEND_URL;
+} else if (process.env.VITE_API_URL) {
+  API_CONFIG.baseUrl = process.env.VITE_API_URL;
 }
 
 // 模块API配置接口
