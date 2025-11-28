@@ -325,7 +325,7 @@ const ExampleAnalysis: React.FC<ExampleAnalysisProps> = ({
           <button
             className={`py-3 px-6 font-medium text-sm rounded-t-lg transition-all duration-300 ease-in-out ${activeTab === 'metrics' ? 'border-b-2 border-primary text-primary bg-primary-soft' : 'text-text-secondary hover:text-primary hover:bg-primary-soft'}`}
             onClick={() => setActiveTab('metrics')}
-            aria-selected={activeTab === 'metrics'}
+            aria-selected={activeTab === 'metrics' ? "true" : "false"}
             aria-controls="metrics-panel"
             role="tab"
           >
@@ -334,7 +334,7 @@ const ExampleAnalysis: React.FC<ExampleAnalysisProps> = ({
           <button
             className={`py-3 px-6 font-medium text-sm rounded-t-lg transition-all duration-300 ease-in-out ${activeTab === 'visualization' ? 'border-b-2 border-primary text-primary bg-primary-soft' : 'text-text-secondary hover:text-primary hover:bg-primary-soft'}`}
             onClick={() => setActiveTab('visualization')}
-            aria-selected={activeTab === 'visualization'}
+            aria-selected={activeTab === 'visualization' ? "true" : "false"}
             aria-controls="visualization-panel"
             role="tab"
           >
@@ -352,7 +352,7 @@ const ExampleAnalysis: React.FC<ExampleAnalysisProps> = ({
               >
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-2">
                   <div className="flex items-center">
-                    <div className={`w-2 h-2 rounded-full mr-2 ${metric.category === 'mobility' ? 'bg-blue-500' : 'bg-amber-500'}`}></div>
+                    <div className={`w-2 h-2 rounded-full mr-2 ${metric.category === 'mobility' ? 'bg-green-500' : 'bg-amber-500'}`}></div>
                     <div className="font-medium text-text-primary">{metric.name}</div>
                   </div>
                   <div className="flex items-center">
@@ -414,7 +414,7 @@ const ExampleAnalysis: React.FC<ExampleAnalysisProps> = ({
                     return (
                       <div key={category} className="flex items-center justify-between">
                         <div className="flex items-center">
-                          <div className={`w-3 h-3 rounded-full mr-2 ${category === 'mobility' ? 'bg-blue-500' : 'bg-amber-500'}`}></div>
+                          <div className={`w-3 h-3 rounded-full mr-2 ${category === 'mobility' ? 'bg-green-500' : 'bg-amber-500'}`}></div>
                           <span className="text-sm text-text-secondary">{category === 'mobility' ? '活动度' : '稳定性'}</span>
                         </div>
                         <span className="text-sm font-medium text-primary">{count}</span>

@@ -192,3 +192,38 @@ export default {
   getAllModuleApis,
   analyzeVideo
 };
+
+/**
+ * 获取仪表盘统计数据
+ */
+// 定义统计数据接口
+export interface StatCard {
+  title: string;
+  value: string;
+  icon: string;
+  bgColor: string;
+  textColor: string;
+  trend?: {
+    value: number;
+    isPositive: boolean;
+  };
+}
+
+// 创建默认apiClient实例
+const apiClient = new ApiClient({
+  baseUrl: API_CONFIG.baseUrl,
+  defaultHeaders: API_CONFIG.defaultHeaders
+});
+
+// 获取仪表盘统计数据
+export const fetchDashboardStats = async (): Promise<StatCard[]> => {
+  try {
+    // 使用ApiClient实例调用get方法
+    const data = await apiClient.get<StatCard[]>('/dashboard/stats');
+    return data;
+    
+  } catch (error) {
+    console.error('获取仪表盘数据失败:', error);
+    throw error;
+  }
+};

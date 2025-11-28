@@ -1,8 +1,9 @@
 /*
-  * Tailwind CSS v4 不再需要 @tailwind 指令
-  * 只需导入 "tailwindcss" 即可
+  * 使用传统的 Tailwind CSS 指令（适用于 v3 或配置为使用此语法的 v4）
   */
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /*
   * 自定义颜色变量定义
@@ -31,639 +32,257 @@
   --color-status-warning: #e0c15b;
   --color-status-danger: #d48a8a;
   
-  /* 边框和阴影 */
+  /* 边框和分割线 */
   --color-border: #d4ddd4;
-  --color-border-light: #e8f0e8;
-  --shadow-soft: 0 4px 20px rgba(143, 170, 143, 0.1);
-  --shadow-hover: 0 8px 30px rgba(143, 170, 143, 0.15);
-  --shadow-card: 0 2px 8px rgba(143, 170, 143, 0.08);
+  --color-divider: #e0e4e0;
   
-  /* 动画 */
-  --transition-fast: 0.2s ease-in-out;
-  --transition-medium: 0.3s ease-in-out;
-  --transition-slow: 0.5s ease-in-out;
+  /* 卡片和容器阴影 */
+  --shadow-soft: 0 2px 10px rgba(143, 170, 143, 0.1);
+  --shadow-hover: 0 4px 20px rgba(143, 170, 143, 0.15);
+  --shadow-card: 0 4px 15px rgba(143, 170, 143, 0.08);
 }
 
-/*
-  * 样式重置
-  */
-@layer base {
-  body {
-    background: var(--color-background-gradient);
-    color: var(--color-text-primary);
-    font-family: Inter, system-ui, sans-serif;
-    min-height: 100vh;
-    line-height: 1.6;
-  }
-  
-  /*
-    * 滚动条样式
-    */
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-  
-  ::-webkit-scrollbar-track {
-    background-color: #f3f4f6; /* gray-100 */
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background-color: #d1d5db; /* gray-300 */
-    border-radius: 9999px; /* rounded-full */
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background-color: #9ca3af; /* gray-400 */
+/* 全局样式重置和基础样式 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--color-primary-gray);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-primary-soft);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary-light);
+}
+
+/* 焦点样式 */
+:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* 链接样式 */
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-primary-light);
+}
+
+/* 按钮基础样式 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+.btn:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* 主要按钮 */
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-light);
+}
+
+.btn-primary:disabled {
+  background-color: var(--color-primary-soft);
+  cursor: not-allowed;
+}
+
+/* 次要按钮 */
+.btn-secondary {
+  background-color: var(--color-primary-white);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-primary-gray);
+  border-color: var(--color-primary-light);
+}
+
+/* 危险按钮 */
+.btn-danger {
+  background-color: var(--color-status-danger);
+  color: white;
+}
+
+.btn-danger:hover {
+  opacity: 0.9;
+}
+
+/* 卡片样式 */
+.card {
+  background: var(--color-primary-white);
+  border-radius: 0.5rem;
+  box-shadow: var(--shadow-card);
+  padding: 1.5rem;
+  transition: box-shadow 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-hover);
+}
+
+/* 表单元素样式 */
+.input-field {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  background-color: var(--color-primary-white);
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.input-field:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+/* 标题样式 */
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 1rem;
+}
+
+.subtitle {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.75rem;
+}
+
+/* 文本样式 */
+.text-primary {
+  color: var(--color-text-primary);
+}
+
+.text-secondary {
+  color: var(--color-text-secondary);
+}
+
+.text-tertiary {
+  color: var(--color-text-tertiary);
+}
+
+.text-success {
+  color: var(--color-status-success);
+}
+
+.text-warning {
+  color: var(--color-status-warning);
+}
+
+.text-danger {
+  color: var(--color-status-danger);
+}
+
+/* 响应式断点 */
+@media (min-width: 640px) {
+  .container {
+    max-width: 640px;
   }
 }
 
-/* 自定义组件样式 */
-@layer components {
-  .analysis-card {
-    background-color: white;
-    border-radius: 1rem;
-    box-shadow: var(--shadow-card);
-    border: 1px solid var(--color-border-light);
-    overflow: hidden;
-    transition: all var(--transition-medium);
-    position: relative;
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-  }
-  
-  .analysis-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
-    opacity: 0;
-    transition: opacity var(--transition-fast);
-  }
-  
-  .analysis-card:hover {
-    box-shadow: var(--shadow-hover);
-    transform: translateY(-2px);
-    border-color: var(--color-primary-soft);
-  }
-  
-  .analysis-card:hover::before {
-    opacity: 1;
-  }
-  
-  .tab-button {
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    border-radius: 0.5rem;
-    transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
-    outline: 2px solid transparent;
-    outline-offset: 2px;
-  }
-  
-  .tab-button:focus {
-    outline: 2px solid transparent;
-    outline-offset: 2px;
-  }
-  
-  .tab-button:focus-visible {
-    box-shadow: 0 0 0 2px white, 0 0 0 4px var(--color-primary);
-    outline-offset: 2px;
-  }
-  
-  .tab-button.active {
-    background-color: var(--color-primary);
-    color: white;
-  }
-  
-  .tab-button:not(.active) {
-    color: #4b5563;
-  }
-  
-  .tab-button:not(.active):hover {
-    color: var(--color-primary);
-    background-color: rgba(143, 170, 143, 0.1);
-  }
-  
-  .score-bar-container {
-    width: 100%;
-    background-color: #e5e7eb;
-    border-radius: 9999px;
-    height: 0.5rem;
-  }
-  
-  .score-bar-fill {
-    background: linear-gradient(to right, var(--color-primary), var(--color-primary-light));
-    height: 0.5rem;
-    border-radius: 9999px;
-    transition: all 0.5s cubic-bezier(0, 0, 0.2, 1);
-  }
-  
-  .capture-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 4rem;
-    height: 4rem;
-    border-radius: 9999px;
-    background-color: #ef4444;
-    outline: 2px solid transparent;
-    outline-offset: 2px;
-    transition: all 0.2s ease-in-out;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-  }
-  
-  .capture-button:hover {
-    background-color: #dc2626;
-  }
-  
-  .capture-button:focus {
-    outline: 2px solid transparent;
-    outline-offset: 2px;
-  }
-  
-  .capture-button:focus-visible {
-    box-shadow: 0 0 0 4px #fecaca;
-  }
-  
-  .file-dropzone {
-    border: 2px dashed var(--color-border);
-    border-radius: 1rem;
-    padding: 2.5rem;
-    text-align: center;
-    transition: all var(--transition-medium);
-    cursor: pointer;
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(10px);
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .file-dropzone::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, transparent, rgba(143, 170, 143, 0.02));
-    opacity: 0;
-    transition: opacity var(--transition-medium);
-  }
-  
-  .file-dropzone:hover {
-    border-color: var(--color-primary);
-    background-color: rgba(255, 255, 255, 0.9);
-    box-shadow: var(--shadow-soft);
-    transform: translateY(-1px);
-  }
-  
-  .file-dropzone:hover::before {
-    opacity: 1;
-  }
-  
-  .file-dropzone.drag-over {
-    border-color: var(--color-primary);
-    background-color: rgba(143, 170, 143, 0.1);
-    box-shadow: var(--shadow-hover);
-  }
-  
-  .action-button {
-    padding: 0.875rem 1.75rem;
-    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
-    color: white;
-    font-weight: 600;
-    border-radius: 0.75rem;
-    border: none;
-    outline: 2px solid transparent;
-    outline-offset: 2px;
-    transition: all var(--transition-medium);
-    box-shadow: var(--shadow-soft);
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .action-button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left var(--transition-slow);
-  }
-  
-  .action-button:hover {
-    background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
-    box-shadow: var(--shadow-hover);
-    transform: translateY(-1px);
-  }
-  
-  .action-button:hover::before {
-    left: 100%;
-  }
-  
-  .action-button:active {
-    transform: translateY(0);
-  }
-  
-  .action-button:focus {
-    outline: 2px solid transparent;
-    outline-offset: 2px;
-  }
-  
-  .action-button:focus-visible {
-    box-shadow: 0 0 0 3px rgba(143, 170, 143, 0.3);
-  }
-  
-  .secondary-button {
-    padding: 0.875rem 1.75rem;
-    background-color: white;
-    color: var(--color-primary);
-    font-weight: 600;
-    border-radius: 0.75rem;
-    border: 2px solid var(--color-primary);
-    outline: 2px solid transparent;
-    outline-offset: 2px;
-    transition: all var(--transition-medium);
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .secondary-button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
-    opacity: 0;
-    transition: opacity var(--transition-medium);
-    z-index: -1;
-  }
-  
-  .secondary-button:hover {
-    color: white;
-    border-color: transparent;
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-soft);
-  }
-  
-  .secondary-button:hover::before {
-    opacity: 1;
-  }
-  
-  .secondary-button:active {
-    transform: translateY(0);
-  }
-  
-  /* 加载动画 */
-  .loading-spinner {
-    width: 1.5rem;
-    height: 1.5rem;
-    border: 2px solid var(--color-border-light);
-    border-top: 2px solid var(--color-primary);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-  
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-  
-  /* 进度条增强 */
-  .progress-bar {
-    width: 100%;
-    height: 0.5rem;
-    background-color: var(--color-border-light);
-    border-radius: 9999px;
-    overflow: hidden;
-    position: relative;
-  }
-  
-  .progress-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
-    border-radius: 9999px;
-    transition: width var(--transition-slow) cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-  }
-  
-  .progress-bar-fill::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-    animation: shimmer 2s infinite;
-  }
-  
-  @keyframes shimmer {
-    0% { left: -100%; }
-    100% { left: 100%; }
-  }
-  
-  /* 状态指示器 */
-  .status-indicator {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 9999px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: all var(--transition-fast);
-  }
-  
-  .status-indicator.success {
-    background-color: rgba(143, 170, 143, 0.1);
-    color: var(--color-status-success);
-    border: 1px solid rgba(143, 170, 143, 0.2);
-  }
-  
-  .status-indicator.warning {
-    background-color: rgba(224, 193, 91, 0.1);
-    color: var(--color-status-warning);
-    border: 1px solid rgba(224, 193, 91, 0.2);
-  }
-  
-  .status-indicator.danger {
-    background-color: rgba(212, 138, 138, 0.1);
-    color: var(--color-status-danger);
-    border: 1px solid rgba(212, 138, 138, 0.2);
-  }
-  
-  .secondary-button:focus {
-    outline: 2px solid transparent;
-    outline-offset: 2px;
-  }
-  
-  .secondary-button:focus-visible {
-    box-shadow: 0 0 0 2px white, 0 0 0 4px var(--color-primary);
-  }
-  
-  /* 基础按钮样式 - 优化触摸操作 */
-  .btn-primary {
-    background-color: var(--color-primary);
-    color: white;
-    border: none;
-    padding: 1rem 1.5rem;
-    border-radius: 0.5rem;
-    font-weight: 500;
-    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-    min-height: 48px;
-    min-width: 80px;
-    touch-action: manipulation;
-    user-select: none;
-    cursor: pointer;
-  }
-  
-  .btn-primary:hover {
-    background-color: rgba(143, 170, 143, 0.9);
-  }
-  
-  .btn-primary:active {
-    transform: scale(0.98);
-  }
-  
-  .btn-primary:focus {
-    outline: 2px solid transparent;
-    outline-offset: 2px;
-  }
-  
-  .btn-primary:focus-visible {
-    box-shadow: 0 0 0 2px var(--color-primary-gray), 0 0 0 4px rgba(143, 170, 143, 0.3);
-  }
-  
-  .btn-secondary {
-    background-color: var(--color-primary-white);
-    color: var(--color-primary);
-    border: 1px solid var(--color-border);
-    padding: 1rem 1.5rem;
-    border-radius: 0.5rem;
-    font-weight: 500;
-    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-    min-height: 48px;
-    min-width: 80px;
-    touch-action: manipulation;
-    user-select: none;
-    cursor: pointer;
-  }
-  
-  .btn-secondary:hover {
-    background-color: rgba(143, 170, 143, 0.05);
-  }
-  
-  .btn-secondary:active {
-    transform: scale(0.98);
-  }
-  
-  .btn-secondary:focus {
-    outline: 2px solid transparent;
-    outline-offset: 2px;
-  }
-  
-  .btn-secondary:focus-visible {
-    box-shadow: 0 0 0 2px var(--color-primary-gray), 0 0 0 4px rgba(143, 170, 143, 0.3);
-  }
-  
-  .card {
-    background-color: var(--color-primary-white);
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-    padding: 1.25rem;
-    border: 1px solid var(--color-border);
-    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .card:hover {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  }
-  
-  .section-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--color-text-primary);
-    margin-bottom: 1rem;
-  }
-  
-  .form-input {
-    width: 100%;
-    padding: 1rem 1rem;
-    border-radius: 0.5rem;
-    border: 1px solid var(--color-border);
-    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-    font-size: 16px; /* 防止iOS缩放 */
-    min-height: 48px;
-    touch-action: manipulation;
-    user-select: none;
-    line-height: 1.5;
-    letter-spacing: 0.02em;
-  }
-  
-  .form-input:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(143, 170, 143, 0.2);
-  }
-  
-  /* 复选框和单选框样式优化 */
-  input[type="checkbox"],
-  input[type="radio"] {
-    width: 20px;
-    height: 20px;
-    margin-right: 10px;
-    cursor: pointer;
-  }
-  
-  /* 触摸友好的标签样式 */
-  label {
-    display: inline-flex;
-    align-items: center;
-    cursor: pointer;
-    touch-action: manipulation;
-    user-select: none;
-    padding: 8px 4px;
-  }
-  
-  /* 触摸优化的链接样式 */
-  a {
-    touch-action: manipulation;
-    min-height: 44px;
-    display: inline-flex;
-    align-items: center;
-  }
-  
-  /* 全局触摸优化 */
-  * {
-    -webkit-tap-highlight-color: transparent;
-  }
-  
-  button, input, select, textarea {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-  
-  /* 防止双击缩放 */
-  button, a, label {
-    touch-action: manipulation;
-  }
-  
-  .form-input:focus {
-    outline: 2px solid transparent;
-    outline-offset: 2px;
-    box-shadow: 0 0 0 2px rgba(143, 170, 143, 0.3);
-    border-color: transparent;
-  }
-  
-  .badge {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
-    border-radius: 9999px;
-    font-weight: 500;
-  }
-  
-  .badge-success {
-    background-color: rgba(143, 170, 143, 0.1);
-    color: var(--color-status-success);
-  }
-  
-  .badge-warning {
-    background-color: rgba(224, 193, 91, 0.1);
-    color: var(--color-status-warning);
-  }
-  
-  .badge-danger {
-    background-color: rgba(212, 138, 138, 0.1);
-    color: var(--color-status-danger);
+@media (min-width: 768px) {
+  .container {
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1024px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1280px;
   }
 }
 
 /* 动画效果 */
-@layer utilities {
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
 
-  .fade-in {
-    animation: fadeIn 0.5s ease-out;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
   }
-
-  .animate-fadeIn {
-    animation: fadeIn 0.5s ease-out;
-  }
-
-  .text-shadow {
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  to {
+    opacity: 1;
   }
 }
 
-/* 响应式断点补充 */
-@layer utilities {
-  @media (min-width: 640px) {
-    .sm\:container {
-      width: 100%;
-      margin-right: auto;
-      margin-left: auto;
-      padding-right: 1rem;
-      padding-left: 1rem;
-    }
-  }
+.slide-up {
+  animation: slideUp 0.3s ease-out;
+}
 
-  @media (min-width: 768px) {
-    .md\:container {
-      width: 100%;
-      margin-right: auto;
-      margin-left: auto;
-      padding-right: 1rem;
-      padding-left: 1rem;
-    }
+@keyframes slideUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
   }
-
-  @media (min-width: 1024px) {
-    .lg\:container {
-      width: 100%;
-      margin-right: auto;
-      margin-left: auto;
-      padding-right: 1rem;
-      padding-left: 1rem;
-    }
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
+}
 
-  @media (min-width: 1280px) {
-    .xl\:container {
-      width: 100%;
-      margin-right: auto;
-      margin-left: auto;
-      padding-right: 1rem;
-      padding-left: 1rem;
-    }
+/* 骨架屏动画 */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
   }
-
-  @media (min-width: 1536px) {
-    .\32 xl\:container {
-      width: 100%;
-      margin-right: auto;
-      margin-left: auto;
-      padding-right: 1rem;
-      padding-left: 1rem;
-    }
+  100% {
+    background-position: -200% 0;
   }
 }

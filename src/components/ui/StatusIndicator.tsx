@@ -1,5 +1,5 @@
 import React from 'react';
-import theme from '../../theme/theme';
+import { colors, typography } from '../../theme';
 
 interface StatusIndicatorProps {
   status: 'healthy' | 'unhealthy' | 'checking' | 'error';
@@ -23,31 +23,15 @@ const getDotSize = (size: StatusIndicatorProps['size']) => {
 const getStatusColor = (status: StatusIndicatorProps['status']) => {
   switch (status) {
     case 'healthy':
-      return theme.colors.primary;
+      return colors.success[500];
     case 'unhealthy':
-      return '#e57373';
+      return colors.error[500];
     case 'checking':
-      return theme.colors.primaryLight;
+      return colors.warning[500];
     case 'error':
-      return '#ff9800';
+      return colors.error[500];
     default:
-      return theme.colors.textLight;
-  }
-};
-
-// 获取文本颜色
-const getTextColor = (status: StatusIndicatorProps['status']) => {
-  switch (status) {
-    case 'healthy':
-      return theme.colors.textPrimary;
-    case 'unhealthy':
-      return '#e57373';
-    case 'checking':
-      return theme.colors.textSecondary;
-    case 'error':
-      return '#ff9800';
-    default:
-      return theme.colors.textLight;
+      return colors.text.secondary;
   }
 };
 
@@ -55,11 +39,27 @@ const getTextColor = (status: StatusIndicatorProps['status']) => {
 const getFontSize = (size: StatusIndicatorProps['size']) => {
   switch (size) {
     case 'small':
-      return theme.typography.fontSize.sm;
+      return typography.fontSize.sm;
     case 'large':
-      return theme.typography.fontSize.lg;
+      return typography.fontSize.lg;
     default:
-      return theme.typography.fontSize.md;
+      return typography.fontSize.base;
+  }
+};
+
+// 获取文本颜色
+const getTextColor = (status: StatusIndicatorProps['status']) => {
+  switch (status) {
+    case 'healthy':
+      return colors.text.primary;
+    case 'unhealthy':
+      return colors.error[500];
+    case 'checking':
+      return colors.text.secondary;
+    case 'error':
+      return colors.error[500];
+    default:
+      return colors.text.secondary;
   }
 };
 
@@ -109,8 +109,8 @@ const IndicatorText: React.FC<{
     <span
       className="font-medium"
       style={{
-        fontFamily: theme.typography.fontFamily,
-        fontWeight: theme.typography.fontWeight.medium,
+        fontFamily: typography.fontFamily,
+        fontWeight: typography.fontWeight.medium,
         color: getTextColor(status),
       }}
     >
@@ -143,6 +143,10 @@ const StatusIndicator: React.FC<StatusIndicatorProps> = ({
   showText = true,
 }) => {
   const getStatusText = () => {
+    // 在本地开发环境中隐藏连接错误提示
+    const backendUrl = process.env.VITE_BACKEND_URL || 'http://localhost:8000';
+    const isLocalDevelopment = backendUrl.includes('localhost') || backendUrl.includes('127.0.0.1');
+    
     switch (status) {
       case 'healthy':
         return '系统正常';
@@ -151,18 +155,28 @@ const StatusIndicator: React.FC<StatusIndicatorProps> = ({
       case 'checking':
         return '检查中...';
       case 'error':
-        return '连接错误';
+        // 如果是本地开发环境，则不显示错误信息
+        return isLocalDevelopment ? '' : '连接错误';
       default:
         return '未知状态';
     }
   };
 
+  // 如果是本地开发环境且状态为error，不显示任何内容
+  const backendUrl = process.env.VITE_BACKEND_URL || 'http://localhost:8000';
+  const isLocalDevelopment = backendUrl.includes('localhost') || backendUrl.includes('127.0.0.1');
+  const statusText = getStatusText();
+  
+  if (isLocalDevelopment && status === 'error' && !statusText) {
+    return null;
+  }
+
   return (
     <IndicatorContainer size={size}>
       <IndicatorDot status={status} size={size} />
-      {showText && (
+      {showText && statusText && (
         <IndicatorText status={status}>
-          {getStatusText()}
+          {statusText}
         </IndicatorText>
       )}
     </IndicatorContainer>

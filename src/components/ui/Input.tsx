@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { theme } from '../../theme/theme';
+import { theme } from '../../theme';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: boolean;
@@ -39,7 +39,7 @@ const Input: React.FC<InputProps> = ({
       default:
         return {
           padding: `${theme.spacing.md} ${theme.spacing.md}`,
-          fontSize: theme.typography.fontSize.md,
+          fontSize: theme.typography.fontSize.base,
           minHeight: '48px'
         };
     }
@@ -51,34 +51,27 @@ const Input: React.FC<InputProps> = ({
   const getBorderColor = () => {
     if (disabled) return theme.colors.borderColor;
     if (error) return '#e57373';
-    if (isFocused) return theme.colors.primary;
-    if (isFocused && error) return '#e57373';
+    if (isFocused) return theme.colors.primary[500];
     return theme.colors.borderColor;
   };
 
-  const wrapperStyles: React.CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing.xs,
-    width: fullWidth ? '100%' : 'auto'
-  };
 
   const labelStyles: React.CSSProperties = {
     fontFamily: theme.typography.fontFamily,
     fontSize: theme.typography.fontSize.sm,
     fontWeight: theme.typography.fontWeight.medium,
-    color: theme.colors.textPrimary
+    color: theme.colors.text.primary
   };
 
   const inputStyles: React.CSSProperties = {
     padding: sizeStyles.padding,
     border: `2px solid ${getBorderColor()}`,
-    borderRadius: theme.borderRadius.medium,
+    borderRadius: theme.borderRadius.md,
     fontFamily: theme.typography.fontFamily,
     fontSize: sizeStyles.fontSize,
-    color: theme.colors.textPrimary,
-    backgroundColor: disabled ? theme.colors.backgroundSecondary : theme.colors.backgroundPrimary,
-    transition: `all ${theme.animations.duration.normal} ${theme.animations.easing.easeInOut}`,
+    color: theme.colors.text.primary, // 修复颜色引用
+    backgroundColor: disabled ? theme.colors.background.secondary : theme.colors.background.default,
+    transition: `all ${theme.transitions.duration.normal} ${theme.transitions.timingFunction.easeInOut}`,
     outline: 'none',
     opacity: disabled ? 0.7 : 1,
     cursor: disabled ? 'not-allowed' : 'text',
@@ -92,7 +85,7 @@ const Input: React.FC<InputProps> = ({
   const helperTextStyles: React.CSSProperties = {
     fontFamily: theme.typography.fontFamily,
     fontSize: theme.typography.fontSize.xs,
-    color: error ? '#e57373' : theme.colors.textLight,
+    color: error ? '#e57373' : theme.colors.text.secondary,
     margin: 0,
     lineHeight: theme.typography.lineHeight.normal
   };
@@ -100,7 +93,7 @@ const Input: React.FC<InputProps> = ({
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     setIsFocused(true);
     if (!disabled) {
-      e.currentTarget.style.borderColor = error ? '#e57373' : theme.colors.primary;
+      e.currentTarget.style.borderColor = error ? '#e57373' : theme.colors.primary[500];
       e.currentTarget.style.boxShadow = '0 0 0 3px rgba(143, 170, 143, 0.2)';
     }
     if (props.onFocus) props.onFocus(e);
@@ -117,7 +110,7 @@ const Input: React.FC<InputProps> = ({
 
   const handleMouseEnter = (e: React.MouseEvent<HTMLInputElement>) => {
     if (!disabled && !isFocused && !error) {
-      e.currentTarget.style.borderColor = theme.colors.primaryLight;
+      e.currentTarget.style.borderColor = theme.colors.primary[500];
     }
     if (props.onMouseEnter) props.onMouseEnter(e);
   };
@@ -130,7 +123,7 @@ const Input: React.FC<InputProps> = ({
   };
 
   return (
-    <div style={wrapperStyles}>
+    <div className="relative w-full">
       {label && (
         <label htmlFor={props.id} style={labelStyles}>
           {label}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { theme } from '../../theme/theme';
+import { theme } from '../../theme';
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   elevation?: 'low' | 'medium' | 'high';
@@ -28,10 +28,10 @@ const Card: React.FC<CardProps> & {
   Footer: React.FC<{ children: React.ReactNode }>;
 } = ({ children, elevation = 'low', noPadding = false, className = '', ...props }) => {
   const styles: React.CSSProperties = {
-    backgroundColor: theme.colors.backgroundSecondary,
-    borderRadius: theme.borderRadius.medium,
+    backgroundColor: theme.colors.background.paper,
+    borderRadius: theme.borderRadius.md,
     border: `1px solid ${theme.colors.borderColor}`,
-    transition: `all ${theme.animations.duration.normal} ${theme.animations.easing.easeInOut}`,
+    transition: `all ${theme.transitions.duration.normal} ${theme.transitions.timingFunction.easeInOut}`,
     boxShadow: getShadowStyle(elevation),
     padding: noPadding ? '0' : theme.spacing.lg,
   };
@@ -75,9 +75,9 @@ Card.Header = ({ title, description, children }) => {
 Card.Title = ({ children }) => {
   const styles: React.CSSProperties = {
     fontFamily: theme.typography.fontFamily,
-    fontSize: theme.typography.fontSize.xl,
+    fontSize: theme.typography.fontSize.lg,
     fontWeight: theme.typography.fontWeight.bold,
-    color: theme.colors.textPrimary,
+    color: theme.colors.text.primary,
     margin: 0,
   };
   
@@ -87,7 +87,7 @@ Card.Title = ({ children }) => {
 Card.Description = ({ children }) => {
   const styles: React.CSSProperties = {
     fontFamily: theme.typography.fontFamily,
-    fontSize: theme.typography.fontSize.md,
+    fontSize: theme.typography.fontSize.base,
     color: theme.colors.textSecondary,
     margin: 0,
     lineHeight: theme.typography.lineHeight.normal,

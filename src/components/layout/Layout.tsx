@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 // 使用内联样式和Tailwind CSS代替styled-components
-import { theme } from '../../theme/theme';
-import StatusIndicator from '../ui/StatusIndicator';
+import { theme } from '../../theme';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -13,7 +12,7 @@ const LayoutContainer: React.FC<{ children: React.ReactNode }> = ({ children }) 
   <div 
     style={{
       minHeight: '100vh',
-      backgroundColor: theme.colors.backgroundPrimary,
+      backgroundColor: theme.colors.background.default,
       display: 'flex',
       flexDirection: 'column'
     }}
@@ -27,8 +26,8 @@ const LayoutContainer: React.FC<{ children: React.ReactNode }> = ({ children }) 
 const Header: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
   <header 
     style={{
-      backgroundColor: theme.colors.primary,
-      color: 'white',
+      backgroundColor: theme.colors.primary[500],
+      color: theme.colors.text.primary,
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
@@ -82,8 +81,8 @@ const TitleComponent: React.FC<{ children: React.ReactNode }> = ({ children }) =
   </h2>
 );
 
-// 头部操作区组件
-const HeaderActions: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+// 头部操作区组件 - 修改为可选的children属性
+const HeaderActions: React.FC<{ children?: React.ReactNode }> = ({ children }) => (
   <div 
     style={{
       display: 'flex',
@@ -95,18 +94,6 @@ const HeaderActions: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     {children}
   </div>
 );
-
-
-
-
-
-
-
-
-
-
-
-
 
 // 主内容区组件
 const Main: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
@@ -125,8 +112,8 @@ const Sidebar: React.FC<{ children: React.ReactNode; className?: string }> = ({ 
   <aside 
     className={`w-full md:w-72 p-4 md:p-6 rounded-lg border md:shadow ${className}`}
     style={{
-      backgroundColor: theme.colors.backgroundSecondary,
-      borderRadius: theme.borderRadius.medium,
+      backgroundColor: theme.colors.background.paper,
+      borderRadius: theme.borderRadius.md,
       borderColor: theme.colors.borderColor,
       boxShadow: theme.shadows.default
     }}
@@ -149,9 +136,9 @@ const SidebarTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     style={{
       fontSize: theme.typography.fontSize.lg,
       fontWeight: theme.typography.fontWeight.semibold,
-      color: theme.colors.textPrimary,
+      color: theme.colors.text.primary,
       margin: '0 0 24px 0',
-      borderBottomColor: theme.colors.primaryLighter,
+      borderBottomColor: theme.colors.primary[100],
       borderBottomWidth: '2px'
     }}
   >
@@ -259,7 +246,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
           {title && <TitleComponent>{title}</TitleComponent>}
         </LogoContainer>
         <HeaderActions>
-          <StatusIndicator status="healthy" size="small" />
+          {/* 移除了StatusIndicator组件，避免出现连接错误提示 */}
         </HeaderActions>
       </Header>
       

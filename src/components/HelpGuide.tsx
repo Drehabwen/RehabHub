@@ -1,5 +1,5 @@
 import React, { useState, useEffect, ReactNode } from 'react';
-import { colors, typography } from '../theme/theme';
+import { colors, typography } from '../theme';
 
 interface HelpStep {
   id: string;
@@ -74,10 +74,10 @@ const HelpGuide: React.FC<HelpGuideProps> = ({ steps, targetRef, isOpen, onClose
       zIndex: 1001,
       width: '320px',
       maxWidth: '90vw',
-      backgroundColor: colors.backgroundPrimary,
+      backgroundColor: colors.background.default,
       borderRadius: '8px',
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-      border: `1px solid ${colors.borderColor}`,
+      border: `1px solid ${colors.neutral[300]}`,
 
       fontFamily: typography.fontFamily,
       transform: 'translateZ(0)',
@@ -125,22 +125,22 @@ const HelpGuide: React.FC<HelpGuideProps> = ({ steps, targetRef, isOpen, onClose
       case 'bottom':
         arrowStyles.top = '-16px';
         arrowStyles.left = '16px';
-        arrowStyles.borderBottomColor = colors.backgroundPrimary;
+        arrowStyles.borderBottomColor = colors.background.default;
         break;
       case 'top':
         arrowStyles.bottom = '-16px';
         arrowStyles.left = '16px';
-        arrowStyles.borderTopColor = colors.backgroundPrimary;
+        arrowStyles.borderTopColor = colors.background.default;
         break;
       case 'right':
         arrowStyles.top = '16px';
         arrowStyles.left = '-16px';
-        arrowStyles.borderRightColor = colors.backgroundPrimary;
+        arrowStyles.borderRightColor = colors.background.default;
         break;
       case 'left':
         arrowStyles.top = '16px';
         arrowStyles.right = '-16px';
-        arrowStyles.borderLeftColor = colors.backgroundPrimary;
+        arrowStyles.borderLeftColor = colors.background.default;
         break;
     }
 
@@ -216,7 +216,7 @@ const HelpGuide: React.FC<HelpGuideProps> = ({ steps, targetRef, isOpen, onClose
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: colors.textSecondary
+              color: colors.text.secondary
             }}
             aria-label="关闭"
           >
@@ -250,7 +250,7 @@ const HelpGuide: React.FC<HelpGuideProps> = ({ steps, targetRef, isOpen, onClose
                 width: '8px',
                 height: '8px',
                 borderRadius: '50%',
-                backgroundColor: index === currentStep ? colors.primary : colors.borderColor,
+                backgroundColor: index === currentStep ? colors.primary[500] : colors.borderColor,
 
                 transition: 'background-color 0.2s ease'
               }}
@@ -275,7 +275,7 @@ const HelpGuide: React.FC<HelpGuideProps> = ({ steps, targetRef, isOpen, onClose
                 border: `1px solid ${colors.borderColor}`,
                 borderRadius: '6px',
                 backgroundColor: 'transparent',
-                color: colors.textPrimary,
+                color: colors.text.primary,
 
                 fontSize: '14px',
                 fontWeight: typography.fontWeight.medium,
@@ -347,8 +347,8 @@ export const TooltipHint: React.FC<TooltipHintProps> = ({
           style={{
             position: 'absolute',
             zIndex: 1000,
-            backgroundColor: colors.backgroundPrimary,
-            border: `1px solid ${colors.borderColor}`,
+            backgroundColor: colors.background.default,
+            border: `1px solid ${colors.neutral[300]}`,
 
             borderRadius: '6px',
             padding: '8px 12px',

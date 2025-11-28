@@ -57,8 +57,8 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onError }) => 
           <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
             <div className="text-white text-center space-y-6">
               <div className="relative">
-                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-400 mx-auto"></div>
-                <div className="animate-ping absolute inset-0 rounded-full h-16 w-16 bg-blue-500 opacity-20 mx-auto"></div>
+                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-400 mx-auto"></div>
+                <div className="animate-ping absolute inset-0 rounded-full h-16 w-16 bg-green-500 opacity-20 mx-auto"></div>
               </div>
               <h3 className="text-xl font-medium tracking-wide">正在启动摄像头...</h3>
               <p className="text-gray-300 max-w-xs mx-auto">请确保您的设备已授予摄像头访问权限</p>
@@ -120,7 +120,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onError }) => 
         <div className="text-center">
           <button
             onClick={takePhoto}
-            className="px-10 py-4 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50 shadow-md hover:shadow-lg min-w-[160px]"
+            className="px-10 py-4 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 focus:ring-opacity-50 shadow-md hover:shadow-lg min-w-[160px]"
           >
             <span className="flex items-center justify-center">
               📸 拍照

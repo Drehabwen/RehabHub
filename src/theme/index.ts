@@ -1,47 +1,58 @@
-// 医疗主题配置文件
-// 定义统一的颜色、字体和样式变量，确保整个应用的UI风格一致性
 
-// 色彩系统 - 医疗专业风格
+/**
+ * 统一主题配置文件
+ * 整合了医疗主题和康复评估平台的配色方案
+ */
+
+// 色彩系统 - 结合医疗蓝与康复绿，创建专业医疗康复风格
 export const colors = {
-  // 主色调 - 医疗蓝系列
+  // 主色调 - 医疗康复专业风格
   primary: {
-    50: '#E3F2FD',    // 极浅蓝，用于背景
-    100: '#BBDEFB',   // 浅蓝色，用于边框
-    200: '#90CAF9',   // 亮蓝色，用于次要元素
-    300: '#64B5F6',   // 中蓝色，用于交互元素
-    400: '#42A5F5',   // 中深蓝色，用于悬停状态
-    500: '#1E88E5',   // 主蓝色，用于主要按钮、强调
-    600: '#1976D2',   // 深蓝色，用于重要元素
-    700: '#1565C0',   // 暗蓝色，用于标题
-    800: '#0D47A1',   // 更深蓝色，用于标题
-    900: '#0B3954',   // 几乎黑色的蓝色，用于最深色文本
+    50: '#E3F5E9',    // 极浅绿，用于背景
+    100: '#C8E6C9',   // 浅绿色，用于边框
+    200: '#A5D6A7',   // 亮绿色，用于次要元素
+    300: '#81C784',   // 中绿色，用于交互元素
+    400: '#66BB6A',   // 中深绿色，用于悬停状态
+    500: '#4CAF50',   // 主绿色，用于主要按钮、强调
+    600: '#43A047',   // 深绿色，用于重要元素
+    700: '#388E3C',   // 暗绿色，用于标题
+    800: '#2E7D32',   // 更深绿色，用于标题
+    900: '#1B5E20',   // 几乎黑色的绿色，用于最深色文本
   },
-  
-  // 辅助色 - 用于状态和指示
+
+  // 辅助色 - 浅绿色系列，用于次要功能
   secondary: {
-    50: '#E8F5E9',    // 浅绿色，用于背景
-    500: '#43A047',   // 绿色，用于成功状态
+    50: '#F1F8E9',    // 极浅绿，用于背景
+    100: '#DCEDC8',   // 浅绿色，用于边框
+    200: '#C5E1A5',   // 亮绿色，用于次要元素
+    300: '#AED581',   // 中绿色，用于交互元素
+    400: '#9CCC65',   // 中深绿色，用于悬停状态
+    500: '#8BC34A',   // 主绿色，用于次要功能按钮
+    600: '#7CB342',   // 深绿色，用于重要元素
+    700: '#689F38',   // 暗绿色，用于标题
+    800: '#558B2F',   // 更深绿色，用于标题
+    900: '#33691E',   // 几乎黑色的绿色，用于最深色文本
   },
-  
+
   // 状态色
   success: {
     50: '#E8F5E9',    // 浅绿背景
     500: '#4CAF50',   // 绿色，用于成功状态
     700: '#388E3C',   // 深绿色，用于重要成功状态
   },
-  
+
   warning: {
     50: '#FFF8E1',    // 浅黄色背景
-    500: '#FB8C00',   // 橙黄色，用于警告状态
+    500: '#FFC107',   // 黄色，用于警告状态
     700: '#F57C00',   // 深橙色，用于重要警告状态
   },
-  
+
   error: {
     50: '#FFEBEE',    // 浅红色背景
-    500: '#E53935',   // 红色，用于错误状态
-    700: '#C62828',   // 深红色，用于重要错误状态
+    500: '#F44336',   // 红色，用于错误状态
+    700: '#D32F2F',   // 深红色，用于重要错误状态
   },
-  
+
   // 中性色 - 用于文本和背景
   neutral: {
     50: '#FAFAFA',    // 接近白色的灰色，用于背景
@@ -55,21 +66,26 @@ export const colors = {
     800: '#424242',   // 更深灰色，用于标题
     900: '#212121',   // 接近黑色的灰色，用于最深色文本
   },
-  
+
   // 背景色
   background: {
-    default: '#F5F9FF', // 非常浅的蓝色作为默认背景
+    default: '#F5F7F5', // 暖灰绿，用于默认背景
     paper: '#FFFFFF',   // 白色用于卡片和面板
+    secondary: '#F1F8E9', // 浅绿色，用于次要背景
   },
-  
+
   // 文本色
   text: {
-    primary: '#212121',   // 主要文本
-    secondary: '#616161', // 次要文本
+    primary: '#2D3A2D',   // 深绿色，用于主要文本
+    secondary: '#5A6B5A', // 中绿色，用于次要文本
     disabled: '#BDBDBD',  // 禁用文本
     hint: '#9E9E9E',      // 提示文本
     inverse: '#FFFFFF',   // 反色文本（深色背景上的白色文本）
   },
+
+  // 添加缺失的颜色属性
+  textSecondary: '#5A6B5A', // 次要文本色
+  borderColor: '#E0E0E0', // 边框颜色
 };
 
 // 间距系统
@@ -100,6 +116,8 @@ export const shadows = {
   lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
   xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
   hover: '0 15px 30px rgba(0, 0, 0, 0.1)',
+  default: '0 4px 20px rgba(143, 170, 143, 0.1)', // 常规状态
+  hoverEnhanced: '0 8px 30px rgba(143, 170, 143, 0.15)', // 悬停状态
 };
 
 // 字体系统
@@ -121,6 +139,11 @@ export const typography = {
     medium: 500,
     semibold: 600,
     bold: 700,
+  },
+  lineHeight: {
+    tight: '1.2',
+    normal: '1.5',
+    relaxed: '1.8',
   },
 };
 
@@ -206,7 +229,7 @@ export const components = {
     borderRadius: borderRadius.md,
     color: colors.text.primary,
     focusBorderColor: colors.primary[500],
-    focusBoxShadow: `0 0 0 3px rgba(30, 136, 229, 0.1)`,
+    focusBoxShadow: `0 0 0 3px rgba(76, 175, 80, 0.1)`,
   },
   // 标签页样式
   tab: {
@@ -250,7 +273,7 @@ export const scoreLevel = {
 };
 
 // 导出完整的主题配置
-export const MedicalTheme = {
+export const theme = {
   colors,
   spacing,
   borderRadius,
@@ -275,4 +298,17 @@ export const backgroundGradient = {
   secondary: 'bg-gradient-to-r from-green-100 to-green-200',
 };
 
-export default MedicalTheme;
+// 导出动画配置
+export const animations = {
+  duration: {
+    fast: '150ms',
+    normal: '250ms',
+    slow: '350ms',
+  },
+  easing: {
+    easeInOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
+    easeOut: 'cubic-bezier(0.2, 0, 0, 1)',
+  },
+};
+
+export default theme;

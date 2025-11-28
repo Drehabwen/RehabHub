@@ -102,7 +102,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
       <div 
         className={`flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer transition-all ${
           isDragActive 
-            ? 'border-blue-500 bg-blue-50' 
+            ? 'border-green-500 bg-green-50' 
             : error 
               ? 'border-red-500 bg-red-50' 
               : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
@@ -159,7 +159,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         
         <label 
           htmlFor="file-upload-input"
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
+          className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors cursor-pointer"
           onClick={handleClickUpload}
         >
           选择文件

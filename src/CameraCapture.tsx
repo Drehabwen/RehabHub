@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useCamera } from './hooks/useCamera.ts';
-import { usePoseEstimation, type Keypoint } from './hooks/usePoseEstimation.ts';
+import { usePoseEstimation } from './hooks/usePoseEstimation.ts';
+import { type Keypoint } from './types/keypoints'; // 修复路径
 import { usePermissions } from './hooks/usePermissions.ts';
 
 interface CameraCaptureProps {
@@ -474,8 +475,8 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
           <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
             <div className="text-white text-center space-y-4 p-4">
               <div className="relative">
-                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-400 mx-auto"></div>
-                <div className="animate-ping absolute inset-0 rounded-full h-16 w-16 bg-blue-500 opacity-20 mx-auto"></div>
+                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-400 mx-auto"></div>
+                <div className="animate-ping absolute inset-0 rounded-full h-16 w-16 bg-green-500 opacity-20 mx-auto"></div>
               </div>
               <h3 className="text-base sm:text-xl font-medium tracking-wide">正在启动摄像头...</h3>
               <p className="text-gray-300 text-sm">请确保您的设备已授予摄像头访问权限</p>
@@ -514,7 +515,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
                 </button>
                 <button 
                   onClick={openAppSettings}
-                  className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50 shadow-md min-h-[48px]"
+                  className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 focus:ring-opacity-50 shadow-md min-h-[48px]"
                 >
                   ⚙️ 应用设置
                 </button>
@@ -548,7 +549,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
         <div className="text-center">
           <button
               onClick={takePhoto}
-              className="w-full max-w-xs px-10 py-4 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50 shadow-md hover:shadow-lg min-h-[56px]"
+              className="w-full max-w-xs px-10 py-4 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 focus:ring-opacity-50 shadow-md hover:shadow-lg min-h-[56px]"
             >
               <span className="flex items-center justify-center">
                 📊 开始评估

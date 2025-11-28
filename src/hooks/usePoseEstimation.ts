@@ -3,13 +3,8 @@ import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-backend-webgl';
 import { extractKeypointsFromFrame, evaluateMovement } from '../services/poseDetection';
 
-// 关键点类型定义
-export interface Keypoint {
-  name: string;
-  x: number;
-  y: number;
-  score?: number;
-}
+// 导入标准关键点接口
+import { Keypoint } from '../types/keypoints';
 
 // 动作评估结果类型
 export interface MovementEvaluation {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { theme } from '../../theme/theme';
+import { theme } from '../../theme';
 import { Layout } from '../layout/Layout';
 import { Button } from '../ui/Button';
 import { StatusIndicator } from '../ui/StatusIndicator';
@@ -21,7 +21,7 @@ const TestSection: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 // 区域标题组件
 const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <h2 style={{
-    borderBottom: `2px solid ${theme.colors.borderColor}`
+    borderBottom: `2px solid ${theme.colors.text.primary}`
   }} className="text-2xl font-semibold text-gray-800 mb-4 pb-2">
     {children}
   </h2>
@@ -37,7 +37,7 @@ const ComponentGrid: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 // 测试用例容器
 const TestCase: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div style={{
-    borderRadius: theme.borderRadius.medium,
+    borderRadius: theme.borderRadius.md,
     border: `1px solid ${theme.colors.borderColor}`
   }} className="p-4 bg-white shadow-sm">
     {children}
@@ -76,8 +76,8 @@ const Card: React.FC<CardProps> = ({ children, shadowLevel = 'medium', noPadding
   
   return (
     <div style={{
-      borderRadius: theme.borderRadius.medium,
-      border: `1px solid ${theme.colors.borderColor}`
+      borderRadius: theme.borderRadius.md,
+      border: `1px solid ${theme.colors.text.primary}`
     }} className={`bg-white ${getShadowClasses()} ${noPadding ? '' : 'p-4'}`}>
       {children}
     </div>
@@ -98,7 +98,7 @@ const Input: React.FC<InputProps> = ({ label, error = false, fullWidth = false, 
       <input
         style={{
           borderColor: error ? '#ef4444' : undefined,
-          borderRadius: theme.borderRadius.small
+          borderRadius: theme.borderRadius.sm
         }}
         className={`px-3 py-2 border ${error ? 'border-red-300' : 'border-gray-300'} rounded w-full focus:outline-none focus:ring-2 focus:ring-primary/50`}
         {...props}
@@ -482,7 +482,7 @@ const ComponentTestPage: React.FC = () => {
           <ComponentGrid>
             <TestCase>
               <TestCaseTitle>状态指示器</TestCaseTitle>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100px', backgroundColor: theme.colors.primary[500] }}>
                 <StatusIndicator 
                   status={status} 
                   size={statusSize}
@@ -493,7 +493,7 @@ const ComponentTestPage: React.FC = () => {
             
             <TestCase>
               <TestCaseTitle>仅图标状态指示器</TestCaseTitle>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100px', backgroundColor: theme.colors.primary[500] }}>
                 <StatusIndicator 
                   status={status} 
                   size={statusSize}
@@ -504,7 +504,7 @@ const ComponentTestPage: React.FC = () => {
             
             <TestCase>
               <TestCaseTitle>状态指示器组合</TestCaseTitle>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', height: '100px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', height: '100px', backgroundColor: theme.colors.primary[500] }}>
                 <StatusIndicator 
                   status="healthy" 
                   size="small"

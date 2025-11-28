@@ -3,12 +3,13 @@ import { animations, animationKeyframes } from './utils/animations';
 import FileDropzone from './FileDropzone.tsx';
 import CameraCapture from './CameraCapture.tsx';
 import LoadingSpinner from './LoadingSpinner.tsx';
-import { colors, typography, borderRadius, shadows } from './theme/theme';
+import { colors, typography, borderRadius, shadows } from './theme';
 import HelpGuide from './components/HelpGuide';
 import { useAnalysis } from './hooks/useAnalysis.ts';
 import { type AnalysisResponse } from './services/api';
 import ExampleAnalysis from './components/ExampleAnalysis';
 import { usePoseEstimation } from './hooks/usePoseEstimation.ts';
+import './styles/VideoAnalysis.css';
 
 // 移除未使用的MedicalTheme接口定义
 
@@ -240,11 +241,11 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
   // 获取评分对应的颜色和级别
   const getScoreColor = (score: number): { color: string; level: string } => {
     if (score >= 80) {
-      return { color: colors.primary, level: '良好' };
+      return { color: colors.primary[700], level: '良好' };
     } else if (score >= 60) {
-      return { color: colors.textSecondary, level: '可接受' };
+      return { color: colors.secondary[600], level: '可接受' };
     } else {
-      return { color: colors.textPrimary, level: '需改进' };
+      return { color: colors.primary[800], level: '需改进' };
     }
   };
 
@@ -267,28 +268,14 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
   };
 
   return (
-    <div className="w-full p-4 min-h-[70vh] flex flex-col" data-testid="video-analysis-container" style={{ 
+    <div className="video-analysis-container" data-testid="video-analysis-container" style={{ 
       ...(mounted && animations.fadeIn('0.4s'))
     }}>
       {/* 操作指引按钮 */}
       <div className="flex justify-end mb-4">
         <button
           onClick={() => setShowHelpGuide(true)}
-          style={{
-            padding: '8px 16px',
-            backgroundColor: '#f5f5f5',
-            border: '1px solid #e0e0e0',
-            borderRadius: '6px',
-            color: colors.primary[700],
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: typography.fontWeight.medium,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            transition: 'all 0.2s ease'
-          }}
-          className="active:scale-95"
+          className="help-button active:scale-95"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
@@ -300,44 +287,44 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
       </div>
       
       {/* 医疗风格的页面头部 */}
-      <div className="p-5 md:p-8 border mb-8 bg-primary-50 rounded-2xl shadow-soft" style={{ 
-          borderColor: colors.borderColor,
+      <div className="header-section" style={{ 
+          borderColor: colors.primary[200],
         ...(mounted && animations.fadeInDown('0.5s', '0.1s'))
       }}>
         <div className="flex items-center mb-4">
-          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold mb-2" style={{ color: colors.primary[800], fontWeight: typography.fontWeight.bold }}>{movementName} 动作分析</h1>
-            <p style={{ color: colors.textSecondary }}>专业康复评估系统 - 精确测量动作表现和姿态控制</p>
+            <h1 className="text-2xl md:text-3xl font-bold mb-2" style={{ color: colors.primary[800] }}>{movementName} 动作分析</h1>
+            <p className="text-secondary-600">专业康复评估系统 - 精确测量动作表现和姿态控制</p>
           </div>
         </div>
       </div>
       
       {/* 主内容区域 */}
       <div className="mb-6 grow">
-        <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 border border-blue-100 overflow-hidden transition-all duration-300 hover:shadow-lg">
+        <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 border border-green-100 overflow-hidden transition-all duration-300 hover:shadow-lg">
           {/* 视频选择选项卡 */}
-          <div ref={videoSourceRef} className="flex w-full overflow-hidden mb-6" style={{ 
+          <div ref={videoSourceRef} className="video-source-tabs" style={{ 
             backgroundColor: colors.primary[50], 
-            borderRadius: borderRadius.large,
+            borderRadius: borderRadius.lg,
             ...(mounted && animations.fadeInUp('0.6s', '0.2s'))
           }} role="tablist">
             <button
               className={`flex flex-1 items-center justify-center min-h-[48px] px-4 py-3 rounded-md text-sm font-medium transition-all sm:text-base`}
               style={{ 
                 backgroundColor: activeTab === 'upload' ? '#ffffff' : 'transparent',
-                color: activeTab === 'upload' ? colors.primary : colors.textSecondary,
+                color: activeTab === 'upload' ? colors.primary[700] : colors.secondary[600],
                 fontWeight: activeTab === 'upload' ? typography.fontWeight.semibold : undefined,
                 boxShadow: activeTab === 'upload' ? shadows.default : 'none'
               }}
               onClick={() => setActiveTab('upload')}
               role="tab"
               id="upload-tab"
-              aria-selected={activeTab === 'upload'}
+              aria-selected={activeTab === 'upload' ? "true" : "false"}
               aria-controls="upload-tabpanel"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 mr-2 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -349,14 +336,14 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
               className={`flex-1 px-4 py-3 rounded-md transition-all text-sm sm:text-base font-medium min-h-[48px] flex items-center justify-center`}
               style={{ 
                 backgroundColor: activeTab === 'camera' ? '#ffffff' : 'transparent',
-                color: activeTab === 'camera' ? colors.primary : colors.textSecondary,
+                color: activeTab === 'camera' ? colors.primary[700] : colors.secondary[600],
                 fontWeight: activeTab === 'camera' ? typography.fontWeight.semibold : undefined,
                 boxShadow: activeTab === 'camera' ? shadows.default : 'none'
               }}
               onClick={() => setActiveTab('camera')}
               role="tab"
               id="camera-tab"
-              aria-selected={activeTab === 'camera'}
+              aria-selected={activeTab === 'camera' ? "true" : "false"}
               aria-controls="camera-tabpanel"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -368,7 +355,7 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
           </div>
           
           {/* 视频显示区域 */}
-          <div className="mt-4 aspect-video overflow-hidden border" style={{ backgroundColor: '#1f2937', borderRadius: borderRadius.large, borderColor: '#e5e7eb' }}>
+          <div className="video-display-area">
             {activeTab === 'upload' && (
               <div id="upload-tabpanel" role="tabpanel" aria-labelledby="upload-tab" className="w-full h-full">
                 <FileDropzone onFileSelect={handleFileSelect} />
@@ -392,19 +379,19 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
           </div>
           
           {/* 操作提示 */}
-          <div className="mt-4 bg-blue-50 p-4 rounded-lg border border-blue-100">
+          <div className="mt-4 bg-green-50 p-4 rounded-lg border border-green-100">
             <div className="flex items-start gap-3">
-              <div className="mt-0.5 w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="mt-0.5 w-5 h-5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div>
-                <h4 className="text-sm font-medium text-blue-800 mb-2">拍摄建议</h4>
+                <h4 className="text-sm font-medium text-green-800 mb-2">拍摄建议</h4>
                 <ul className="text-xs sm:text-sm text-gray-600 space-y-1">
                   {getAssessmentTips().map((tip, index) => (
                     <li key={index} className="flex items-start gap-2">
-                      <span className="text-blue-500 mt-1">•</span>
+                      <span className="text-green-500 mt-1">•</span>
                       <span>{tip}</span>
                     </li>
                   ))}
@@ -417,16 +404,16 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
 
       {/* 文件信息和分析按钮区域 */}
       {selectedFile && !isAnalyzing && (
-        <div className="mb-8 p-5 bg-white rounded-xl shadow-md border border-blue-100 transition-all duration-300 hover:shadow-lg">
+        <div className="mb-8 p-5 bg-white rounded-xl shadow-md border border-green-100 transition-all duration-300 hover:shadow-lg">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex-1 min-w-0 flex items-center gap-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
               </div>
               <div>
-                <div className="flex items-center text-blue-700 mb-1">
+                <div className="flex items-center text-green-700 mb-1">
                   <span className="text-sm font-medium">已选择文件</span>
                 </div>
                 <p className="text-gray-800 text-sm sm:text-base font-medium truncate">
@@ -446,12 +433,12 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
                   placeholder="输入患者信息" 
                   value={patientInfo}
                   onChange={(e) => setPatientInfo(e.target.value)}
-                  className="px-4 py-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="px-4 py-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 />
                 <button
               onClick={handleAnalyze}
               disabled={isAnalyzing}
-              className={`px-6 py-2 text-white font-medium rounded-lg disabled:opacity-50 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50 shadow-md min-h-[40px]`}
+              className={`analyze-button ${isAnalyzing ? 'disabled' : ''}`}
               style={{ 
                 backgroundColor: isAnalyzing ? colors.primary[300] : colors.primary[700],
                 ...animations.buttonHover,
@@ -473,12 +460,12 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
 
       {/* 分析中加载状态 */}
       {isAnalyzing && (
-        <div className="flex flex-col items-center justify-center my-12 py-8 border" style={{ backgroundColor: '#ffffff', borderRadius: borderRadius.large, boxShadow: shadows.default, borderColor: colors.primaryLight }}>
-          <div className="mb-4 w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: colors.backgroundSecondary }}>
+        <div className="flex flex-col items-center justify-center my-12 py-8 border" style={{ backgroundColor: '#ffffff', borderRadius: borderRadius.lg, boxShadow: shadows.default, borderColor: colors.primary[400] }}>
+          <div className="mb-4 w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: colors.background.secondary }}>
             <LoadingSpinner size="large" message={``} />
           </div>
           <h3 className="text-lg font-semibold mb-2" style={{ color: colors.primary[700], fontWeight: typography.fontWeight.semibold }}>正在分析 {movementName} 动作...</h3>
-        <p className="text-sm max-w-md text-center" style={{ color: colors.textSecondary }}>
+        <p className="text-sm max-w-md text-center" style={{ color: colors.secondary[600] }}>
             系统正在进行精确的动作识别和姿态评估，请稍候...
           </p>
         </div>
@@ -509,11 +496,11 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
 
       {/* 姿态处理中状态 */}
       {isPoseProcessing && (
-        <div className="flex flex-col items-center justify-center my-12 py-8 bg-white rounded-xl shadow-sm border border-blue-100">
-          <div className="mb-4 w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center my-12 py-8 bg-white rounded-xl shadow-sm border border-green-100">
+          <div className="mb-4 w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
             <LoadingSpinner size="large" message={``} />
           </div>
-          <h3 className="text-lg font-semibold text-blue-800 mb-2">正在进行姿态估计...</h3>
+          <h3 className="text-lg font-semibold text-green-800 mb-2">正在进行姿态估计...</h3>
           <p className="text-sm text-gray-600 max-w-md text-center">
             系统正在实时检测您的动作姿态，请保持标准姿势...
           </p>
@@ -522,11 +509,11 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
 
       {/* 模型加载中状态 */}
       {isModelLoading && (
-        <div className="flex flex-col items-center justify-center my-12 py-8 bg-white rounded-xl shadow-sm border border-blue-100">
-          <div className="mb-4 w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center my-12 py-8 bg-white rounded-xl shadow-sm border border-green-100">
+          <div className="mb-4 w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
             <LoadingSpinner size="large" message={``} />
           </div>
-          <h3 className="text-lg font-semibold text-blue-800 mb-2">正在加载姿态估计模型...</h3>
+          <h3 className="text-lg font-semibold text-green-800 mb-2">正在加载姿态估计模型...</h3>
           <p className="text-sm text-gray-600 max-w-md text-center">
             首次使用需要加载模型资源，请稍候...
           </p>
@@ -535,14 +522,14 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
 
       {/* 姿态评估结果 */}
       {movementEvaluation && activeTab === 'camera' && (
-        <div className="mt-8 p-4 sm:p-6 bg-white rounded-xl shadow-md border border-blue-100 overflow-auto transition-all duration-300 hover:shadow-lg">
+        <div className="mt-8 p-4 sm:p-6 bg-white rounded-xl shadow-md border border-green-100 overflow-auto transition-all duration-300 hover:shadow-lg">
           <div className="flex items-center gap-2 mb-6">
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
             </div>
-            <h3 className="text-base sm:text-lg font-semibold text-blue-800">实时姿态评估结果</h3>
+            <h3 className="text-base sm:text-lg font-semibold text-green-800">实时姿态评估结果</h3>
           </div>
           
           {/* 评分卡 */}
@@ -556,7 +543,7 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
               </div>
               <div className="flex items-center gap-2 mb-2">
                 <span 
-                  className={`text-xs px-2 py-1 rounded-full ${getScoreColor(movementEvaluation.score).color === colors.primary ? 'bg-green-100 text-green-800' : getScoreColor(movementEvaluation.score).color === colors.textSecondary ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'}`}
+                  className={`text-xs px-2 py-1 rounded-full ${getScoreColor(movementEvaluation.score).color === colors.primary[700] ? 'bg-green-100 text-green-800' : getScoreColor(movementEvaluation.score).color === colors.secondary[600] ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'}`}
                   aria-label={`评分等级: ${getScoreColor(movementEvaluation.score).level}`}
                 >
                   {getScoreColor(movementEvaluation.score).level}
@@ -575,8 +562,8 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
           </div>
           
           {/* 评估反馈 */}
-          <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 mb-4">
-            <p className="text-sm font-medium text-blue-800 mb-2">评估反馈</p>
+          <div className="p-4 bg-green-50 rounded-lg border border-green-100 mb-4">
+            <p className="text-sm font-medium text-green-800 mb-2">评估反馈</p>
             <p className="text-sm text-gray-700">{movementEvaluation.feedback}</p>
           </div>
           
@@ -596,7 +583,7 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
                     >
                       <div className="text-xs text-gray-500 mb-1">{joint}</div>
                       <div className="flex justify-between items-center">
-                        <span className="text-lg font-bold" style={{ color: isGoodAngle ? colors.primary : colors.textSecondary }}>
+                        <span className="text-lg font-bold" style={{ color: isGoodAngle ? colors.primary[700] : colors.secondary[600] }}>
                           {angle}°
                         </span>
                         {isGoodAngle && (
@@ -616,13 +603,13 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
           <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
             <button 
               onClick={handleAnalyze}
-              className="px-5 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50 shadow-md"
+              className="px-5 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 focus:ring-opacity-50 shadow-md"
             >
               保存评估结果
             </button>
             <button 
               onClick={() => setSelectedFile(null)}
-              className="px-5 py-2 bg-white border border-blue-300 text-blue-600 font-medium rounded-lg hover:bg-blue-50 transition-colors focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50"
+              className="px-5 py-2 bg-white border border-green-300 text-green-600 font-medium rounded-lg hover:bg-green-50 transition-colors focus:outline-none focus:ring-4 focus:ring-green-300 focus:ring-opacity-50"
             >
               重新评估
             </button>

@@ -26,7 +26,7 @@ const FileDropzone: React.FC<FileDropzoneProps> = ({ onFileSelect, accept = 'vid
     <div 
       {...getRootProps()} 
       className={`flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer ${
-        isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
+        isDragActive ? 'border-green-500 bg-green-50' : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
       }`}
     >
       <input {...getInputProps()} />

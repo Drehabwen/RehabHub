@@ -1,5 +1,5 @@
 import React from 'react';
-import { theme } from '../../theme/theme';
+import { theme } from '../../theme';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'text';
@@ -98,11 +98,13 @@ const Button: React.FC<ButtonProps> = ({
       disabled={disabled}
       style={{
         border: variant === 'outline' && !disabled ? `2px solid ${theme.colors.primary}` : 'none',
-        borderRadius: theme.borderRadius.medium,
+        borderRadius: theme.borderRadius.md,
         touchAction: 'manipulation',
         userSelect: 'none',
         minHeight: size === 'small' ? '36px' : size === 'medium' ? '48px' : '56px',
-        minWidth: '80px'
+        minWidth: '80px',
+        color: theme.colors.text.primary,
+
       }}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}

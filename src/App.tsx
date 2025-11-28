@@ -2,40 +2,16 @@ import React, { useState } from 'react';
 import VideoAnalysis from './VideoAnalysis';
 
 
-import { useHealthCheck } from './hooks/useHealthCheck';
 import Dashboard from './components/pages/Dashboard';
 import StatusIndicatorExample from './components/pages/StatusIndicatorExample';
 import ComponentTestPage from './components/pages/ComponentTestPage';
-import StatusIndicator from './components/ui/StatusIndicator';
-import { colors, components, typography } from './theme/MedicalTheme';
-
-// 健康检查状态组件 - 移动端适配
-const HealthStatusIndicator: React.FC = () => {
-  const { isHealthy, isChecking, hasError, checkHealth } = useHealthCheck();
-  
-  const getStatus = () => {
-    if (isChecking) return 'checking';
-    if (hasError) return 'error';
-    return isHealthy ? 'healthy' : 'unhealthy';
-  };
-  
-  return (
-    <div 
-      style={{
-        position: 'fixed',
-        top: '16px',
-        right: '16px',
-        zIndex: 1000,
-        cursor: 'pointer',
-        padding: '4px' // 增加触摸目标大小
-      }} 
-      onClick={checkHealth}
-      className="active:scale-95 transition-transform" // 添加触摸反馈
-    >
-      <StatusIndicator status={getStatus()} size="small" />
-    </div>
-  );
-};
+import { colors, components, typography } from './theme';
+import { 
+  goToMovementSelection, 
+  goToHome,
+  // goToStatusIndicatorExample, // 已注释，未使用
+  // goToComponentTest // 已注释，未使用
+} from './utils/navigation';
 
 // 动态导入FMS动作模块
 const DeepSquatAnalysis = React.lazy(() => import('./movements/deep-squat'));
@@ -107,7 +83,7 @@ const MovementSelection = ({ onSelectMovement }: { onSelectMovement: (movement: 
       {/* 返回按钮和顶部装饰 - 移动端适配 */}
       <div className="flex items-center justify-between mb-6">
         <button 
-          onClick={() => window.dispatchEvent(new CustomEvent('setActiveModule', { detail: 'dashboard' }))}
+          onClick={goToHome}
           className="flex items-center transition-all duration-300 rounded-full shadow-sm hover:shadow active:scale-95" 
           style={{ 
             color: colors.primary[600], 
@@ -273,7 +249,7 @@ const App: React.FC = () => {
           <React.Suspense fallback={<div>加载中...</div>}>
             <div className="flex flex-col min-h-screen">
               <button 
-                onClick={() => setActiveModule('movement-selection')}
+                onClick={goToMovementSelection}
                 className="flex items-center transition-colors p-4 active:scale-95" 
                 style={{ 
                   color: colors.success[700], 
@@ -294,7 +270,7 @@ const App: React.FC = () => {
           <React.Suspense fallback={<div>加载中...</div>}>
             <div className="flex flex-col min-h-screen">
               <button 
-                onClick={() => setActiveModule('movement-selection')}
+                onClick={goToMovementSelection}
                 className="flex items-center transition-colors p-4 active:scale-95" 
                 style={{ 
                 color: colors.success[700], 
@@ -315,7 +291,7 @@ const App: React.FC = () => {
           <React.Suspense fallback={<div>加载中...</div>}>
             <div className="flex flex-col min-h-screen">
               <button 
-                onClick={() => setActiveModule('movement-selection')}
+                onClick={goToMovementSelection}
                 className="flex items-center transition-colors p-4 active:scale-95" 
                 style={{ 
                   color: colors.success[700], 
@@ -336,7 +312,7 @@ const App: React.FC = () => {
           <React.Suspense fallback={<div>加载中...</div>}>
             <div className="flex flex-col min-h-screen">
               <button 
-                onClick={() => setActiveModule('movement-selection')}
+                onClick={goToMovementSelection}
                 className="flex items-center transition-colors p-4 active:scale-95" 
                 style={{ 
                   color: colors.success[700], 
@@ -357,7 +333,7 @@ const App: React.FC = () => {
           <React.Suspense fallback={<div>加载中...</div>}>
             <div className="flex flex-col min-h-screen">
               <button 
-                onClick={() => setActiveModule('movement-selection')}
+                onClick={goToMovementSelection}
                 className="flex items-center transition-colors p-4 active:scale-95" 
                 style={{ 
                 color: colors.success[700], 
@@ -378,7 +354,7 @@ const App: React.FC = () => {
           <React.Suspense fallback={<div>加载中...</div>}>
             <div className="flex flex-col min-h-screen">
               <button 
-                onClick={() => setActiveModule('movement-selection')}
+                onClick={goToMovementSelection}
                 className="flex items-center transition-colors p-4 active:scale-95" 
                 style={{ 
                   color: colors.success[700], 
@@ -399,7 +375,7 @@ const App: React.FC = () => {
           <React.Suspense fallback={<div>加载中...</div>}>
             <div className="flex flex-col min-h-screen">
               <button 
-                onClick={() => setActiveModule('movement-selection')}
+                onClick={goToMovementSelection}
                 className="flex items-center transition-colors p-4 active:scale-95" 
                 style={{ 
                   color: colors.success[700], 
@@ -420,7 +396,7 @@ const App: React.FC = () => {
           <div className="space-y-4">
             {selectedMovement && (
               <button 
-                onClick={() => setActiveModule('movement-selection')}
+                onClick={goToMovementSelection}
                 className="flex items-center transition-colors p-4 active:scale-95" 
                 style={{ 
                   color: colors.success[700], 
@@ -439,7 +415,6 @@ const App: React.FC = () => {
 
   return (
     <div>
-      <HealthStatusIndicator />
       {renderModule()}
     </div>
   );

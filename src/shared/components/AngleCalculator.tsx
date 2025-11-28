@@ -1,11 +1,7 @@
 import React from 'react';
 
-// 关键点接口定义
-interface Keypoint {
-  x: number;
-  y: number;
-  name: string;
-}
+// 导入标准关键点接口
+import { Keypoint } from '../../types/keypoints';
 
 // 角度计算结果接口
 interface AngleResult {
@@ -99,4 +95,5 @@ const AngleCalculator: React.FC = () => {
 
 export default AngleCalculator;
 export { calculateAngle };
-export type { Keypoint, AngleResult };
+// Keypoint已从标准类型导入，不再需要导出
+export type { AngleResult };
