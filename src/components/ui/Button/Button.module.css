@@ -1,0 +1,134 @@
+.button {
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  gap: 8px;
+  position: relative;
+  outline: none;
+}
+
+.button:focus-visible {
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+}
+
+/* 尺寸变体 */
+.button--small {
+  padding: 8px 12px;
+  font-size: 14px;
+  min-height: 32px;
+}
+
+.button--medium {
+  padding: 12px 16px;
+  font-size: 16px;
+  min-height: 40px;
+}
+
+.button--large {
+  padding: 16px 24px;
+  font-size: 18px;
+  min-height: 48px;
+}
+
+/* 类型变体 */
+.button--primary {
+  background-color: #3b82f6;
+  color: white;
+  border: 1px solid #3b82f6;
+}
+
+.button--primary:hover:not(.button--disabled) {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.button--secondary {
+  background-color: #6b7280;
+  color: white;
+  border: 1px solid #6b7280;
+}
+
+.button--secondary:hover:not(.button--disabled) {
+  background-color: #4b5563;
+  border-color: #4b5563;
+}
+
+.button--danger {
+  background-color: #ef4444;
+  color: white;
+  border: 1px solid #ef4444;
+}
+
+.button--danger:hover:not(.button--disabled) {
+  background-color: #dc2626;
+  border-color: #dc2626;
+}
+
+.button--success {
+  background-color: #10b981;
+  color: white;
+  border: 1px solid #10b981;
+}
+
+.button--success:hover:not(.button--disabled) {
+  background-color: #059669;
+  border-color: #059669;
+}
+
+/* 禁用状态 */
+.button--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.button--disabled:hover {
+  background-color: inherit !important;
+  border-color: inherit !important;
+}
+
+/* 加载状态 */
+.button--loading {
+  pointer-events: none;
+}
+
+.loadingSpinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 图标样式 */
+.button__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button__icon--left {
+  order: -1;
+}
+
+.button__icon--right {
+  order: 1;
+}
+
+/* 文本样式 */
+.button__text {
+  display: flex;
+  align-items: center;
+}
