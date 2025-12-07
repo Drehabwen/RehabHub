@@ -10,36 +10,36 @@
   * 使用标准CSS自定义属性代替@theme规则以提高兼容性
   */
 :root {
-  /* 主色调 - 绿色系 */
-  --color-primary: #8faa8f;
-  --color-primary-light: #a8c4a8;
-  --color-primary-soft: #c8d6c8;
-  --color-primary-lighter: #e8f0e8;
+  /* 主色调 - 绿灰色系（降低饱和度，更加温和） */
+  --color-primary: #8faa9d;
+  --color-primary-light: #a8c4b8;
+  --color-primary-soft: #c8d6cc;
+  --color-primary-lighter: #e8f0ec;
   
   /* 背景色 */
   --color-primary-white: #fefefe;
-  --color-primary-gray: #f5f7f5;
-  --color-background-gradient: linear-gradient(135deg, #f5f7f5 0%, #e8f0e8 100%);
+  --color-primary-gray: #f7f9f7;
+  --color-background-gradient: linear-gradient(135deg, #f7f9f7 0%, #e8f0ec 100%);
   
-  /* 文本色 */
-  --color-text-primary: #2d3a2d;
-  --color-text-secondary: #5a6b5a;
+  /* 文本色（更加柔和的对比度） */
+  --color-text-primary: #445a4b;
+  --color-text-secondary: #5a6f61;
   --color-text-tertiary: #7a8a7a;
   --color-text-light: #9aab9a;
   
-  /* 状态色 */
-  --color-status-success: #8faa8f;
-  --color-status-warning: #e0c15b;
-  --color-status-danger: #d48a8a;
+  /* 状态色（降低饱和度） */
+  --color-status-success: #8faa9d;
+  --color-status-warning: #e6c27a;
+  --color-status-danger: #d49094;
   
   /* 边框和分割线 */
-  --color-border: #d4ddd4;
+  --color-border: #d0ddd5;
   --color-divider: #e0e4e0;
   
-  /* 卡片和容器阴影 */
-  --shadow-soft: 0 2px 10px rgba(143, 170, 143, 0.1);
-  --shadow-hover: 0 4px 20px rgba(143, 170, 143, 0.15);
-  --shadow-card: 0 4px 15px rgba(143, 170, 143, 0.08);
+  /* 卡片和容器阴影（使用更柔和的颜色） */
+  --shadow-soft: 0 2px 10px rgba(143, 170, 157, 0.08);
+  --shadow-hover: 0 4px 20px rgba(143, 170, 157, 0.12);
+  --shadow-card: 0 4px 15px rgba(143, 170, 157, 0.06);
 }
 
 /* 全局样式重置和基础样式 */

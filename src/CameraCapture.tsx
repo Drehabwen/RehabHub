@@ -20,8 +20,8 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
   keypoints = [], 
   onVideoFrame,
   showSkeleton = true,
-  skeletonColor = '#4F46E5', // 更改为现代的靛蓝色
-  skeletonLineColor = '#10B981' // 更改为现代的翠绿色
+  skeletonColor = '#8faa9d', // 更改为温和的绿灰色
+  skeletonLineColor = '#a8c4b8' // 更改为中绿灰色
 }) => {
   // 集成姿态估计hook
   const { 

@@ -15,7 +15,7 @@
 }
 
 .button:focus-visible {
-  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+  box-shadow: 0 0 0 3px rgba(143, 170, 157, 0.5);
 }
 
 /* 尺寸变体 */
@@ -39,47 +39,47 @@
 
 /* 类型变体 */
 .button--primary {
-  background-color: #3b82f6;
+  background-color: #8faa9d;
   color: white;
-  border: 1px solid #3b82f6;
+  border: 1px solid #8faa9d;
 }
 
 .button--primary:hover:not(.button--disabled) {
-  background-color: #2563eb;
-  border-color: #2563eb;
+  background-color: #7a9a8a;
+  border-color: #7a9a8a;
 }
 
 .button--secondary {
-  background-color: #6b7280;
+  background-color: #5a6f61;
   color: white;
-  border: 1px solid #6b7280;
+  border: 1px solid #5a6f61;
 }
 
 .button--secondary:hover:not(.button--disabled) {
-  background-color: #4b5563;
-  border-color: #4b5563;
+  background-color: #4a5f51;
+  border-color: #4a5f51;
 }
 
 .button--danger {
-  background-color: #ef4444;
+  background-color: #d49094;
   color: white;
-  border: 1px solid #ef4444;
+  border: 1px solid #d49094;
 }
 
 .button--danger:hover:not(.button--disabled) {
-  background-color: #dc2626;
-  border-color: #dc2626;
+  background-color: #c68084;
+  border-color: #c68084;
 }
 
 .button--success {
-  background-color: #10b981;
+  background-color: #8faa9d;
   color: white;
-  border: 1px solid #10b981;
+  border: 1px solid #8faa9d;
 }
 
 .button--success:hover:not(.button--disabled) {
-  background-color: #059669;
-  border-color: #059669;
+  background-color: #7a9a8a;
+  border-color: #7a9a8a;
 }
 
 /* 禁用状态 */

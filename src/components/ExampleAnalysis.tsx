@@ -166,7 +166,7 @@ const SimpleRadarChart = ({ metrics }: { metrics: Metric[] }) => {
           y={y}
           textAnchor={textAnchor}
           fontSize="12"
-          fill="#2d3a2d"
+          fill="#445a4b"
           fontWeight="600"
           className="text-shadow"
         >
@@ -188,7 +188,7 @@ const SimpleRadarChart = ({ metrics }: { metrics: Metric[] }) => {
             key={`grid-${level}`}
             points={generateGridPoints(level)}
             fill="none"
-            stroke={i === 2 ? "#a5e6c8" : "#e0f2e9"}
+            stroke={i === 2 ? "#c8d6cc" : "#e8f0ec"}
             strokeWidth={i === 2 ? 1.5 : 1}
             className={`animate-fadeIn delay-${i * 10}`}
           />
@@ -206,7 +206,7 @@ const SimpleRadarChart = ({ metrics }: { metrics: Metric[] }) => {
               y1={centerY}
               x2={x}
               y2={y}
-              stroke="#e0f2e9"
+              stroke="#e8f0ec"
               strokeWidth="1"
               className={`animate-fadeIn delay-${15 + index * 5}`}
             />
@@ -216,8 +216,8 @@ const SimpleRadarChart = ({ metrics }: { metrics: Metric[] }) => {
         {/* 数据多边形 */}
         <polygon
           points={polygonPoints}
-          fill="rgba(143, 170, 143, 0.35)"
-          stroke="#8faa8f"
+          fill="rgba(143, 170, 157, 0.35)"
+          stroke="#8faa9d"
           strokeWidth="2.5"
           className="animate-fadeIn delay-30"
         />
@@ -235,7 +235,7 @@ const SimpleRadarChart = ({ metrics }: { metrics: Metric[] }) => {
               cx={x}
               cy={y}
               r="5"
-              fill="#2d3a2d"
+              fill="#445a4b"
               stroke="white"
               strokeWidth="1.5"
               className={`animate-pulse delay-${delay}`}
@@ -244,7 +244,7 @@ const SimpleRadarChart = ({ metrics }: { metrics: Metric[] }) => {
         })}
         
         {/* 中心点 */}
-        <circle cx={centerX} cy={centerY} r="3" fill="#2d3a2d" stroke="white" strokeWidth="1.5" className="animate-fadeIn delay-20" />
+        <circle cx={centerX} cy={centerY} r="3" fill="#445a4b" stroke="white" strokeWidth="1.5" className="animate-fadeIn delay-20" />
       </svg>
     </div>
   );
