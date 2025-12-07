@@ -1,14 +1,14 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { animations, animationKeyframes } from './utils/animations';
-import FileDropzone from './FileDropzone.tsx';
-import CameraCapture from './CameraCapture.tsx';
+import FileDropzone from './FileDropzone';
+import CameraCapture from './CameraCapture';
 import LoadingSpinner from './LoadingSpinner.tsx';
 import { colors, typography, borderRadius, shadows } from './theme';
 import HelpGuide from './components/HelpGuide';
-import { useAnalysis } from './hooks/useAnalysis.ts';
+import { useAnalysis } from './hooks/useAnalysis';
 import { type AnalysisResponse } from './services/api';
 import ExampleAnalysis from './components/ExampleAnalysis';
-import { usePoseEstimation } from './hooks/usePoseEstimation.ts';
+import { usePoseEstimation } from './hooks/usePoseEstimation';
 import './styles/VideoAnalysis.css';
 
 // 移除未使用的导航工具函数导入
@@ -401,66 +401,54 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* 文件信息和分析按钮区域 */}
-      {selectedFile && !isAnalyzing && (
-        <div className="mb-8 p-5 rounded-xl shadow-md border transition-all duration-300 hover:shadow-lg" style={{ backgroundColor: '#ffffff', borderColor: '#d0ddd5' }}>
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex-1 min-w-0 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: '#e8f0ec' }}>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" style={{ color: '#8faa9d' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <div>
-                <div className="flex items-center mb-1" style={{ color: '#6b8475' }}>
-                  <span className="text-sm font-medium">已选择文件</span>
-                </div>
-                <p className="text-sm sm:text-base font-medium truncate" style={{ color: '#445a4b' }}>
-                  {selectedFile.name}
-                </p>
-                <p className="text-xs mt-1" style={{ color: '#7a8a7a' }}>
-                  {formatFileSize(selectedFile.size)} • {selectedFile.type}
-                </p>
-              </div>
-            </div>
-            
-            {/* 患者信息输入 */}
-            <div className="w-full md:w-auto md:ml-auto">
-              <div className="flex flex-col sm:flex-row gap-3">
-                <input 
-                  type="text" 
-                  placeholder="输入患者信息" 
-                  value={patientInfo}
-                  onChange={(e) => setPatientInfo(e.target.value)}
-                  className="px-4 py-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                />
-                <button
-              onClick={handleAnalyze}
-              disabled={isAnalyzing}
-              className={`analyze-button ${isAnalyzing ? 'disabled' : ''}`}
-              style={{ 
-                backgroundColor: isAnalyzing ? colors.primary[300] : '#8faa9d',
-                color: '#ffffff',
-                boxShadow: '0 4px 12px rgba(143, 170, 157, 0.3)',
-                ...animations.buttonHover,
-                ...(mounted && animations.fadeInUp('0.6s', '0.3s'))
-              }}
-              >
-                  <span className="flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          
+          {/* 已选择文件信息 */}
+          {selectedFile && (
+            <div className="mt-4 p-4 rounded-lg border" style={{ backgroundColor: '#f4f7f0', borderColor: '#d0ddd5' }}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#e8f0ec' }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" style={{ color: '#8faa9d' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
-                    开始分析
-                  </span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: '#6b8475' }}>{selectedFile.name}</p>
+                    <p className="text-xs" style={{ color: '#5a6f61' }}>{formatFileSize(selectedFile.size)}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedFile(null)}
+                  className="text-sm p-2 rounded-full transition-colors"
+                  style={{ color: '#5a6f61', backgroundColor: '#e8f0ec' }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              {/* 分析按钮 */}
+              <div className="mt-4 flex justify-center">
+                <button
+                  onClick={handleAnalyze}
+                  disabled={isAnalyzing}
+                  className="px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 focus:ring-opacity-50 shadow-md"
+                >
+                  {isAnalyzing ? (
+                    <span className="flex items-center gap-2">
+                      <LoadingSpinner size="small" message="" />
+                      分析中...
+                    </span>
+                  ) : (
+                    '开始分析'
+                  )}
                 </button>
               </div>
             </div>
-          </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* 分析中加载状态 */}
       {isAnalyzing && (
@@ -628,10 +616,7 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
           ...animations.fadeInUp('0.7s'),
           ...animations.cardHover
         }}>
-          <ExampleAnalysis 
-            movementType={movementType}
-            movementName={movementName}
-          />
+          <ExampleAnalysis />
         </div>
       )}
       

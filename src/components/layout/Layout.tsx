@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 // 使用内联样式和Tailwind CSS代替styled-components
 import { theme } from '../../theme';
+import { useNavigation } from '../../contexts/NavigationContext';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -216,32 +217,117 @@ const NavigationLink: React.FC<NavigationLinkProps> = ({
   );
 };
 
-const Layout: React.FC<LayoutProps> = ({ children, title }) => {
+// 新的导航组件，使用导航上下文
+const Navigation: React.FC = () => {
+  const { state, navigateTo } = useNavigation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
+  const handleNavigationClick = (module: string) => {
+    navigateTo(module);
+    // 在移动端点击导航后关闭侧边栏
+    if (window.innerWidth < 768) {
+      setSidebarOpen(false);
+    }
+  };
+
+  return (
+    <>
+      {/* 移动端菜单按钮 */}
+      <button 
+        onClick={toggleSidebar}
+        className="md:hidden p-2 rounded-full hover:bg-primary-light/30"
+        aria-label={sidebarOpen ? "关闭菜单" : "打开菜单"}
+      >
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {sidebarOpen ? (
+            // 关闭图标
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          ) : (
+            // 菜单图标
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          )}
+        </svg>
+      </button>
+
+      {/* 移动端侧边栏覆盖层 */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          onClick={toggleSidebar}
+        />
+      )}
+      
+      {/* 侧边栏 - 移动端抽屉式，桌面端固定 */}
+      <Sidebar className={`
+        md:w-72 md:static md:block fixed inset-y-0 left-0 z-40 transform transition-transform duration-300 ease-in-out 
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
+        md:translate-x-0 md:shadow-none shadow-lg
+        w-64
+      `}>
+        <div className="flex justify-between items-center pb-4 border-b mb-4">
+          <SidebarTitle>功能导航</SidebarTitle>
+          <button 
+            onClick={toggleSidebar}
+            className="md:hidden p-1 rounded-full hover:bg-gray-100"
+            aria-label="关闭菜单"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <NavigationList>
+          <NavigationItem>
+            <NavigationLink 
+              active={state.currentModule === 'dashboard'} 
+              onClick={() => handleNavigationClick('dashboard')} 
+              className="py-3"
+            >
+              仪表盘
+            </NavigationLink>
+          </NavigationItem>
+          <NavigationItem>
+            <NavigationLink 
+              active={state.currentModule === 'movement-selection'} 
+              onClick={() => handleNavigationClick('movement-selection')} 
+              className="py-3"
+            >
+              康复评估
+            </NavigationLink>
+          </NavigationItem>
+          <NavigationItem>
+            <NavigationLink 
+              active={state.currentModule === 'history'} 
+              onClick={() => handleNavigationClick('history')} 
+              className="py-3"
+            >
+              历史记录
+            </NavigationLink>
+          </NavigationItem>
+          <NavigationItem>
+            <NavigationLink 
+              active={state.currentModule === 'settings'} 
+              onClick={() => handleNavigationClick('settings')} 
+              className="py-3"
+            >
+              设置
+            </NavigationLink>
+          </NavigationItem>
+        </NavigationList>
+      </Sidebar>
+    </>
+  );
+};
+
+const Layout: React.FC<LayoutProps> = ({ children, title }) => {
   return (
     <LayoutContainer>
       <Header className="md:p-4 p-3">
-        {/* 移动端菜单按钮 */}
-        <button 
-          onClick={toggleSidebar}
-          className="md:hidden p-2 rounded-full hover:bg-primary-light/30"
-          aria-label={sidebarOpen ? "关闭菜单" : "打开菜单"}
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            {sidebarOpen ? (
-              // 关闭图标
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            ) : (
-              // 菜单图标
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            )}
-          </svg>
-        </button>
+        <Navigation />
         <LogoContainer>
           <Logo>DeepRehab</Logo>
           {title && <TitleComponent>{title}</TitleComponent>}
@@ -251,49 +337,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
         </HeaderActions>
       </Header>
       
-      {/* 移动端侧边栏覆盖层 */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-30 md:hidden"
-          onClick={toggleSidebar}
-        />
-      )}
-      
       <Main className="md:flex-row flex flex-col">
-        {/* 侧边栏 - 移动端抽屉式，桌面端固定 */}
-        <Sidebar className={`
-          md:w-72 md:static md:block fixed inset-y-0 left-0 z-40 transform transition-transform duration-300 ease-in-out 
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
-          md:translate-x-0 md:shadow-none shadow-lg
-          w-64
-        `}>
-          <div className="flex justify-between items-center pb-4 border-b mb-4">
-            <SidebarTitle>功能导航</SidebarTitle>
-            <button 
-              onClick={toggleSidebar}
-              className="md:hidden p-1 rounded-full hover:bg-gray-100"
-              aria-label="关闭菜单"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-          <NavigationList>
-            <NavigationItem>
-              <NavigationLink active href="#dashboard" className="py-3">仪表盘</NavigationLink>
-            </NavigationItem>
-            <NavigationItem>
-              <NavigationLink href="#assessment" className="py-3">康复评估</NavigationLink>
-            </NavigationItem>
-            <NavigationItem>
-              <NavigationLink href="#history" className="py-3">历史记录</NavigationLink>
-            </NavigationItem>
-            <NavigationItem>
-              <NavigationLink href="#settings" className="py-3">设置</NavigationLink>
-            </NavigationItem>
-          </NavigationList>
-        </Sidebar>
         <Content>{children}</Content>
       </Main>
     </LayoutContainer>

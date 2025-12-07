@@ -6,12 +6,7 @@ import Input from '../ui/Input';
 import { colors, typography, borderRadius } from '../../theme';
 import HelpGuide from '../HelpGuide';
 import { animations, animationKeyframes } from '../../utils/animations';
-import { 
-  goToMovementSelection,
-  goToHistory,
-  goToPatients,
-  navigateToModule
-} from '../../utils/navigation';
+import { useNavigation } from '../../contexts/NavigationContext';
 import { useDashboardData } from '../../hooks/useDashboardData';
 
 // 医疗风格的Dashboard组件
@@ -28,6 +23,9 @@ const Dashboard: React.FC<DashboardProps> = ({ isStatisticsPage = false }) => {
   const movementsRef = useRef<HTMLDivElement>(null);
   const statsRef = useRef<HTMLDivElement>(null);
   const quickStartRef = useRef<HTMLDivElement>(null);
+  
+  // 使用导航上下文
+  const { navigateTo, goBack } = useNavigation();
   
   // 使用自定义Hook获取仪表盘数据
   const { statsCards, isLoading, error, refetch } = useDashboardData();
@@ -99,27 +97,18 @@ const Dashboard: React.FC<DashboardProps> = ({ isStatisticsPage = false }) => {
       }, 1000);
     }
   }, []);
-
-
-  
-  // 统一导航函数
-  const handleNavigation = useCallback((path: string, module: string) => {
-    window.location.href = `#/${path}`;
-    const event = new CustomEvent('setActiveModule', { detail: module });
-    window.dispatchEvent(event);
-  }, []);
   
   // 快速开始处理函数
   const handleQuickStart = useCallback(() => {
     if (patientId.trim()) {
       // 存储患者ID到会话存储
       sessionStorage.setItem('currentPatientId', patientId.trim());
-      handleNavigation('movement-selection', 'movement-selection');
+      navigateTo('movement-selection');
     } else {
       // 显示错误提示
       alert('请输入有效的患者ID');
     }
-  }, [patientId, handleNavigation]);
+  }, [patientId, navigateTo]);
   
   // 渲染趋势指示器
   const renderTrendIndicator = (trend?: { value: number; isPositive: boolean }) => {
@@ -142,8 +131,6 @@ const Dashboard: React.FC<DashboardProps> = ({ isStatisticsPage = false }) => {
     );
   };
 
-
-
   return (
     <Layout title="康复评估平台">
       <style>{animationKeyframes}</style>
@@ -154,14 +141,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isStatisticsPage = false }) => {
             <Button
               variant="secondary"
               size="medium"
-              onClick={() => {
-                // 优先使用router.back()，如果没有历史记录则跳转到主页面
-                if (window.history.length > 1) {
-                  window.history.back();
-                } else {
-                  navigateToModule('dashboard');
-                }
-              }}
+              onClick={goBack}
               className="transition-colors duration-300"
               style={{ backgroundColor: colors.primary[100], color: colors.primary[700] }}
               aria-label="返回主页面"
@@ -175,7 +155,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isStatisticsPage = false }) => {
             <Button
               variant="secondary"
               size="medium"
-              onClick={goToMovementSelection}
+              onClick={() => navigateTo('movement-selection')}
               className="transition-colors duration-300"
               style={{ backgroundColor: colors.primary[100], color: colors.primary[700] }}
               aria-label="返回动作选择"
@@ -198,229 +178,155 @@ const Dashboard: React.FC<DashboardProps> = ({ isStatisticsPage = false }) => {
             <div className="text-center">
               <div className="flex flex-col items-center justify-center">
                 <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: colors.primary[100] }}>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: colors.primary[700] }}>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: colors.primary[600] }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
                 </div>
-                <div>
-                  <h1 className="text-2xl md:text-3xl font-bold mb-2" style={{ color: colors.text.primary, fontWeight: typography.fontWeight.bold }}>欢迎使用 DeepRehab 康复评估系统</h1>
-                  <p className="text-gray-600 text-base">专业的动作功能评估工具，为康复治疗提供精准的数据支持</p>
-                </div>
-              </div>
-            </div>
-            <div className="flex flex-col gap-3 items-center w-full">
-              <Button
-                variant="primary"
-                size="large"
-                onClick={goToMovementSelection}
-                className="duration-300 h-[52px] w-full sm:w-auto min-w-[160px] transition-colors"
-                style={{ backgroundColor: colors.primary[600] }}
-                aria-label="开始新的康复评估"
-              >
-                开始新评估
-              </Button>
-              <Button
-                variant="outline"
-                size="large"
-                onClick={() => navigateToModule('statistics')}
-                className="w-full sm:w-auto min-w-[140px] h-[52px] transition-colors duration-300"
-                style={{ borderColor: colors.primary[300], color: colors.primary[600] }}
-                aria-label="查看详细统计数据"
-              >
-                查看统计
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* 统计数据区域 */}
-        <div ref={statsRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8" style={mounted ? animations.fadeInUp('0.6s', '0.2s') : undefined}>
-          {isLoading ? (
-            // 加载状态
-            Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="p-6 rounded-xl shadow" style={{ backgroundColor: colors.background.paper }}>
-                <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-3"></div>
-                  <div className="h-8 bg-gray-200 rounded w-1/2 mb-3"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                </div>
-              </div>
-            ))
-          ) : error ? (
-            // 错误状态
-            <div className="col-span-full p-6 rounded-xl shadow" style={{ backgroundColor: colors.error[50] }}>
-              <div className="flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: colors.error[500] }}>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span style={{ color: colors.error[700] }}>{error}</span>
-                <button 
-                  onClick={refetch}
-                  className="ml-auto px-3 py-1 rounded text-sm"
-                  style={{ backgroundColor: colors.error[50], color: colors.error[700] }}
-                >
-                  重试
-                </button>
-
-              </div>
-            </div>
-          ) : (
-            // 正常状态
-            statsCards.map((stat: any, index: any) => (
-              <div key={index} className="p-6 rounded-xl shadow hover:shadow-lg transition-shadow duration-300" style={{ 
-                backgroundColor: stat.bgColor,
-                ...(mounted ? animations.fadeInUp('0.6s', `${0.2 + index * 0.1}s`) : {})
-              }}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="text-2xl">{stat.icon}</div>
-                  {stat.trend && renderTrendIndicator(stat.trend)}
-                </div>
-                <h3 className="text-sm font-medium mb-1" style={{ color: colors.text.secondary }}>{stat.title}</h3>
-                <p className="text-2xl font-bold" style={{ color: stat.textColor }}>{stat.value}</p>
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* 根据页面状态显示不同内容 */}
-        {isStatisticsPage ? (
-          // 统计页面内容
-          <div className="mt-8">
-            <h2 className="text-2xl font-bold mb-6" style={{ color: colors.text.primary }}>统计数据</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="p-6 rounded-xl shadow" style={{ backgroundColor: colors.background.paper }}>
-                <h3 className="text-lg font-semibold mb-4" style={{ color: colors.text.primary }}>评估统计</h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span style={{ color: colors.text.secondary }}>总评估次数</span>
-                    <span className="text-xl font-bold" style={{ color: colors.text.primary }}>128</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span style={{ color: colors.text.secondary }}>今日评估</span>
-                    <span className="text-xl font-bold" style={{ color: colors.text.primary }}>12</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span style={{ color: colors.text.secondary }}>本周评估</span>
-                    <span className="text-xl font-bold" style={{ color: colors.text.primary }}>45</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span style={{ color: colors.text.secondary }}>本月评估</span>
-                    <span className="text-xl font-bold" style={{ color: colors.text.primary }}>128</span>
-                  </div>
-                </div>
-              </div>
-              <div className="p-6 rounded-xl shadow" style={{ backgroundColor: colors.background.paper }}>
-                <h3 className="text-lg font-semibold mb-4" style={{ color: colors.text.primary }}>患者统计</h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span style={{ color: colors.text.secondary }}>总患者数</span>
-                    <span className="text-xl font-bold" style={{ color: colors.text.primary }}>76</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span style={{ color: colors.text.secondary }}>活跃患者</span>
-                    <span className="text-xl font-bold" style={{ color: colors.text.primary }}>42</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span style={{ color: colors.text.secondary }}>新患者(本月)</span>
-                    <span className="text-xl font-bold" style={{ color: colors.text.primary }}>15</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="mt-6 p-6 rounded-xl shadow" style={{ backgroundColor: colors.background.paper }}>
-              <h3 className="text-lg font-semibold mb-4" style={{ color: colors.text.primary }}>评估类型分布</h3>
-              <div className="space-y-3">
-                {[ 
-                  { type: '深蹲评估', count: 35 },
-                  { type: '箭步蹲评估', count: 28 },
-                  { type: '直腿抬高', count: 22 },
-                  { type: '肩部活动度', count: 18 },
-                  { type: '躯干稳定性', count: 25 }
-                ].map((item, index) => (
-                  <div key={index} className="flex justify-between items-center">
-                    <span style={{ color: colors.text.secondary }}>{item.type}</span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-32 h-4 rounded-full overflow-hidden" style={{ backgroundColor: colors.neutral[200] }}>
-                        <div 
-                          className="h-full rounded-full" 
-                          style={{ 
-                            backgroundColor: colors.primary[500],
-                            width: `${(item.count / 35) * 100}%`
-                          }}
-                        />
-                      </div>
-                      <span className="text-sm font-medium" style={{ color: colors.text.primary }}>{item.count}</span>
-                    </div>
-                  </div>
-                ))}
+                <h1 className="text-2xl font-bold text-gray-800">欢迎来到康复评估系统</h1>
+                <p className="text-gray-600 mt-2 max-w-lg">
+                  通过AI驱动的姿态识别技术，为患者提供专业的康复评估与追踪服务
+                </p>
               </div>
             </div>
           </div>
-        ) : (
-          // 仪表盘页面内容
-          <>
-            {/* 核心功能区域 */}
-            <div ref={movementsRef} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8" style={mounted ? animations.fadeInUp('0.6s', '0.4s') : undefined}>
-              <Card 
-                title="视频动作评估" 
-                onClick={() => handleNavigation('video-analysis', 'video-analysis')}
-                style={{ backgroundColor: colors.background.paper }}
-              >
-                <p>通过AI姿态识别技术分析患者动作表现</p>
-              </Card>
-              <Card 
-                title="历史数据追踪" 
-                onClick={goToHistory}
-                style={{ backgroundColor: colors.background.paper }}
-              >
-                <p>记录并可视化患者的康复进度</p>
-              </Card>
-              <Card 
-                title="患者管理" 
-                onClick={goToPatients}
-                style={{ backgroundColor: colors.background.paper }}
-              >
-                <p>便捷的患者信息管理系统</p>
-              </Card>
-            </div>
-
-            {/* 快速开始区域 */}
-            <div ref={quickStartRef} className="p-6 rounded-xl shadow" style={{ 
-              backgroundColor: colors.background.paper,
-              ...(mounted && animations.fadeInUp('0.6s', '0.6s'))
-            }}>
-              <h2 className="text-xl font-bold mb-4" style={{ color: colors.text.primary }}>快速开始</h2>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Input
-                  placeholder="请输入患者ID"
-                  value={patientId}
-                  onChange={(e) => setPatientId(e.target.value)}
-                  fullWidth
-                  style={{ flex: 1 }}
-                />
-                <Button
-                  variant="primary"
-                  onClick={handleQuickStart}
-                  disabled={!patientId.trim()}
-                  style={{ backgroundColor: colors.primary[600] }}
-                >
-                  开始评估
-                </Button>
+        </div>
+        
+        {/* 统计数据卡片 */}
+        <div ref={statsRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {statsCards.map((card, index) => (
+            <Card 
+              key={index}
+              className="p-6 border shadow-md hover:shadow-lg transition-all duration-300"
+              style={{
+                ...(mounted && animations.fadeInUp('0.6s', `${0.1 + index * 0.1}s`))
+              }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: card.bgColor + '20' }}>
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: card.textColor }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <span className="text-xs font-medium px-2 py-1 rounded-full" style={{ 
+                  backgroundColor: card.trend?.isPositive ? colors.success[100] : colors.error[100],
+                  color: card.trend?.isPositive ? colors.success[700] : colors.error[700]
+                }}>
+                  {card.trend?.isPositive ? '↑' : '↓'} {Math.abs(card.trend?.value || 0)}%
+                </span>
               </div>
-            </div>
-          </>
-        )}
-
-        {/* 操作指引 */}
-        {showHelpGuide && (
-          <HelpGuide 
-            steps={helpSteps}
-            onClose={() => setShowHelpGuide(false)}
-            isOpen={showHelpGuide}
-            targetRef={movementsRef}
-          />
-        )}
+              <h3 className="text-lg font-semibold" style={{ color: card.textColor }}>{card.value}</h3>
+              <p className="text-sm" style={{ color: colors.text.secondary }}>{card.title}</p>
+              {renderTrendIndicator(card.trend)}
+            </Card>
+          ))}
+        </div>
+        
+        {/* 核心功能区域 */}
+        <div ref={movementsRef} className="mb-8">
+          <h2 className="text-xl font-bold text-gray-800 mb-6" style={{
+            ...(mounted && animations.fadeInUp('0.6s', '0.5s'))
+          }}>
+            核心功能
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card 
+              className="p-6 border shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
+              onClick={() => navigateTo('movement-selection')}
+              style={{
+                ...(mounted && animations.fadeInUp('0.6s', '0.6s'))
+              }}
+            >
+              <div className="flex flex-col items-center text-center">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: colors.primary[100] }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: colors.primary[600] }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">视频动作评估</h3>
+                <p className="text-sm text-gray-600">通过AI姿态识别技术分析患者动作表现，提供专业评估报告</p>
+              </div>
+            </Card>
+            
+            <Card 
+              className="p-6 border shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
+              onClick={() => navigateTo('history')}
+              style={{
+                ...(mounted && animations.fadeInUp('0.6s', '0.7s'))
+              }}
+            >
+              <div className="flex flex-col items-center text-center">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: colors.secondary[100] }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: colors.secondary[600] }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">历史数据追踪</h3>
+                <p className="text-sm text-gray-600">记录并可视化患者的康复进度，生成趋势分析报告</p>
+              </div>
+            </Card>
+            
+            <Card 
+              className="p-6 border shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
+              onClick={() => navigateTo('patients')}
+              style={{
+                ...(mounted && animations.fadeInUp('0.6s', '0.8s'))
+              }}
+            >
+              <div className="flex flex-col items-center text-center">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: colors.secondary[100] }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: colors.secondary[600] }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">患者管理</h3>
+                <p className="text-sm text-gray-600">便捷的患者信息管理系统，支持创建、编辑和查看患者档案</p>
+              </div>
+            </Card>
+          </div>
+        </div>
+        
+        {/* 快速开始区域 */}
+        <div ref={quickStartRef} className="border rounded-xl p-6 shadow-md" style={{ 
+          backgroundColor: colors.background.secondary, 
+          borderColor: colors.borderColor,
+          ...(mounted && animations.fadeInUp('0.6s', '0.9s'))
+        }}>
+          <h2 className="text-xl font-bold text-gray-800 mb-4">快速开始</h2>
+          <div className="flex flex-col md:flex-row gap-4">
+            <Input
+              placeholder="输入患者ID"
+              value={patientId}
+              onChange={(e) => setPatientId(e.target.value)}
+              className="flex-1"
+              style={{
+                height: '48px'
+              }}
+            />
+            <Button
+              variant="primary"
+              size="medium"
+              onClick={handleQuickStart}
+              disabled={!patientId.trim()}
+              className="px-6"
+              style={{
+                height: '48px',
+                minWidth: '120px'
+              }}
+            >
+              开始评估
+            </Button>
+          </div>
+        </div>
       </div>
+      
+      {/* 帮助指引 */}
+      {showHelpGuide && (
+        <HelpGuide 
+          steps={helpSteps}
+          onClose={() => setShowHelpGuide(false)}
+          startFromStep={0}
+        />
+      )}
     </Layout>
   );
 };
