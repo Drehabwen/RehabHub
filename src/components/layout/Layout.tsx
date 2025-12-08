@@ -24,7 +24,7 @@ const LayoutContainer: React.FC<{ children: React.ReactNode }> = ({ children }) 
 );
 
 // 头部组件
-const Header: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
+const Header: React.FC<{ children: React.ReactNode; className?: string; onMenuClick?: () => void }> = ({ children, className = '', onMenuClick }) => (
   <header 
     style={{
       backgroundColor: theme.colors.primary[500],
@@ -33,10 +33,22 @@ const Header: React.FC<{ children: React.ReactNode; className?: string }> = ({ c
       justifyContent: 'space-between',
       alignItems: 'center',
       boxShadow: theme.shadows.default,
-      position: 'relative' // 添加相对定位，让子元素的绝对定位相对于Header
+      position: 'relative',
+      zIndex: 30 // 提高Header层级
     }}
     className={`bg-primary text-white p-3 md:p-4 flex justify-between items-center shadow-md ${className}`}
   >
+    {onMenuClick && (
+      <button 
+        onClick={onMenuClick}
+        className="md:hidden mr-3 p-1 rounded hover:bg-white/10 transition-colors"
+        aria-label="打开菜单"
+      >
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    )}
     {children}
   </header>
 );
@@ -222,55 +234,24 @@ const NavigationLink: React.FC<NavigationLinkProps> = ({
 };
 
 // 新的导航组件，使用导航上下文
-const Navigation: React.FC = () => {
+const Navigation: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const { state, navigateTo } = useNavigation();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
 
   const handleNavigationClick = (module: string) => {
     navigateTo(module);
     // 在移动端点击导航后关闭侧边栏
     if (window.innerWidth < 768) {
-      setSidebarOpen(false);
+      onClose();
     }
   };
 
   return (
     <>
-      {/* 移动端菜单按钮 - 显示在Main内部，保持适当间距 */}
-      <div className="md:hidden mb-4 flex justify-start">
-        <button 
-          onClick={toggleSidebar}
-          className="p-2 rounded-full hover:bg-gray-100 transition-all duration-200"
-          aria-label={sidebarOpen ? "关闭菜单" : "打开菜单"}
-          style={{
-            backgroundColor: theme.colors.background.paper,
-            border: `1px solid ${theme.colors.borderColor}`,
-            boxShadow: theme.shadows.default,
-            position: 'relative',
-            zIndex: 10
-          }}
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            {sidebarOpen ? (
-              // 关闭图标
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            ) : (
-              // 菜单图标
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            )}
-          </svg>
-        </button>
-      </div>
-
       {/* 移动端侧边栏覆盖层 */}
-      {sidebarOpen && (
+      {isOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-40 md:hidden"
-          onClick={toggleSidebar}
+          onClick={onClose}
           style={{
             position: 'fixed',
             top: 0,
@@ -282,19 +263,18 @@ const Navigation: React.FC = () => {
         />
       )}
       
-      {/* 侧边栏 - 移动端抽屉式，桌面端固定 */}
+      {/* 侧边栏 - 移动端抽屉式(覆盖大部分屏幕)，桌面端固定 */}
       <Sidebar className={`
         md:w-72 md:static md:block fixed inset-y-0 left-0 transform transition-transform duration-300 ease-in-out 
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
         md:translate-x-0 md:shadow-none shadow-lg
-        w-64
-        md:mb-0 mb-4
+        w-[85vw] sm:w-80
         z-50
       `}>
         <div className="flex justify-between items-center pb-4 border-b mb-4">
           <SidebarTitle>功能导航</SidebarTitle>
           <button 
-            onClick={toggleSidebar}
+            onClick={onClose}
             className="md:hidden p-1 rounded-full hover:bg-gray-100 transition-colors"
             aria-label="关闭菜单"
           >
@@ -310,6 +290,7 @@ const Navigation: React.FC = () => {
               onClick={() => handleNavigationClick('dashboard')} 
               className="py-3"
             >
+              <span className="mr-3 text-lg">📊</span>
               仪表盘
             </NavigationLink>
           </NavigationItem>
@@ -319,7 +300,18 @@ const Navigation: React.FC = () => {
               onClick={() => handleNavigationClick('movement-selection')} 
               className="py-3"
             >
+              <span className="mr-3 text-lg">🧘</span>
               康复评估
+            </NavigationLink>
+          </NavigationItem>
+          <NavigationItem>
+            <NavigationLink 
+              active={state.currentModule === 'patients'} 
+              onClick={() => handleNavigationClick('patients')} 
+              className="py-3"
+            >
+              <span className="mr-3 text-lg">👥</span>
+              患者管理
             </NavigationLink>
           </NavigationItem>
           <NavigationItem>
@@ -328,7 +320,18 @@ const Navigation: React.FC = () => {
               onClick={() => handleNavigationClick('history')} 
               className="py-3"
             >
+              <span className="mr-3 text-lg">🕒</span>
               历史记录
+            </NavigationLink>
+          </NavigationItem>
+          <NavigationItem>
+            <NavigationLink 
+              active={state.currentModule === 'reports'} 
+              onClick={() => handleNavigationClick('reports')} 
+              className="py-3"
+            >
+              <span className="mr-3 text-lg">📄</span>
+              评估报告
             </NavigationLink>
           </NavigationItem>
           <NavigationItem>
@@ -337,34 +340,50 @@ const Navigation: React.FC = () => {
               onClick={() => handleNavigationClick('settings')} 
               className="py-3"
             >
+              <span className="mr-3 text-lg">⚙️</span>
               设置
             </NavigationLink>
           </NavigationItem>
         </NavigationList>
+        
+        {/* 底部快速操作区 */}
+        <div className="mt-8 pt-4 border-t border-gray-100">
+          <button
+            onClick={() => handleNavigationClick('movement-selection')}
+            className="w-full py-3 px-4 bg-primary text-white rounded-lg shadow hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 font-medium"
+            style={{ backgroundColor: theme.colors.primary[500] }}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            新建评估
+          </button>
+        </div>
       </Sidebar>
     </>
   );
 };
 
 const Layout: React.FC<LayoutProps> = ({ children, title }) => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
     <LayoutContainer>
-      <Header className="md:p-4 p-3">
-        {/* 移除了Navigation组件，将其移到Main组件中 */}
-        <div className="flex justify-between w-full">
-          {/* 移除了未使用的导航预留空间 */}
+      <Header className="md:p-4 p-3" onMenuClick={() => setSidebarOpen(true)}>
+        <div className="flex items-center w-full">
           <LogoContainer>
             <Logo>DeepRehab</Logo>
             {title && <TitleComponent>{title}</TitleComponent>}
           </LogoContainer>
+          <div className="flex-1" /> {/* Spacer */}
           <HeaderActions>
-            {/* 移除了StatusIndicator组件，避免出现连接错误提示 */}
+            {/* Header actions can go here */}
           </HeaderActions>
         </div>
       </Header>
       
-      <Main className="md:flex-row flex flex-col">
-        <Navigation />
+      <Main className="md:flex-row flex flex-col p-2 md:p-4">
+        <Navigation isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <Content>{children}</Content>
       </Main>
     </LayoutContainer>

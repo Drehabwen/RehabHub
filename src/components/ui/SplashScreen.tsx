@@ -18,8 +18,8 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
     // Stage 3: Fade Out (2500ms)
     const timer3 = setTimeout(() => setIsFadingOut(true), 2500);
     
-    // Stage 4: Finish (3000ms)
-    const timer4 = setTimeout(onFinish, 3000);
+    // Stage 4: Finish (3300ms) - Ensure fade out animation (700ms) completes
+    const timer4 = setTimeout(onFinish, 3300);
 
     return () => {
       clearTimeout(timer1);
