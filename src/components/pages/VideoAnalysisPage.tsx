@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Layout } from '../layout/Layout';
+
 import { colors, typography } from '../../theme';
 import { useNavigation } from '../../contexts/NavigationContext';
 import Button from '../ui/Button';
@@ -52,7 +52,7 @@ const VideoAnalysisPage: React.FC = () => {
   };
 
   return (
-    <Layout title="视频分析">
+    <>
       <div className="mx-auto max-w-4xl p-4 w-full">
         {/* 返回按钮 */}
         <div className="mb-6 flex justify-start">
@@ -266,7 +266,7 @@ const VideoAnalysisPage: React.FC = () => {
           </div>
         )}
       </div>
-    </Layout>
+    </>
   );
 };
 

@@ -113,10 +113,9 @@ const HelpGuide: React.FC<HelpGuideProps> = ({ steps, targetRef, isOpen, onClose
       position: 'absolute',
       width: 0,
       height: 0,
-      borderLeft: '8px solid transparent',
-      borderRight: '8px solid transparent',
-      borderBottom: '8px solid transparent',
-      borderTop: '8px solid transparent',
+      borderWidth: '8px',
+      borderStyle: 'solid',
+      borderColor: 'transparent',
       willChange: 'opacity, transform'
     };
 

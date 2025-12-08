@@ -17,7 +17,7 @@ export interface MovementEvaluation {
 export const usePoseEstimation = () => {
   // 修改: 添加状态变量类型定义
   const [keypoints, setKeypoints] = useState<Keypoint[]>([]);
-  const [isProcessing] = useState<boolean>(false);
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isModelLoading, setIsModelLoading] = useState<boolean>(true);
   const [movementEvaluation, setMovementEvaluation] = useState<MovementEvaluation | null>(null);
@@ -116,6 +116,7 @@ export const usePoseEstimation = () => {
     lastProcessTimeRef.current = now;
 
     processingRef.current = true;
+    setIsProcessing(true);
     
     try {
       // 提取关键点 - 移除不必要的日志以提高性能
@@ -148,6 +149,7 @@ export const usePoseEstimation = () => {
       console.error('视频帧处理失败，请确保摄像头正常工作且光线充足');
     } finally {
       processingRef.current = false;
+      setIsProcessing(false);
     }
   };
   

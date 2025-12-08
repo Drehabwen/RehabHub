@@ -1,9 +1,9 @@
 // 导入必要的React钩子和组件
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Layout from './components/layout/Layout';
-import { NavigationProvider, useNavigation, useNavigationParams } from './contexts/NavigationContext';
+import { useNavigation, NavigationProvider } from './contexts/NavigationContext';
 import Breadcrumbs from './components/ui/Breadcrumbs';
-import { colors, typography } from './theme';
+import { colors } from './theme';
 
 // 导入页面组件
 import Dashboard from './components/pages/Dashboard';
@@ -11,7 +11,7 @@ import StatusIndicatorExample from './components/pages/StatusIndicatorExample';
 import ComponentTestPage from './components/pages/ComponentTestPage';
 // VideoAnalysis 组件已迁移到 ./components/pages/VideoAnalysis 目录
 import MovementSelection from './components/pages/MovementSelection';
-import VideoAnalysisPage from './components/pages/VideoAnalysis';
+import VideoAnalysisPage from './components/pages/VideoAnalysisPage';
 import History from './components/pages/History';
 import Patients from './components/pages/Patients';
 import Tests from './components/pages/Tests';
@@ -29,18 +29,9 @@ const ActiveStraightLegRaiseAnalysis = React.lazy(() => import('./movements/acti
 const TrunkStabilityPushupAnalysis = React.lazy(() => import('./movements/trunk-stability-pushup'));
 const RotaryStabilityAnalysis = React.lazy(() => import('./movements/rotary-stability'));
 
-// 定义FMS动作类型
-interface FmsMovement {
-  id: string;
-  name: string;
-  description: string;
-  icon: React.ReactNode;
-}
-
 // 应用内容组件
 const AppContent: React.FC = () => {
   const { state, navigateTo, goBack } = useNavigation();
-  const { getParams } = useNavigationParams<{ movement?: FmsMovement }>();
 
   const renderModule = () => {
     // 渲染仪表盘
@@ -92,16 +83,14 @@ const AppContent: React.FC = () => {
       return <Admin />;
     }
 
-    // 获取当前动作参数
-    const params = getParams();
-    const movement = params?.movement;
+    
 
     // 根据选择的动作模块渲染对应组件
     switch (state.currentModule) {
       case 'deep-squat':
         return (
           <React.Suspense fallback={<div>加载中...</div>}>
-            <div className="flex flex-col min-h-screen">
+            <div className="flex flex-col">
               <button 
                 onClick={goBack}
                 className="flex items-center transition-colors p-4 active:scale-95" 
@@ -121,7 +110,7 @@ const AppContent: React.FC = () => {
       case 'hurdle-step':
         return (
           <React.Suspense fallback={<div>加载中...</div>}>
-            <div className="flex flex-col min-h-screen">
+            <div className="flex flex-col">
               <button 
                 onClick={goBack}
                 className="flex items-center transition-colors p-4 active:scale-95" 
@@ -141,7 +130,7 @@ const AppContent: React.FC = () => {
       case 'inline-lunge':
         return (
           <React.Suspense fallback={<div>加载中...</div>}>
-            <div className="flex flex-col min-h-screen">
+            <div className="flex flex-col">
               <button 
                 onClick={goBack}
                 className="flex items-center transition-colors p-4 active:scale-95" 
@@ -161,7 +150,7 @@ const AppContent: React.FC = () => {
       case 'shoulder-mobility':
         return (
           <React.Suspense fallback={<div>加载中...</div>}>
-            <div className="flex flex-col min-h-screen">
+            <div className="flex flex-col">
               <button 
                 onClick={goBack}
                 className="flex items-center transition-colors p-4 active:scale-95" 
@@ -181,7 +170,7 @@ const AppContent: React.FC = () => {
       case 'active-straight-leg-raise':
         return (
           <React.Suspense fallback={<div>加载中...</div>}>
-            <div className="flex flex-col min-h-screen">
+            <div className="flex flex-col">
               <button 
                 onClick={goBack}
                 className="flex items-center transition-colors p-4 active:scale-95" 
@@ -201,7 +190,7 @@ const AppContent: React.FC = () => {
       case 'trunk-stability-pushup':
         return (
           <React.Suspense fallback={<div>加载中...</div>}>
-            <div className="flex flex-col min-h-screen">
+            <div className="flex flex-col">
               <button 
                 onClick={goBack}
                 className="flex items-center transition-colors p-4 active:scale-95" 
@@ -221,7 +210,7 @@ const AppContent: React.FC = () => {
       case 'rotary-stability':
         return (
           <React.Suspense fallback={<div>加载中...</div>}>
-            <div className="flex flex-col min-h-screen">
+            <div className="flex flex-col">
               <button 
                 onClick={goBack}
                 className="flex items-center transition-colors p-4 active:scale-95" 
@@ -261,14 +250,12 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen" style={{ backgroundColor: colors.background.default }}>
-      <Layout>
-        <Breadcrumbs />
-        <div className="flex-1">
-          {renderModule()}
-        </div>
-      </Layout>
-    </div>
+    <Layout>
+      <Breadcrumbs className="mb-4" />
+      <div className="flex-1">
+        {renderModule()}
+      </div>
+    </Layout>
   );
 };
 

@@ -7,7 +7,7 @@ import { colors, typography, borderRadius, shadows } from './theme';
 import HelpGuide from './components/HelpGuide';
 import { useAnalysis } from './hooks/useAnalysis';
 import { type AnalysisResponse } from './services/api';
-import ExampleAnalysis from './components/ExampleAnalysis';
+
 import { usePoseEstimation } from './hooks/usePoseEstimation';
 import './styles/VideoAnalysis.css';
 
@@ -27,7 +27,7 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
   const [analysisResult, setAnalysisResult] = useState<AnalysisResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'upload' | 'camera'>('upload');
-  const [patientInfo, setPatientInfo] = useState<string>('');
+  const [patientInfo] = useState<string>('');
   const [showHelpGuide, setShowHelpGuide] = useState(false);
   
   // 操作指引引用
@@ -121,8 +121,16 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
     isProcessing: isPoseProcessing, 
     movementEvaluation, 
     processFrame,
-    isModelLoading
+    isModelLoading,
+    error: poseError
   } = usePoseEstimation();
+
+  // 监听姿态估计错误
+  useEffect(() => {
+    if (poseError) {
+      console.error('姿态估计错误:', poseError);
+    }
+  }, [poseError]);
 
   // 处理视频帧
   const processVideoFrame = useCallback((videoElement: HTMLVideoElement) => {
@@ -137,6 +145,118 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
     setError(null);
     setAnalysisResult(null);
   };
+
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const uploadVideoRef = useRef<HTMLVideoElement>(null);
+  const uploadCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  // 当 selectedFile 变化时生成 URL
+  useEffect(() => {
+    if (selectedFile) {
+      const url = URL.createObjectURL(selectedFile);
+      setVideoUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setVideoUrl(null);
+    }
+  }, [selectedFile]);
+
+  // 处理上传视频的播放和实时分析
+  const handleVideoPlay = () => {
+    const video = uploadVideoRef.current;
+    if (!video) return;
+    
+    const processLoop = () => {
+      if (video.paused || video.ended) return;
+      
+      // 直接调用 processFrame，hook 内部会处理并发和节流
+      processFrame(video, movementType);
+      
+      requestAnimationFrame(processLoop);
+    };
+    
+    processLoop();
+  };
+
+  // 绘制上传视频的骨骼点
+  useEffect(() => {
+    const canvas = uploadCanvasRef.current;
+    const video = uploadVideoRef.current;
+    
+    if (!canvas || !video) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // 确保 canvas 尺寸匹配视频显示尺寸
+    if (video.videoWidth > 0 && video.videoHeight > 0) {
+      if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+      }
+    }
+
+    // 清除画布
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (!poseKeypoints || poseKeypoints.length === 0) return;
+
+    // 绘制逻辑 (增强版)
+    const skeletonColor = '#8faa9d';
+    const skeletonLineColor = '#a8c4b8';
+    
+    // 绘制连接线
+    const connections = [
+      ['left_shoulder', 'right_shoulder'],
+      ['left_shoulder', 'left_elbow'], ['left_elbow', 'left_wrist'],
+      ['right_shoulder', 'right_elbow'], ['right_elbow', 'right_wrist'],
+      ['left_shoulder', 'left_hip'], ['right_shoulder', 'right_hip'],
+      ['left_hip', 'right_hip'],
+      ['left_hip', 'left_knee'], ['left_knee', 'left_ankle'],
+      ['right_hip', 'right_knee'], ['right_knee', 'right_ankle']
+    ];
+
+    const keypointMap = new Map(poseKeypoints.map(kp => [kp.name, kp]));
+
+    ctx.strokeStyle = skeletonLineColor;
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    connections.forEach(([start, end]) => {
+      const p1 = keypointMap.get(start);
+      const p2 = keypointMap.get(end);
+
+      // 如果没有score属性，默认为1 (高置信度)
+      const s1 = p1?.score ?? 1;
+      const s2 = p2?.score ?? 1;
+
+      if (p1 && p2 && s1 > 0.3 && s2 > 0.3) {
+        ctx.beginPath();
+        ctx.moveTo(p1.x * canvas.width, p1.y * canvas.height);
+        ctx.lineTo(p2.x * canvas.width, p2.y * canvas.height);
+        ctx.stroke();
+      }
+    });
+
+    // 绘制关键点
+    poseKeypoints.forEach(point => {
+      const x = point.x * canvas.width;
+      const y = point.y * canvas.height;
+      const score = point.score ?? 1;
+      
+      if (score > 0.3) {
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = skeletonColor;
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    });
+
+  }, [poseKeypoints]);
 
   const handleCapture = (image: string) => {
     // 将base64图像转换为File对象
@@ -405,6 +525,30 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
           {/* 已选择文件信息 */}
           {selectedFile && (
             <div className="mt-4 p-4 rounded-lg border" style={{ backgroundColor: '#f4f7f0', borderColor: '#d0ddd5' }}>
+              {/* 视频预览区域 */}
+              {videoUrl && activeTab === 'upload' && (
+                <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden mb-4 border border-gray-200 shadow-inner">
+                  <video
+                    ref={uploadVideoRef}
+                    src={videoUrl}
+                    className="absolute top-0 left-0 w-full h-full object-contain"
+                    controls
+                    onPlay={handleVideoPlay}
+                    crossOrigin="anonymous"
+                    playsInline
+                  />
+                  <canvas
+                    ref={uploadCanvasRef}
+                    className="absolute top-0 left-0 w-full h-full pointer-events-none"
+                    style={{ zIndex: 10 }}
+                  />
+                  {/* 提示信息 */}
+                  <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm z-20">
+                    播放视频以查看实时骨骼点分析
+                  </div>
+                </div>
+              )}
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#e8f0ec' }}>
@@ -514,7 +658,7 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
       )}
 
       {/* 姿态评估结果 */}
-      {movementEvaluation && activeTab === 'camera' && (
+      {movementEvaluation && (activeTab === 'camera' || (activeTab === 'upload' && videoUrl)) && (
         <div className="mt-8 p-4 sm:p-6 bg-white rounded-xl shadow-md border border-green-100 overflow-auto transition-all duration-300 hover:shadow-lg">
           <div className="flex items-center gap-2 mb-6">
             <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
@@ -616,7 +760,7 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
           ...animations.fadeInUp('0.7s'),
           ...animations.cardHover
         }}>
-          <ExampleAnalysis />
+          {/* 示例分析组件已移除 */}
         </div>
       )}
       

@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Layout } from '../layout/Layout';
+
 import Card from '../ui/Card';
 import Button from '../ui/Button';
-import { colors, typography, borderRadius } from '../../theme';
+import { colors, typography } from '../../theme';
 import { useNavigation, useNavigationParams } from '../../contexts/NavigationContext';
 import { animations, animationKeyframes } from '../../utils/animations';
 
@@ -25,11 +25,12 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({
   movementName = '深蹲' 
 }) => {
   // 使用导航上下文
-  const { goBack } = useNavigation();
+  const { goBack, navigateTo } = useNavigation();
   const params = useNavigationParams();
   
   // 从导航参数中获取动作信息
-  const movement = params?.movement as any;
+  const paramsData = params.getParams();
+  const movement = paramsData?.movement as any;
   const actualMovementType = movement?.id || movementType;
   const actualMovementName = movement?.name || movementName;
   
@@ -127,9 +128,9 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({
   
   // 获取分数颜色
   const getScoreColor = (score: number) => {
-    if (score >= 80) return colors.success[600];
-    if (score >= 60) return colors.warning[600];
-    return colors.error[600];
+    if (score >= 80) return colors.success[500];
+    if (score >= 60) return colors.warning[500];
+    return colors.error[500];
   };
   
   // 获取分数文本
@@ -140,25 +141,24 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({
   };
   
   return (
-    <Layout title={`${actualMovementName}评估`}>
+    <div className="mx-auto max-w-4xl p-4 w-full">
       <style>{animationKeyframes}</style>
-      <div className="mx-auto max-w-4xl p-4 w-full">
-        {/* 返回按钮 */}
-        <div className="mb-6 flex justify-start">
-          <Button
-            variant="secondary"
-            size="medium"
-            onClick={goBack}
-            className="transition-colors duration-300"
-            style={{ backgroundColor: colors.primary[100], color: colors.primary[700] }}
-            aria-label="返回动作选择"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            返回动作选择
-          </Button>
-        </div>
+      {/* 返回按钮 */}
+      <div className="mb-6 flex justify-start">
+        <Button
+          variant="secondary"
+          size="medium"
+          onClick={goBack}
+          className="transition-colors duration-300"
+          style={{ backgroundColor: colors.primary[100], color: colors.primary[700] }}
+          aria-label="返回动作选择"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          返回动作选择
+        </Button>
+      </div>
         
         {/* 页面标题 */}
         <div className="text-center mb-8">
@@ -272,7 +272,7 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({
                   size="medium"
                   onClick={startRecording}
                   className="flex-1"
-                  style={{ backgroundColor: colors.error[600] }}
+                  style={{ backgroundColor: colors.error[500] }}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -285,7 +285,7 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({
                   size="medium"
                   onClick={stopRecording}
                   className="flex-1"
-                  style={{ backgroundColor: colors.error[600] }}
+                  style={{ backgroundColor: colors.error[500] }}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -389,7 +389,6 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({
           </Card>
         )}
       </div>
-    </Layout>
   );
 };
 

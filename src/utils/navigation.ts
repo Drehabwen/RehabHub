@@ -9,11 +9,8 @@
  * @param module 要跳转到的模块名称
  */
 export const navigateToModule = (module: string): void => {
-  // 更新URL哈希值
-  window.location.href = `#/${module}`;
-
-  // 触发自定义事件
-  const event = new CustomEvent('setActiveModule', { detail: module });
+  // 使用NavigationContext进行导航
+  const event = new CustomEvent('navigateToModule', { detail: module });
   window.dispatchEvent(event);
 };
 
@@ -21,7 +18,9 @@ export const navigateToModule = (module: string): void => {
  * 返回上一页
  */
 export const goBack = (): void => {
-  window.history.back();
+  // 使用NavigationContext进行返回操作
+  const event = new CustomEvent('goBack');
+  window.dispatchEvent(event);
 };
 
 /**

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout } from '../layout/Layout';
+
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
@@ -123,7 +123,7 @@ const Patients: React.FC = () => {
   };
   
   return (
-    <Layout title="患者管理">
+    <>
       <style>{animationKeyframes}</style>
       <div className="mx-auto max-w-6xl p-4 w-full">
         {/* 返回按钮 */}
@@ -377,7 +377,7 @@ const Patients: React.FC = () => {
                   variant="outline"
                   size="small"
                   onClick={() => handleDeletePatient(patient.id)}
-                  style={{ borderColor: colors.error[300], color: colors.error[600] }}
+                  style={{ borderColor: colors.error[100], color: colors.error[500] }}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -411,7 +411,7 @@ const Patients: React.FC = () => {
           </Card>
         )}
       </div>
-    </Layout>
+    </>
   );
 };
 

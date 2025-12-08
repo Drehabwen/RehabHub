@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layout } from '../layout/Layout';
+
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { colors, typography } from '../../theme';
@@ -66,9 +66,9 @@ const History: React.FC = () => {
   
   // 获取分数颜色
   const getScoreColor = (score: number) => {
-    if (score >= 80) return colors.success[600];
-    if (score >= 60) return colors.warning[600];
-    return colors.error[600];
+    if (score >= 80) return colors.success[500];
+    if (score >= 60) return colors.warning[500];
+    return colors.error[500];
   };
   
   // 获取分数文本
@@ -85,25 +85,24 @@ const History: React.FC = () => {
   };
   
   return (
-    <Layout title="历史记录">
+    <div className="mx-auto max-w-6xl p-4 w-full">
       <style>{animationKeyframes}</style>
-      <div className="mx-auto max-w-6xl p-4 w-full">
-        {/* 返回按钮 */}
-        <div className="mb-6 flex justify-start">
-          <Button
-            variant="secondary"
-            size="medium"
-            onClick={() => navigateTo('dashboard')}
-            className="transition-colors duration-300"
-            style={{ backgroundColor: colors.primary[100], color: colors.primary[700] }}
-            aria-label="返回仪表盘"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            返回仪表盘
-          </Button>
-        </div>
+      {/* 返回按钮 */}
+      <div className="mb-6 flex justify-start">
+        <Button
+          variant="secondary"
+          size="medium"
+          onClick={() => navigateTo('dashboard')}
+          className="transition-colors duration-300"
+          style={{ backgroundColor: colors.primary[100], color: colors.primary[700] }}
+          aria-label="返回仪表盘"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          返回仪表盘
+        </Button>
+      </div>
         
         {/* 页面标题 */}
         <div className="text-center mb-8">
@@ -198,7 +197,6 @@ const History: React.FC = () => {
           </Card>
         )}
       </div>
-    </Layout>
   );
 };
 

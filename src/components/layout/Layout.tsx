@@ -100,9 +100,11 @@ const HeaderActions: React.FC<{ children?: React.ReactNode }> = ({ children }) =
 // 主内容区组件
 const Main: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
   <main 
-    className={`flex-1 flex gap-4 p-4 ${className}`}
+    className={`flex-1 flex flex-col md:flex-row gap-4 p-4 ${className}`}
     style={{
-      gap: theme.spacing.md
+      gap: theme.spacing.md,
+      position: 'relative',
+      zIndex: 1
     }}
   >
     {children}
@@ -117,7 +119,9 @@ const Sidebar: React.FC<{ children: React.ReactNode; className?: string }> = ({ 
       backgroundColor: theme.colors.background.paper,
       borderRadius: theme.borderRadius.md,
       borderColor: theme.colors.borderColor,
-      boxShadow: theme.shadows.default
+      boxShadow: theme.shadows.default,
+      position: 'relative',
+      zIndex: 2
     }}
   >
     {children}
@@ -126,7 +130,7 @@ const Sidebar: React.FC<{ children: React.ReactNode; className?: string }> = ({ 
 
 // 内容区组件
 const Content: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="flex-1 min-w-0">
+  <div className="flex-1 min-w-0" style={{ position: 'relative', zIndex: 2 }}>
     {children}
   </div>
 );
@@ -236,43 +240,62 @@ const Navigation: React.FC = () => {
 
   return (
     <>
-      {/* 移动端菜单按钮 */}
-      <button 
-        onClick={toggleSidebar}
-        className="md:hidden p-2 rounded-full hover:bg-primary-light/30"
-        aria-label={sidebarOpen ? "关闭菜单" : "打开菜单"}
-      >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          {sidebarOpen ? (
-            // 关闭图标
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          ) : (
-            // 菜单图标
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          )}
-        </svg>
-      </button>
+      {/* 移动端菜单按钮 - 显示在Main内部，保持适当间距 */}
+      <div className="md:hidden mb-4 flex justify-start">
+        <button 
+          onClick={toggleSidebar}
+          className="p-2 rounded-full hover:bg-gray-100 transition-all duration-200"
+          aria-label={sidebarOpen ? "关闭菜单" : "打开菜单"}
+          style={{
+            backgroundColor: theme.colors.background.paper,
+            border: `1px solid ${theme.colors.borderColor}`,
+            boxShadow: theme.shadows.default,
+            position: 'relative',
+            zIndex: 10
+          }}
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {sidebarOpen ? (
+              // 关闭图标
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            ) : (
+              // 菜单图标
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            )}
+          </svg>
+        </button>
+      </div>
 
       {/* 移动端侧边栏覆盖层 */}
       {sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
           onClick={toggleSidebar}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 40
+          }}
         />
       )}
       
       {/* 侧边栏 - 移动端抽屉式，桌面端固定 */}
       <Sidebar className={`
-        md:w-72 md:static md:block fixed inset-y-0 left-0 z-40 transform transition-transform duration-300 ease-in-out 
+        md:w-72 md:static md:block fixed inset-y-0 left-0 transform transition-transform duration-300 ease-in-out 
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
         md:translate-x-0 md:shadow-none shadow-lg
         w-64
+        md:mb-0 mb-4
+        z-50
       `}>
         <div className="flex justify-between items-center pb-4 border-b mb-4">
           <SidebarTitle>功能导航</SidebarTitle>
           <button 
             onClick={toggleSidebar}
-            className="md:hidden p-1 rounded-full hover:bg-gray-100"
+            className="md:hidden p-1 rounded-full hover:bg-gray-100 transition-colors"
             aria-label="关闭菜单"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -327,17 +350,23 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
   return (
     <LayoutContainer>
       <Header className="md:p-4 p-3">
-        <Navigation />
-        <LogoContainer>
-          <Logo>DeepRehab</Logo>
-          {title && <TitleComponent>{title}</TitleComponent>}
-        </LogoContainer>
-        <HeaderActions>
-          {/* 移除了StatusIndicator组件，避免出现连接错误提示 */}
-        </HeaderActions>
+        {/* 移除了Navigation组件，将其移到Main组件中 */}
+        <div className="flex justify-between w-full">
+          <div className="flex items-center">
+            {/* 移动端菜单按钮由Navigation组件内部管理 */}
+          </div>
+          <LogoContainer>
+            <Logo>DeepRehab</Logo>
+            {title && <TitleComponent>{title}</TitleComponent>}
+          </LogoContainer>
+          <HeaderActions>
+            {/* 移除了StatusIndicator组件，避免出现连接错误提示 */}
+          </HeaderActions>
+        </div>
       </Header>
       
       <Main className="md:flex-row flex flex-col">
+        <Navigation />
         <Content>{children}</Content>
       </Main>
     </LayoutContainer>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout } from '../layout/Layout';
+
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { colors, typography } from '../../theme';
@@ -81,12 +81,6 @@ const Reports: React.FC = () => {
     setSelectedReport(report);
   };
   
-  // 编辑报告
-  const handleEditReport = (report: Report) => {
-    setSelectedReport(report);
-    // 这里可以打开编辑表单
-  };
-  
   // 删除报告
   const handleDeleteReport = async (id: string) => {
     if (confirm('确定要删除此报告吗？')) {
@@ -164,9 +158,9 @@ const Reports: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return colors.success[600];
+        return colors.success[500];
       case 'in-progress':
-        return colors.warning[600];
+        return colors.warning[500];
       case 'draft':
         return colors.neutral[600];
       default:
@@ -190,33 +184,32 @@ const Reports: React.FC = () => {
   
   // 获取分数颜色
   const getScoreColor = (score: number) => {
-    if (score >= 90) return colors.success[600];
+    if (score >= 90) return colors.success[700];
     if (score >= 80) return colors.success[500];
-    if (score >= 70) return colors.warning[600];
+    if (score >= 70) return colors.warning[700];
     if (score >= 60) return colors.warning[500];
-    return colors.error[600];
+    return colors.error[500];
   };
   
   return (
-    <Layout title="报告管理">
+    <div className="mx-auto max-w-6xl p-4 w-full">
       <style>{animationKeyframes}</style>
-      <div className="mx-auto max-w-6xl p-4 w-full">
-        {/* 返回按钮 */}
-        <div className="mb-6 flex justify-start">
-          <Button
-            variant="secondary"
-            size="medium"
-            onClick={() => navigateTo('dashboard')}
-            className="transition-colors duration-300"
-            style={{ backgroundColor: colors.primary[100], color: colors.primary[700] }}
-            aria-label="返回仪表盘"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            返回仪表盘
-          </Button>
-        </div>
+      {/* 返回按钮 */}
+      <div className="mb-6 flex justify-start">
+        <Button
+          variant="secondary"
+          size="medium"
+          onClick={() => navigateTo('dashboard')}
+          className="transition-colors duration-300"
+          style={{ backgroundColor: colors.primary[100], color: colors.primary[700] }}
+          aria-label="返回仪表盘"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          返回仪表盘
+        </Button>
+      </div>
         
         {/* 页面标题和操作 */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
@@ -461,7 +454,7 @@ const Reports: React.FC = () => {
                       variant="outline"
                       size="small"
                       onClick={() => handleDeleteReport(report.id)}
-                      style={{ borderColor: colors.error[300], color: colors.error[600] }}
+                      style={{ backgroundColor: colors.error[100], color: colors.error[500] }}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -599,7 +592,6 @@ const Reports: React.FC = () => {
           </div>
         )}
       </div>
-    </Layout>
   );
 };
 

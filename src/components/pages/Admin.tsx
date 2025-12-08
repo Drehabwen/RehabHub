@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout } from '../layout/Layout';
+
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { colors, typography } from '../../theme';
@@ -71,7 +71,7 @@ const Admin: React.FC = () => {
   const { navigateTo } = useNavigation();
   const [mounted, setMounted] = useState(false);
   const [users, setUsers] = useState<User[]>(mockUsersData);
-  const [systemStats, setSystemStats] = useState<SystemStats>(mockSystemStats);
+  const [systemStats] = useState<SystemStats>(mockSystemStats);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'settings'>('dashboard');
   const [showAddUserForm, setShowAddUserForm] = useState(false);
   const [newUser, setNewUser] = useState<Partial<User>>({
@@ -128,13 +128,13 @@ const Admin: React.FC = () => {
   const getRoleColor = (role: string) => {
     switch (role) {
       case 'admin':
-        return colors.error[600];
+        return colors.error[500];
       case 'therapist':
-        return colors.primary[600];
+        return colors.primary[500];
       case 'viewer':
-        return colors.neutral[600];
+        return colors.neutral[500];
       default:
-        return colors.neutral[600];
+        return colors.neutral[500];
     }
   };
   
@@ -156,11 +156,11 @@ const Admin: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return colors.success[600];
+        return colors.success[500];
       case 'inactive':
-        return colors.neutral[600];
+        return colors.neutral[500];
       default:
-        return colors.neutral[600];
+        return colors.neutral[500];
     }
   };
   
@@ -177,25 +177,24 @@ const Admin: React.FC = () => {
   };
   
   return (
-    <Layout title="系统管理">
+    <div className="mx-auto max-w-6xl p-4 w-full">
       <style>{animationKeyframes}</style>
-      <div className="mx-auto max-w-6xl p-4 w-full">
-        {/* 返回按钮 */}
-        <div className="mb-6 flex justify-start">
-          <Button
-            variant="secondary"
-            size="medium"
-            onClick={() => navigateTo('dashboard')}
-            className="transition-colors duration-300"
-            style={{ backgroundColor: colors.primary[100], color: colors.primary[700] }}
-            aria-label="返回仪表盘"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            返回仪表盘
-          </Button>
-        </div>
+      {/* 返回按钮 */}
+      <div className="mb-6 flex justify-start">
+        <Button
+          variant="secondary"
+          size="medium"
+          onClick={() => navigateTo('dashboard')}
+          className="transition-colors duration-300"
+          style={{ backgroundColor: colors.primary[100], color: colors.primary[700] }}
+          aria-label="返回仪表盘"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          返回仪表盘
+        </Button>
+      </div>
         
         {/* 页面标题 */}
         <div className="mb-8">
@@ -273,7 +272,7 @@ const Admin: React.FC = () => {
                     </p>
                   </div>
                   <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: colors.success[100] }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: colors.success[600] }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: colors.success[500] }}>
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
@@ -296,7 +295,7 @@ const Admin: React.FC = () => {
                     </p>
                   </div>
                   <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: colors.warning[100] }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: colors.warning[600] }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: colors.warning[500] }}>
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                   </div>
@@ -318,8 +317,8 @@ const Admin: React.FC = () => {
                       {systemStats.activeUsers}
                     </p>
                   </div>
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: colors.info[100] }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: colors.info[600] }}>
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: colors.primary[100] }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: colors.primary[500] }}>
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                     </svg>
                   </div>
@@ -570,8 +569,8 @@ const Admin: React.FC = () => {
                       size="small"
                       onClick={() => handleToggleUserStatus(user.id)}
                       style={{ 
-                        borderColor: user.status === 'active' ? colors.warning[300] : colors.success[300],
-                        color: user.status === 'active' ? colors.warning[600] : colors.success[600]
+                        borderColor: user.status === 'active' ? colors.warning[100] : colors.success[100],
+                        color: user.status === 'active' ? colors.warning[500] : colors.success[500]
                       }}
                     >
                       {user.status === 'active' ? '禁用' : '启用'}
@@ -581,7 +580,7 @@ const Admin: React.FC = () => {
                       variant="outline"
                       size="small"
                       onClick={() => handleDeleteUser(user.id)}
-                      style={{ borderColor: colors.error[300], color: colors.error[600] }}
+                      style={{ borderColor: colors.error[100], color: colors.error[500] }}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -687,7 +686,7 @@ const Admin: React.FC = () => {
                   <Button
                     variant="outline"
                     onClick={() => alert('清空日志功能将删除所有日志记录')}
-                    style={{ borderColor: colors.error[300], color: colors.error[600] }}
+                    style={{ borderColor: colors.error[100], color: colors.error[500] }}
                   >
                     清空日志
                   </Button>
@@ -697,7 +696,6 @@ const Admin: React.FC = () => {
           </div>
         )}
       </div>
-    </Layout>
   );
 };
 

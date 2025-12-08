@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout } from '../layout/Layout';
+
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { colors, typography } from '../../theme';
@@ -64,7 +64,7 @@ const mockHelpData: HelpItem[] = [
 const Help: React.FC = () => {
   const { navigateTo } = useNavigation();
   const [mounted, setMounted] = useState(false);
-  const [helpItems, setHelpItems] = useState<HelpItem[]>(mockHelpData);
+  const [helpItems] = useState<HelpItem[]>(mockHelpData);
   const [selectedItem, setSelectedItem] = useState<HelpItem | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
@@ -99,11 +99,11 @@ const Help: React.FC = () => {
       case '快速入门':
         return colors.primary[600];
       case '使用指南':
-        return colors.success[600];
+        return colors.success[500];
       case '报告解读':
-        return colors.warning[600];
+        return colors.warning[500];
       case '故障排除':
-        return colors.error[600];
+        return colors.error[500];
       case '系统管理':
         return colors.neutral[600];
       default:
@@ -112,25 +112,24 @@ const Help: React.FC = () => {
   };
   
   return (
-    <Layout title="帮助中心">
+    <div className="mx-auto max-w-6xl p-4 w-full">
       <style>{animationKeyframes}</style>
-      <div className="mx-auto max-w-6xl p-4 w-full">
-        {/* 返回按钮 */}
-        <div className="mb-6 flex justify-start">
-          <Button
-            variant="secondary"
-            size="medium"
-            onClick={() => navigateTo('dashboard')}
-            className="transition-colors duration-300"
-            style={{ backgroundColor: colors.primary[100], color: colors.primary[700] }}
-            aria-label="返回仪表盘"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            返回仪表盘
-          </Button>
-        </div>
+      {/* 返回按钮 */}
+      <div className="mb-6 flex justify-start">
+        <Button
+          variant="secondary"
+          size="medium"
+          onClick={() => navigateTo('dashboard')}
+          className="transition-colors duration-300"
+          style={{ backgroundColor: colors.primary[100], color: colors.primary[700] }}
+          aria-label="返回仪表盘"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          返回仪表盘
+        </Button>
+      </div>
         
         {/* 页面标题 */}
         <div className="mb-8">
@@ -351,7 +350,6 @@ const Help: React.FC = () => {
           </div>
         )}
       </div>
-    </Layout>
   );
 };
 

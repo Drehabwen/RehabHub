@@ -180,9 +180,8 @@ export const analyzeVideo = async (request: AnalysisRequest): Promise<AnalysisRe
     const formData = new FormData();
     formData.append('file', request.video);
     
-    // 使用模块配置中定义的端点
-    const moduleConfig = moduleApis['video-analysis'];
-    const endpoint = moduleConfig.endpoints.analyze;
+    // 确保endpoint以/开头，避免URL拼接问题
+    const endpoint = '/analyze';
     const data = await apiClient.upload<AnalysisResponse>(endpoint, formData);
     console.log('API调用成功，返回数据:', data);
     return data;
@@ -192,48 +191,45 @@ export const analyzeVideo = async (request: AnalysisRequest): Promise<AnalysisRe
   }
 };
 
-export const fetchDashboardStats = async (): Promise<any[]> => {
-  // 模拟数据
-  return [
-    {
-      title: '今日评估',
-      value: '12',
-      icon: 'activity',
-      bgColor: 'bg-blue-100',
-      textColor: 'text-blue-600',
-      trend: { value: 12, isPositive: true }
-    },
-    {
-      title: '总患者数',
-      value: '45',
-      icon: 'users',
-      bgColor: 'bg-green-100',
-      textColor: 'text-green-600',
-      trend: { value: 5, isPositive: true }
-    },
-    {
-      title: '完成率',
-      value: '85%',
-      icon: 'check-circle',
-      bgColor: 'bg-purple-100',
-      textColor: 'text-purple-600'
-    },
-    {
-      title: '待处理',
-      value: '3',
-      icon: 'clock',
-      bgColor: 'bg-yellow-100',
-      textColor: 'text-yellow-600',
-      trend: { value: 2, isPositive: false }
-    }
-  ];
-};
-
 // 默认导出
 export default {
   getModuleApi,
   registerModuleApi,
   getAllModuleApis,
-  analyzeVideo,
-  fetchDashboardStats
+  analyzeVideo
+};
+
+/**
+ * 获取仪表盘统计数据
+ */
+// 定义统计数据接口
+export interface StatCard {
+  title: string;
+  value: string;
+  icon: string;
+  bgColor: string;
+  textColor: string;
+  trend?: {
+    value: number;
+    isPositive: boolean;
+  };
+}
+
+// 创建默认apiClient实例
+const apiClient = new ApiClient({
+  baseUrl: API_CONFIG.baseUrl,
+  defaultHeaders: API_CONFIG.defaultHeaders
+});
+
+// 获取仪表盘统计数据
+export const fetchDashboardStats = async (): Promise<StatCard[]> => {
+  try {
+    // 使用ApiClient实例调用get方法
+    const data = await apiClient.get<StatCard[]>('/dashboard/stats');
+    return data;
+    
+  } catch (error) {
+    console.error('获取仪表盘数据失败:', error);
+    throw error;
+  }
 };

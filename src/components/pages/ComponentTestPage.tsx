@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { theme } from '../../theme';
-import { Layout } from '../layout/Layout';
+
 import { Button } from '../ui/Button';
 import { StatusIndicator } from '../ui/StatusIndicator';
 
@@ -150,7 +150,7 @@ const ComponentTestPage: React.FC = () => {
   const [showStatusText, setShowStatusText] = useState(true);
 
   return (
-    <Layout>
+    <>
       <TestContainer>
         <h1>UI组件综合测试页面</h1>
         <p>测试所有UI组件在不同状态下的表现效果</p>
@@ -530,7 +530,7 @@ const ComponentTestPage: React.FC = () => {
           </ComponentGrid>
         </TestSection>
       </TestContainer>
-    </Layout>
+    </>
   );
 };
 

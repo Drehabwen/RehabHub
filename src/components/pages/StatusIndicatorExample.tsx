@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Layout } from '../layout/Layout';
+
 import Card from '../ui/Card';
 import { Button } from '../ui/Button';
 import { StatusIndicator } from '../ui/StatusIndicator';
@@ -19,7 +19,7 @@ const StatusIndicatorExample: React.FC = () => {
   };
   
   return (
-    <Layout>
+    <>
       <div className="space-y-8">
         {/* 页面标题 */}
         <div className="space-y-2">
@@ -198,7 +198,7 @@ const StatusIndicatorExample: React.FC = () => {
                     </Card.Content>
         </Card>
       </div>
-    </Layout>
+    </>
   );
 };
 
