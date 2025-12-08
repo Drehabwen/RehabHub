@@ -3,6 +3,7 @@ import React from 'react';
 import Layout from './components/layout/Layout';
 import { useNavigation, NavigationProvider } from './contexts/NavigationContext';
 import Breadcrumbs from './components/ui/Breadcrumbs';
+import SplashScreen from './components/ui/SplashScreen';
 import { colors } from './theme';
 
 // 导入页面组件
@@ -261,10 +262,15 @@ const AppContent: React.FC = () => {
 
 // 主应用组件
 const App: React.FC = () => {
+  const [showSplash, setShowSplash] = React.useState(true);
+
   return (
-    <NavigationProvider>
-      <AppContent />
-    </NavigationProvider>
+    <>
+      {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
+      <NavigationProvider>
+        <AppContent />
+      </NavigationProvider>
+    </>
   );
 };
 

@@ -659,97 +659,162 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
 
       {/* 姿态评估结果 */}
       {movementEvaluation && (activeTab === 'camera' || (activeTab === 'upload' && videoUrl)) && (
-        <div className="mt-8 p-4 sm:p-6 bg-white rounded-xl shadow-md border border-green-100 overflow-auto transition-all duration-300 hover:shadow-lg">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
+        <div className="mt-8 bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50 overflow-hidden transition-all duration-300 hover:shadow-2xl ring-1 ring-black/5">
+          {/* 头部标题区 */}
+          <div className="bg-gradient-to-r from-green-50/80 to-emerald-50/30 p-5 border-b border-green-100/50 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-green-600 ring-1 ring-green-100">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-800 tracking-tight">AI 姿态评估报告</h3>
+                <p className="text-xs text-gray-500 font-medium">基于深度学习的实时动作分析</p>
+              </div>
             </div>
-            <h3 className="text-base sm:text-lg font-semibold text-green-800">实时姿态评估结果</h3>
+            <div className="text-xs px-3 py-1 bg-white/80 rounded-full text-green-700 font-medium shadow-sm border border-green-100">
+              实时生成
+            </div>
           </div>
           
-          {/* 评分卡 */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-gray-700">综合评分</span>
-                <span className="text-2xl font-bold" style={{ color: getScoreColor(movementEvaluation.score).color }}>
-                  {movementEvaluation.score}/100
-                </span>
-              </div>
-              <div className="flex items-center gap-2 mb-2">
-                <span 
-                  className={`text-xs px-2 py-1 rounded-full ${getScoreColor(movementEvaluation.score).color === colors.primary[700] ? 'bg-green-100 text-green-800' : getScoreColor(movementEvaluation.score).color === colors.secondary[600] ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'}`}
-                  aria-label={`评分等级: ${getScoreColor(movementEvaluation.score).level}`}
-                >
+          <div className="p-6">
+            {/* 核心评分展示区 */}
+            <div className="flex flex-col md:flex-row gap-8 mb-8">
+              {/* 左侧：分数大圆环 */}
+              <div className="flex-shrink-0 flex flex-col items-center justify-center relative w-full md:w-auto">
+                <div className="relative w-40 h-40">
+                  <svg className="w-full h-full transform -rotate-90">
+                    <circle
+                      cx="80"
+                      cy="80"
+                      r="70"
+                      stroke="currentColor"
+                      strokeWidth="12"
+                      fill="transparent"
+                      className="text-gray-100"
+                    />
+                    <circle
+                      cx="80"
+                      cy="80"
+                      r="70"
+                      stroke="currentColor"
+                      strokeWidth="12"
+                      fill="transparent"
+                      strokeDasharray={440}
+                      strokeDashoffset={440 - (440 * movementEvaluation.score) / 100}
+                      className={`transition-all duration-1000 ease-out ${
+                        getScoreColor(movementEvaluation.score).color === colors.primary[700] ? 'text-emerald-500' : 
+                        getScoreColor(movementEvaluation.score).color === colors.secondary[600] ? 'text-amber-500' : 'text-rose-500'
+                      }`}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-4xl font-black text-gray-800">{movementEvaluation.score}</span>
+                    <span className="text-xs text-gray-400 font-medium uppercase tracking-wider mt-1">Total Score</span>
+                  </div>
+                </div>
+                <div className={`mt-4 px-4 py-1.5 rounded-full text-sm font-bold shadow-sm ${
+                  getScoreColor(movementEvaluation.score).color === colors.primary[700] ? 'bg-emerald-100 text-emerald-800' : 
+                  getScoreColor(movementEvaluation.score).color === colors.secondary[600] ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800'
+                }`}>
                   {getScoreColor(movementEvaluation.score).level}
-                </span>
+                </div>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="h-2 rounded-full transition-all duration-500 ease-out" 
-                  style={{ 
-                    width: `${movementEvaluation.score}%`,
-                    backgroundColor: getScoreColor(movementEvaluation.score).color
-                  }}
-                ></div>
-              </div>
-            </div>
-          </div>
-          
-          {/* 评估反馈 */}
-          <div className="p-4 bg-green-50 rounded-lg border border-green-100 mb-4">
-            <p className="text-sm font-medium text-green-800 mb-2">评估反馈</p>
-            <p className="text-sm text-gray-700">{movementEvaluation.feedback}</p>
-          </div>
-          
-          {/* 关节角度 */}
-          {movementEvaluation.angles && Object.keys(movementEvaluation.angles).length > 0 && (
-            <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-              <p className="text-sm font-medium text-gray-700 mb-3">关键关节角度</p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {Object.entries(movementEvaluation.angles).map(([joint, angle]) => {
-                  // 简单的角度评估逻辑
-                  const isGoodAngle = angle >= 80 && angle <= 110; // 示例范围，具体根据关节类型调整
-                  
-                  return (
-                    <div 
-                      key={joint} 
-                      className={`p-3 rounded-lg ${isGoodAngle ? 'bg-green-50 border border-green-100' : 'bg-amber-50 border border-amber-100'}`}
-                    >
-                      <div className="text-xs text-gray-500 mb-1">{joint}</div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-lg font-bold" style={{ color: isGoodAngle ? colors.primary[700] : colors.secondary[600] }}>
-                          {angle}°
-                        </span>
-                        {isGoodAngle && (
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                        )}
-                      </div>
+
+              {/* 右侧：反馈与详情 */}
+              <div className="flex-1 flex flex-col justify-center">
+                <div className="bg-slate-50 rounded-xl p-5 border border-slate-100 relative">
+                  <div className="absolute -left-2 top-6 w-4 h-4 bg-slate-50 transform rotate-45 border-l border-b border-slate-100 hidden md:block"></div>
+                  <h4 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                    智能评估反馈
+                  </h4>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    {movementEvaluation.feedback}
+                  </p>
+                </div>
+                
+                {/* 进度条展示 */}
+                <div className="mt-6 space-y-4">
+                  <div>
+                    <div className="flex justify-between text-xs mb-1.5 font-medium">
+                      <span className="text-gray-500">动作准确度</span>
+                      <span className="text-gray-700">{movementEvaluation.score}%</span>
                     </div>
-                  );
-                })}
+                    <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                      <div 
+                        className="h-full rounded-full transition-all duration-1000 ease-out bg-gradient-to-r from-emerald-400 to-green-500 shadow-sm"
+                        style={{ width: `${movementEvaluation.score}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          )}
-          
-          {/* 操作按钮 */}
-          <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
-            <button 
-              onClick={handleAnalyze}
-              className="px-5 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 focus:ring-opacity-50 shadow-md"
-            >
-              保存评估结果
-            </button>
-            <button 
-              onClick={() => setSelectedFile(null)}
-              className="px-5 py-2 bg-white border border-green-300 text-green-600 font-medium rounded-lg hover:bg-green-50 transition-colors focus:outline-none focus:ring-4 focus:ring-green-300 focus:ring-opacity-50"
-            >
-              重新评估
-            </button>
+            
+            {/* 关节角度数据网格 */}
+            {movementEvaluation.angles && Object.keys(movementEvaluation.angles).length > 0 && (
+              <div className="mt-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="h-4 w-1 bg-green-500 rounded-full"></div>
+                  <h4 className="font-bold text-gray-800">关键关节角度分析</h4>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {Object.entries(movementEvaluation.angles).map(([joint, angle]) => {
+                    const isGoodAngle = angle >= 80 && angle <= 110; 
+                    return (
+                      <div 
+                        key={joint} 
+                        className={`group p-3 rounded-xl border transition-all duration-200 hover:shadow-md ${
+                          isGoodAngle 
+                            ? 'bg-emerald-50/50 border-emerald-100 hover:border-emerald-200' 
+                            : 'bg-amber-50/50 border-amber-100 hover:border-amber-200'
+                        }`}
+                      >
+                        <div className="text-xs text-gray-500 mb-1.5 font-medium flex justify-between">
+                          {joint}
+                          {isGoodAngle ? (
+                             <svg className="w-3.5 h-3.5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                             </svg>
+                          ) : (
+                            <svg className="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                          )}
+                        </div>
+                        <div className="flex items-baseline gap-1">
+                          <span className={`text-xl font-bold ${isGoodAngle ? 'text-emerald-700' : 'text-amber-700'}`}>
+                            {angle}°
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            
+            {/* 底部操作区 */}
+            <div className="mt-8 pt-6 border-t border-gray-100 flex flex-col sm:flex-row gap-4 justify-end">
+              <button 
+                onClick={() => setSelectedFile(null)}
+                className="px-6 py-2.5 rounded-lg text-gray-600 font-medium hover:bg-gray-50 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200"
+              >
+                重新评估
+              </button>
+              <button 
+                onClick={handleAnalyze}
+                className="px-6 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-medium rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-green-100 active:scale-95 flex items-center gap-2 justify-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                </svg>
+                保存详细报告
+              </button>
+            </div>
           </div>
         </div>
       )}

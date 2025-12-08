@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Card from '../ui/Card';
 import { Button } from '../ui/Button';
 import Input from '../ui/Input';
-import { colors, typography, borderRadius } from '../../theme';
+import { colors } from '../../theme';
 import HelpGuide from '../HelpGuide';
 import { animations, animationKeyframes } from '../../utils/animations';
 import { useNavigation } from '../../contexts/NavigationContext';
@@ -142,27 +142,6 @@ const Dashboard: React.FC<DashboardProps> = ({ isStatisticsPage = false }) => {
       alert('请输入有效的患者ID');
     }
   }, [patientId, navigateTo]);
-  
-  // 渲染趋势指示器
-  const renderTrendIndicator = (trend?: { value: number; isPositive: boolean }) => {
-    if (!trend) return null;
-    
-    return (
-      <div className="mt-3 flex items-center text-xs" style={{ fontWeight: typography.fontWeight.medium, color: trend.isPositive ? colors.success[500] : colors.error[500] }}>
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          className="h-3 w-3 mr-1" 
-          fill="none" 
-          viewBox="0 0 24 24" 
-          stroke="currentColor"
-          style={{ transform: trend.isPositive ? 'rotate(0deg)' : 'rotate(180deg)' }}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-        </svg>
-        较昨日{trend.isPositive ? '增长' : '下降'} {Math.abs(trend.value)}%
-      </div>
-    );
-  };
 
   return (
     <div className="mx-auto max-w-6xl p-4 w-full">
@@ -186,24 +165,36 @@ const Dashboard: React.FC<DashboardProps> = ({ isStatisticsPage = false }) => {
         </div>
       )}
       {/* 顶部医疗风格的欢迎区域 */}
-      <div className="border mb-8 p-6 md:p-8 rounded-2xl shadow" style={{ 
-        backgroundColor: colors.background.secondary, 
-        borderColor: colors.borderColor, 
-        borderRadius: borderRadius.md,
+      <div className="relative mb-8 p-8 rounded-2xl shadow-sm overflow-hidden group" style={{ 
+        background: `linear-gradient(135deg, ${colors.primary[50]} 0%, ${colors.background.paper} 100%)`,
+        borderColor: colors.primary[100], 
+        borderWidth: '1px',
         ...(mounted && animations.fadeInDown('0.6s', '0.1s'))
       }}>
-        <div className="flex flex-col items-center justify-center gap-6">
-          <div className="text-center">
-            <div className="flex flex-col items-center justify-center">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: colors.primary[100] }}>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: colors.primary[600] }}>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-              </div>
-              <h1 className="text-2xl font-bold text-gray-800">欢迎来到康复评估系统</h1>
-              <p className="text-gray-600 mt-2 max-w-lg">
-                通过AI驱动的姿态识别技术，为患者提供专业的康复评估与追踪服务
+        <div className="absolute top-0 right-0 w-64 h-64 bg-green-100/30 rounded-full -mr-16 -mt-16 blur-3xl transition-transform duration-700 group-hover:scale-110"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-100/30 rounded-full -ml-12 -mb-12 blur-2xl transition-transform duration-700 group-hover:scale-110"></div>
+        
+        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="flex items-center gap-5">
+            <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center ring-4 ring-white/50">
+              <span className="text-3xl">👋</span>
+            </div>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight">
+                {new Date().getHours() < 12 ? '早上好' : new Date().getHours() < 18 ? '下午好' : '晚上好'}，治疗师
+              </h1>
+              <p className="text-gray-500 mt-1 font-medium">
+                准备好开始今天的康复评估工作了吗？
               </p>
+            </div>
+          </div>
+          
+          <div className="hidden md:flex flex-col items-end">
+            <div className="text-3xl font-bold text-green-700/80 font-mono tracking-tight">
+              {new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
+            </div>
+            <div className="text-sm text-gray-400 font-medium">
+              {new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}
             </div>
           </div>
         </div>
@@ -214,27 +205,50 @@ const Dashboard: React.FC<DashboardProps> = ({ isStatisticsPage = false }) => {
         {statsCards.map((card, index) => (
           <Card 
             key={index}
-            className="p-6 border shadow-md hover:shadow-lg transition-all duration-300"
+            className="p-0 border-0 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group bg-white ring-1 ring-slate-100"
             style={{
               ...(mounted && animations.fadeInUp('0.6s', `${0.1 + index * 0.1}s`))
             }}
           >
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: card.bgColor + '20' }}>
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: card.textColor }}>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
+            <div className="p-6 relative">
+              {/* 装饰性背景 */}
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white to-transparent opacity-50 rounded-bl-full pointer-events-none transition-transform duration-500 group-hover:scale-110" 
+                   style={{ backgroundColor: card.bgColor }}></div>
+              
+              <div className="flex items-start justify-between mb-4 relative z-10">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-sm ring-2 ring-white" 
+                     style={{ backgroundColor: card.bgColor, color: card.textColor }}>
+                   {/* 根据卡片标题动态显示图标，如果icon是emoji则显示emoji，如果是SVG路径则需要改造数据结构，这里暂时保持原逻辑但优化容器样式 */}
+                   <span className="text-xl">{card.icon}</span>
+                </div>
+                <div className={`flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-lg border shadow-sm ${
+                  card.trend?.isPositive 
+                    ? 'bg-emerald-50 text-emerald-600 border-emerald-100' 
+                    : 'bg-rose-50 text-rose-600 border-rose-100'
+                }`}>
+                  {card.trend?.isPositive ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                  )}
+                  {Math.abs(card.trend?.value || 0)}%
+                </div>
               </div>
-              <span className="text-xs font-medium px-2 py-1 rounded-full" style={{ 
-                backgroundColor: card.trend?.isPositive ? colors.success[100] : colors.error[100],
-                color: card.trend?.isPositive ? colors.success[700] : colors.error[700]
-              }}>
-                {card.trend?.isPositive ? '↑' : '↓'} {Math.abs(card.trend?.value || 0)}%
-              </span>
+              
+              <div className="relative z-10">
+                <h3 className="text-3xl font-black text-gray-800 tracking-tight mb-1">{card.value}</h3>
+                <p className="text-sm font-medium text-gray-400 flex items-center gap-1">
+                  {card.title}
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </p>
+              </div>
             </div>
-            <h3 className="text-lg font-semibold" style={{ color: card.textColor }}>{card.value}</h3>
-            <p className="text-sm" style={{ color: colors.text.secondary }}>{card.title}</p>
-            {renderTrendIndicator(card.trend)}
           </Card>
         ))}
       </div>

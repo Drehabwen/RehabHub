@@ -352,9 +352,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
       <Header className="md:p-4 p-3">
         {/* 移除了Navigation组件，将其移到Main组件中 */}
         <div className="flex justify-between w-full">
-          <div className="flex items-center">
-            {/* 移动端菜单按钮由Navigation组件内部管理 */}
-          </div>
+          {/* 移除了未使用的导航预留空间 */}
           <LogoContainer>
             <Logo>DeepRehab</Logo>
             {title && <TitleComponent>{title}</TitleComponent>}
