@@ -20,6 +20,12 @@ import Settings from './components/pages/Settings';
 import Reports from './components/pages/Reports';
 import Help from './components/pages/Help';
 import Admin from './components/pages/Admin';
+import AssessmentHub from './components/pages/AssessmentHub';
+import Scales from './components/pages/Scales';
+import Questionnaire from './components/pages/Questionnaire';
+import AdamsTest from './components/pages/AdamsTest';
+import ResultsHistory from './components/pages/ResultsHistory';
+import ResultDetail from './components/pages/ResultDetail';
 
 // 动态导入FMS动作模块
 const DeepSquatAnalysis = React.lazy(() => import('./movements/deep-squat'));
@@ -51,6 +57,9 @@ const AppContent: React.FC = () => {
     if (state.currentModule === 'movement-selection') {
       return <MovementSelection />;
     }
+    if (state.currentModule === 'assessment-hub') {
+      return <AssessmentHub />;
+    }
     
     if (state.currentModule === 'video-analysis') {
       return <VideoAnalysisPage />;
@@ -62,6 +71,21 @@ const AppContent: React.FC = () => {
     
     if (state.currentModule === 'patients') {
       return <Patients />;
+    }
+    if (state.currentModule === 'scales') {
+      return <Scales />;
+    }
+    if (state.currentModule === 'questionnaire') {
+      return <Questionnaire />;
+    }
+    if (state.currentModule === 'adams-test') {
+      return <AdamsTest />;
+    }
+    if (state.currentModule === 'results-history') {
+      return <ResultsHistory />;
+    }
+    if (state.currentModule === 'results-detail') {
+      return <ResultDetail />;
     }
     
     if (state.currentModule === 'tests') {

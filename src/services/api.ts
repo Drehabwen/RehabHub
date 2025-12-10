@@ -237,3 +237,33 @@ export default {
   analyzeVideo,
   fetchDashboardStats
 };
+
+// 流式上传关键点与角度数据
+export const postPoseTelemetry = async (payload: {
+  movementType: string;
+  movementName?: string;
+  timestamp: string;
+  angles: Record<string, number>;
+  keypoints: Keypoint[];
+}): Promise<{ status: string }> => {
+  const apiClient = getModuleApi('video-analysis');
+  return apiClient.post<{ status: string }>('/api/pose/stream', payload);
+};
+
+// 历史列表
+export const getResults = async (page = 1, size = 20): Promise<{ items: any[]; total: number; page: number; size: number }> => {
+  const apiClient = getModuleApi('video-analysis');
+  return apiClient.get<{ items: any[]; total: number; page: number; size: number }>('/api/results', { page: String(page), size: String(size) });
+};
+
+// 详情
+export const getResultDetail = async (id: string): Promise<any> => {
+  const apiClient = getModuleApi('video-analysis');
+  return apiClient.get<any>(`/api/results/${id}`);
+};
+
+// 删除
+export const deleteResult = async (id: string): Promise<{ status: string }> => {
+  const apiClient = getModuleApi('video-analysis');
+  return apiClient.delete<{ status: string }>(`/api/results/${id}`);
+};

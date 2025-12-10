@@ -33,6 +33,7 @@ export default defineConfig({
     hmr: {
       host: 'localhost',
       port: 3000,
+      clientPort: 3000,
       protocol: 'ws',
       path: '/__vite_hmr'
     },

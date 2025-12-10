@@ -40,15 +40,38 @@ export const useCamera = (): UseCameraReturn => {
       }
 
       console.log('请求摄像头权限...');
-      // 获取摄像头权限，添加更具体的约束
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'environment', // 优先使用后置摄像头
-          width: { ideal: 1920 }, // 提高分辨率，提供更大的预览
-          height: { ideal: 1080 }
-        },
-        audio: false
-      });
+      // 先尝试使用后置摄像头约束
+      let stream: MediaStream | null = null;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: 'environment' },
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          },
+          audio: false
+        });
+      } catch (e) {
+        console.warn('facingMode 环境后置失败，尝试枚举设备回退');
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoInputs = devices.filter(d => d.kind === 'videoinput');
+        const rear = videoInputs.find(d => /back|rear|environment/i.test(d.label));
+        const targetId = rear?.deviceId || videoInputs[0]?.deviceId;
+        if (targetId) {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              deviceId: { exact: targetId },
+              width: { ideal: 1280 },
+              height: { ideal: 720 }
+            },
+            audio: false
+          });
+        }
+      }
+
+      if (!stream) {
+        throw new Error('无法获取摄像头流');
+      }
 
       streamRef.current = stream;
       setHasPermission(true);
@@ -91,7 +114,13 @@ export const useCamera = (): UseCameraReturn => {
         videoRef.current.autoplay = true;
         videoRef.current.playsInline = true;
         videoRef.current.muted = true;
-        
+
+        // 元数据加载后，尝试设置分辨率匹配
+        videoRef.current.onloadedmetadata = () => {
+          console.log('视频元数据加载完成，分辨率:', videoRef.current?.videoWidth, videoRef.current?.videoHeight);
+          setStatus('active');
+        };
+
         // 等待视频加载
         videoRef.current.onloadeddata = () => {
           console.log('视频加载完成，摄像头激活');

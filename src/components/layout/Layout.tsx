@@ -41,7 +41,7 @@ const Header: React.FC<{ children: React.ReactNode; className?: string; onMenuCl
     {onMenuClick && (
       <button 
         onClick={onMenuClick}
-        className="md:hidden mr-3 p-1 rounded hover:bg-white/10 transition-colors"
+        className="mr-3 p-1 rounded hover:bg-white/10 transition-colors"
         aria-label="打开菜单"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,9 +131,7 @@ const Sidebar: React.FC<{ children: React.ReactNode; className?: string }> = ({ 
       backgroundColor: theme.colors.background.paper,
       borderRadius: theme.borderRadius.md,
       borderColor: theme.colors.borderColor,
-      boxShadow: theme.shadows.default,
-      position: 'relative',
-      zIndex: 2
+      boxShadow: theme.shadows.default
     }}
   >
     {children}
@@ -247,35 +245,23 @@ const Navigation: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen
 
   return (
     <>
-      {/* 移动端侧边栏覆盖层 */}
+      {/* 半覆盖抽屉式导航 */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          className="fixed inset-0 bg-black/40 backdrop-blur-[1px] z-40"
           onClick={onClose}
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 40
-          }}
         />
       )}
-      
-      {/* 侧边栏 - 移动端抽屉式(覆盖大部分屏幕)，桌面端固定 */}
       <Sidebar className={`
-        md:w-72 md:static md:block fixed inset-y-0 left-0 transform transition-transform duration-300 ease-in-out 
-        ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
-        md:translate-x-0 md:shadow-none shadow-lg
-        w-[85vw] sm:w-80
-        z-50
+        fixed inset-y-0 right-0 transform transition-transform duration-300 ease-in-out 
+        ${isOpen ? 'translate-x-0' : 'translate-x-full'} 
+        w-[90vw] md:w-[50vw] max-w-[560px] shadow-lg z-50
       `}>
         <div className="flex justify-between items-center pb-4 border-b mb-4">
           <SidebarTitle>功能导航</SidebarTitle>
           <button 
             onClick={onClose}
-            className="md:hidden p-1 rounded-full hover:bg-gray-100 transition-colors"
+            className="p-1 rounded-full hover:bg-gray-100 transition-colors"
             aria-label="关闭菜单"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -364,27 +350,89 @@ const Navigation: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen
   );
 };
 
+// 底部导航栏组件
+const BottomNavigation: React.FC<{ onMenuClick: () => void }> = ({ onMenuClick }) => {
+  const { state, navigateTo } = useNavigation();
+
+  const navItems = [
+    { id: 'dashboard', label: '主页', icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      </svg>
+    )},
+    { id: 'movement-selection', label: '评估', icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+      </svg>
+    )},
+    { id: 'history', label: '历史', icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    )},
+    { id: 'menu', label: '更多', icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    )}
+  ];
+
+  return (
+    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center pb-safe-area z-40 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+      {navItems.map((item) => {
+        const isActive = state.currentModule === item.id;
+        return (
+          <button
+            key={item.id}
+            onClick={() => item.id === 'menu' ? onMenuClick() : navigateTo(item.id)}
+            className={`flex flex-col items-center justify-center w-full py-2 transition-colors ${
+              isActive ? 'text-primary' : 'text-gray-500 hover:text-gray-700'
+            }`}
+            style={{ color: isActive ? theme.colors.primary[500] : undefined }}
+          >
+            {item.icon}
+            <span className="text-xs mt-1">{item.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
 const Layout: React.FC<LayoutProps> = ({ children, title }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <LayoutContainer>
-      <Header className="md:p-4 p-3" onMenuClick={() => setSidebarOpen(true)}>
-        <div className="flex items-center w-full">
+      <Header
+        className="md:p-4 p-3 hidden md:flex"
+        onMenuClick={() => setSidebarOpen(true)}
+      >
+        <div className="flex items-center gap-4">
           <LogoContainer>
-            <Logo>DeepRehab</Logo>
+            <Logo>Rehabhub</Logo>
             {title && <TitleComponent>{title}</TitleComponent>}
           </LogoContainer>
-          <div className="flex-1" /> {/* Spacer */}
           <HeaderActions>
-            {/* Header actions can go here */}
+             {/* Desktop actions */}
           </HeaderActions>
         </div>
       </Header>
+
+      {/* Mobile Header - Simplified */}
+      <div className="md:hidden bg-white px-4 py-3 shadow-sm sticky top-0 z-30 flex items-center justify-center">
+        <span className="font-bold text-lg text-gray-800">{title || 'Rehabhub'}</span>
+      </div>
       
-      <Main className="md:flex-row flex flex-col p-2 md:p-4">
-        <Navigation isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <Content>{children}</Content>
+      <Navigation isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+      <Main className="md:flex-row flex flex-col p-0 md:p-4 pb-20 md:pb-4 bg-gray-50">
+        
+        <div className="flex-1 px-4 py-4 md:p-0">
+          <Content>{children}</Content>
+        </div>
+
+        <BottomNavigation onMenuClick={() => setSidebarOpen(true)} />
       </Main>
     </LayoutContainer>
   );

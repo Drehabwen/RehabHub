@@ -1,4 +1,4 @@
-package com.deeprehab.video;
+package com.rehabhub.app;
 
 import com.getcapacitor.BridgeActivity;
 

@@ -1,7 +1,7 @@
 {
-  "name": "DeepRehab 视频分析系统",
-  "short_name": "DeepRehab",
-  "description": "专业的康复动作评估工具，基于AI技术的康复评估平台",
+  "name": "Rehabhub",
+  "short_name": "Rehabhub",
+  "description": "康复动作评估与视频分析平台",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

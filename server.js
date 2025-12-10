@@ -2,17 +2,36 @@ const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
 
 // 中间件
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '2mb' }));
 
-// 配置文件上传
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+// 目录初始化
+const ensureDir = (dirPath) => {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+};
+ensureDir(path.join(__dirname, 'uploads'));
+ensureDir(path.join(__dirname, 'data'));
+
+// 配置文件上传到磁盘
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, 'uploads'));
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname || '') || '.mp4';
+    const name = `video_${Date.now()}${ext}`;
+    cb(null, name);
+  }
+});
+const upload = multer({ storage });
 
 // 模拟姿态估计数据
 const generateMockKeypoints = () => {
@@ -46,9 +65,10 @@ const generateMockKeypoints = () => {
 };
 
 // API路由
-app.post('/analyze', upload.single('file'), (req, res) => {
+app.post(['/api/analyze', '/analyze'], upload.single('file'), (req, res) => {
   // 模拟处理延迟
   setTimeout(() => {
+    const savedFile = req.file ? req.file.filename : null;
     const mockResponse = {
       score: Math.random() * 0.5 + 0.5, // 0.5-1.0之间的随机分数
       feedback: "动作完成良好，继续保持",
@@ -64,13 +84,117 @@ app.post('/analyze', upload.single('file'), (req, res) => {
       processing_time: "0.5s",
       keypoints_detected: true,
       annotated_image: "",
-      details: {},
+      details: { file: savedFile },
       timestamp: new Date().toISOString(),
       keypoints: generateMockKeypoints()
     };
 
     res.json(mockResponse);
   }, 300); // 模拟300ms的处理延迟
+});
+
+// 实时姿态流上报（角度与关键点）
+app.post('/api/pose/stream', (req, res) => {
+  try {
+    const payload = req.body || {};
+    const id = `result_${Date.now()}`;
+    const record = { id, ...payload };
+    const resultsFile = path.join(__dirname, 'data', 'results.json');
+    let existing = [];
+    if (fs.existsSync(resultsFile)) {
+      try { existing = JSON.parse(fs.readFileSync(resultsFile, 'utf-8')); } catch { existing = []; }
+    }
+    existing.push(record);
+    fs.writeFileSync(resultsFile, JSON.stringify(existing, null, 2));
+    res.json({ status: 'ok', id });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: 'failed to store pose telemetry' });
+  }
+});
+
+// 结果列表与详情
+app.get('/api/results', (req, res) => {
+  const resultsFile = path.join(__dirname, 'data', 'results.json');
+  const page = parseInt(req.query.page || '1', 10);
+  const size = parseInt(req.query.size || '20', 10);
+  let data = [];
+  if (fs.existsSync(resultsFile)) {
+    try { data = JSON.parse(fs.readFileSync(resultsFile, 'utf-8')); } catch { data = []; }
+  }
+  const total = data.length;
+  const start = (page - 1) * size;
+  const items = data.slice(start, start + size).map((r) => ({
+    id: r.id,
+    movementType: r.movementType,
+    movementName: r.movementName,
+    timestamp: r.timestamp,
+    scoreSummary: r.overallScore ? `${r.overallScore.value}/${r.overallScore.maxValue}` : undefined,
+    anglesSummary: r.angles || {}
+  }));
+  res.json({ items, total, page, size });
+});
+
+app.get('/api/results/:id', (req, res) => {
+  const resultsFile = path.join(__dirname, 'data', 'results.json');
+  if (!fs.existsSync(resultsFile)) return res.status(404).json({ message: 'not found' });
+  try {
+    const data = JSON.parse(fs.readFileSync(resultsFile, 'utf-8'));
+    const found = data.find((r) => r.id === req.params.id);
+    if (!found) return res.status(404).json({ message: 'not found' });
+    res.json(found);
+  } catch {
+    res.status(500).json({ message: 'read error' });
+  }
+});
+
+app.delete('/api/results/:id', (req, res) => {
+  const resultsFile = path.join(__dirname, 'data', 'results.json');
+  if (!fs.existsSync(resultsFile)) return res.status(404).json({ message: 'not found' });
+  try {
+    const data = JSON.parse(fs.readFileSync(resultsFile, 'utf-8'));
+    const next = data.filter((r) => r.id !== req.params.id);
+    fs.writeFileSync(resultsFile, JSON.stringify(next, null, 2));
+    res.json({ status: 'ok' });
+  } catch {
+    res.status(500).json({ message: 'write error' });
+  }
+});
+
+// 创建报告（用于Reports页的快速创建）
+app.post('/api/results', (req, res) => {
+  try {
+    const resultsFile = path.join(__dirname, 'data', 'results.json');
+    let data = [];
+    if (fs.existsSync(resultsFile)) {
+      try { data = JSON.parse(fs.readFileSync(resultsFile, 'utf-8')); } catch { data = []; }
+    }
+    const id = `report_${Date.now()}`;
+    const payload = req.body || {};
+    const record = {
+      id,
+      patientId: payload.patientId || '',
+      patientName: payload.patientName || '',
+      testId: payload.testId || '',
+      testName: payload.testName || '评估报告',
+      date: payload.date || new Date().toISOString().split('T')[0],
+      score: payload.score || 0,
+      status: payload.status || 'draft',
+      summary: payload.summary || '',
+      details: payload.details || ''
+    };
+    data.push(record);
+    fs.writeFileSync(resultsFile, JSON.stringify(data, null, 2));
+    res.json(record);
+  } catch (e) {
+    res.status(500).json({ message: 'create error' });
+  }
+});
+
+// 导出报告（Mock）
+app.get('/api/results/:id/export', (req, res) => {
+  const format = (req.query.format || 'pdf').toString();
+  // 直接返回一个提示（真实环境应生成PDF/Excel并返回下载）
+  res.json({ status: 'ok', id: req.params.id, format });
 });
 
 // 健康检查端点
@@ -134,7 +258,8 @@ app.get('/dashboard/stats', (req, res) => {
 app.listen(PORT, () => {
   console.log(`模拟API服务器运行在 http://localhost:${PORT}`);
   console.log('健康检查端点: http://localhost:' + PORT + '/health');
-  console.log('分析端点: http://localhost:' + PORT + '/analyze');
+  console.log('分析端点: http://localhost:' + PORT + '/api/analyze');
+  console.log('姿态流端点: http://localhost:' + PORT + '/api/pose/stream');
 });
 
 module.exports = app;

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">DeepRehab Video</string>
-    <string name="title_activity_main">DeepRehab Video</string>
-    <string name="package_name">com.deeprehab.video</string>
-    <string name="custom_url_scheme">com.deeprehab.video</string>
+    <string name="app_name">Rehabhub</string>
+    <string name="title_activity_main">Rehabhub</string>
+    <string name="package_name">com.rehabhub.app</string>
+    <string name="custom_url_scheme">com.rehabhub.app</string>
 </resources>

@@ -1,40 +1,105 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 import { colors, typography } from '../../theme';
-import { useNavigation } from '../../contexts/NavigationContext';
+import { useNavigation, useNavigationParams } from '../../contexts/NavigationContext';
+import { FmsProcessor } from '../../services/assessment/fmsProcessor';
 import Button from '../ui/Button';
+import { useCamera } from '../../hooks/useCamera';
+import SkeletonVisualizer from '../../shared/components/SkeletonVisualizer';
+import { postPoseTelemetry } from '../../services/api';
+import { usePoseEstimation } from '../../hooks/usePoseEstimation';
 
 const VideoAnalysisPage: React.FC = () => {
   const { navigateTo, goBack } = useNavigation();
+  const { getParams } = useNavigationParams<{ movement?: { id: string; name: string } }>();
+  const [selectedMovement, setSelectedMovement] = useState<{ id: string; name: string } | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const { videoRef, status } = useCamera();
+  const { keypoints, movementEvaluation, processFrame, fps } = usePoseEstimation();
+  const [currentView, setCurrentView] = useState<'front' | 'side' | 'oblique45'>('side');
+  const uploadedVideoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [overlaySize, setOverlaySize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && file.type.startsWith('video/')) {
       setVideoFile(file);
       const videoURL = URL.createObjectURL(file);
-      if (videoRef.current) {
-        videoRef.current.src = videoURL;
+      if (uploadedVideoRef.current) {
+        uploadedVideoRef.current.src = videoURL;
       }
     }
   };
+
+  useEffect(() => {
+    const params = getParams();
+    if (params && params.movement) {
+      setSelectedMovement(params.movement);
+    }
+  }, [getParams]);
+
+  // 同步骨骼叠加层尺寸与视频预览尺寸
+  useEffect(() => {
+    const updateSize = () => {
+      const el = (videoRef.current as HTMLVideoElement) || null;
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        setOverlaySize({ w: Math.floor(rect.width), h: Math.floor(rect.height) });
+      }
+    };
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  }, [videoRef, status]);
+
+  // 实时处理视频帧并上报到后端（定时器节流）
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (videoRef.current && status === 'active') {
+        processFrame(videoRef.current as HTMLVideoElement, `${selectedMovement?.id || 'unknown'}:${currentView}`);
+        (window as any).__poseTick__ = ((window as any).__poseTick__ || 0) + 1;
+        if ((window as any).__poseTick__ % 10 === 0 && movementEvaluation && keypoints && keypoints.length) {
+          postPoseTelemetry({
+            movementType: selectedMovement?.id || 'unknown',
+            movementName: selectedMovement?.name,
+            timestamp: new Date().toISOString(),
+            angles: movementEvaluation.angles || {},
+            keypoints
+          }).catch(() => {});
+        }
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, [videoRef, status, selectedMovement, movementEvaluation, keypoints, processFrame]);
 
   const handleAnalyzeVideo = () => {
     if (!videoFile) return;
     
     setIsAnalyzing(true);
     
-    // 模拟视频分析过程
+    // 模拟视频分析过程，并使用FmsProcessor生成结构化评估
     setTimeout(() => {
-      setAnalysisResult({
-        score: 3,
-        feedback: '动作完成度良好，但需要注意保持核心稳定性',
-        recommendations: ['加强核心训练', '注意动作节奏', '保持呼吸均匀']
+      const mockRaw = {
+        movementType: selectedMovement?.id || 'unknown',
+        movementName: selectedMovement?.name || '未知动作',
+        hipMobilityScore: 2,
+        kneeStabilityScore: 2,
+        shoulderMobilityScore: 3,
+        coreActivationScore: 2,
+        posturalAlignmentScore: 3,
+        leftSideScores: { hip: 2, knee: 2 },
+        rightSideScores: { hip: 3, knee: 2 },
+        compensationPatterns: ['膝内扣', '躯干前倾']
+      };
+      const processor = new FmsProcessor();
+      processor.process(mockRaw).then(assessment => {
+        setAnalysisResult(assessment);
+        // 保存到本地，便于报告页读取
+        localStorage.setItem('lastAssessment', JSON.stringify(assessment));
       });
       setIsAnalyzing(false);
     }, 3000);
@@ -46,8 +111,8 @@ const VideoAnalysisPage: React.FC = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-    if (videoRef.current) {
-      videoRef.current.src = '';
+    if (uploadedVideoRef.current) {
+      uploadedVideoRef.current.src = '';
     }
   };
 
@@ -81,10 +146,76 @@ const VideoAnalysisPage: React.FC = () => {
           <h1 className="text-2xl md:text-3xl font-bold mb-3" style={{ 
             color: colors.primary[800], 
             fontWeight: typography.fontWeight.bold
-          }}>视频分析</h1>
+          }}>{selectedMovement ? `${selectedMovement.name} · 视频分析` : '视频分析'}</h1>
           <p className="text-base md:text-lg max-w-2xl mx-auto" style={{ color: colors.text.secondary }}>
             上传或录制视频，系统将自动分析动作质量和规范性
           </p>
+          {selectedMovement && (
+            <div className="mt-2 text-sm" style={{ color: colors.text.secondary }}>
+              当前动作：{selectedMovement.name}
+            </div>
+          )}
+        </div>
+
+        {/* 视角选择与状态栏 */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex gap-2">
+            {(['front','side','oblique45'] as const).map(v => (
+              <button
+                key={v}
+                onClick={() => setCurrentView(v)}
+                className={`px-3 py-2 rounded-md text-sm ${currentView === v ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+              >
+                {v === 'front' ? '正面' : v === 'side' ? '侧面' : '45°'}
+              </button>
+            ))}
+          </div>
+          <div className="text-xs text-gray-600">
+            FPS: <span className="font-semibold" style={{ color: colors.primary[700] }}>{fps}</span> · 摄像头状态: <span className="font-semibold">{status}</span>
+          </div>
+        </div>
+
+        {/* 实时摄像与骨骼可视化 */}
+        <div className="relative rounded-lg overflow-hidden shadow-md mb-8">
+          <video
+            ref={videoRef as any}
+            className={`w-full h-auto object-contain ${status === 'active' ? 'block' : 'hidden'}`}
+            autoPlay
+            playsInline
+            muted
+          />
+          {/* 叠加骨骼层 */}
+          <div className="absolute inset-0 pointer-events-none">
+            {overlaySize.w > 0 && overlaySize.h > 0 && (
+              <SkeletonVisualizer keypoints={keypoints || []} width={overlaySize.w} height={overlaySize.h} />
+            )}
+          </div>
+          {/* 角度HUD */}
+          {movementEvaluation && (
+            <div className="absolute top-2 left-2 bg-white/80 rounded-md p-2 text-xs shadow">
+              {Object.entries(movementEvaluation.angles || {}).map(([k, v]) => (
+                <div key={k} className="flex justify-between gap-2">
+                  <span className="text-gray-600">{k}</span>
+                  <span className="font-semibold" style={{ color: colors.primary[700] }}>{Math.round(v)}°</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {/* 质量提示HUD */}
+          {movementEvaluation && (
+            (() => {
+              const kpCount = (keypoints && keypoints.length) || 0;
+              const avg = kpCount > 0 ? keypoints.reduce((s: number, kp: any) => s + (kp.score || 0), 0) / kpCount : 0;
+              if (avg < 0.5 || kpCount < 10) {
+                return (
+                  <div className="absolute top-2 right-2 bg-yellow-100 text-yellow-800 rounded-md p-2 text-xs shadow">
+                    检测质量较低，请靠近摄像头、保证全身入镜并改善光线
+                  </div>
+                );
+              }
+              return null;
+            })()
+          )}
         </div>
         
         {/* 视频上传/录制区域 */}
@@ -157,7 +288,7 @@ const VideoAnalysisPage: React.FC = () => {
             <div className="space-y-4">
               {/* 视频预览 */}
               <video
-                ref={videoRef}
+                ref={uploadedVideoRef as any}
                 controls
                 className="w-full h-auto rounded-lg"
                 style={{ maxHeight: '400px' }}
@@ -216,26 +347,24 @@ const VideoAnalysisPage: React.FC = () => {
             <h2 className="text-xl font-semibold mb-4" style={{ color: colors.primary[700] }}>分析结果</h2>
             
             <div className="mb-4">
-              <div className="flex items-center mb-2">
-                <span className="text-lg font-medium mr-2" style={{ color: colors.primary[700] }}>评分:</span>
-                <div className="flex items-center">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <svg
-                      key={star}
-                      xmlns="http://www.w3.org/2000/svg"
-                      className={`h-6 w-6 ${star <= analysisResult.score ? 'text-yellow-400' : 'text-gray-300'}`}
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 rounded-lg" style={{ backgroundColor: colors.primary[50] }}>
+                  <div className="text-sm" style={{ color: colors.text.secondary }}>总分</div>
+                  <div className="text-2xl font-bold" style={{ color: colors.primary[700] }}>{analysisResult.overallScore.value}/{analysisResult.overallScore.maxValue}</div>
+                </div>
+                <div className="p-4 rounded-lg" style={{ backgroundColor: colors.primary[50] }}>
+                  <div className="text-sm" style={{ color: colors.text.secondary }}>灵活性</div>
+                  <div className="text-2xl font-bold" style={{ color: colors.primary[700] }}>{analysisResult.mobilityScore.value}/{analysisResult.mobilityScore.maxValue}</div>
+                </div>
+                <div className="p-4 rounded-lg" style={{ backgroundColor: colors.primary[50] }}>
+                  <div className="text-sm" style={{ color: colors.text.secondary }}>稳定性</div>
+                  <div className="text-2xl font-bold" style={{ color: colors.primary[700] }}>{analysisResult.stabilityScore.value}/{analysisResult.stabilityScore.maxValue}</div>
                 </div>
               </div>
               
               <div className="mb-4">
                 <span className="text-lg font-medium" style={{ color: colors.primary[700] }}>反馈:</span>
-                <p className="mt-1" style={{ color: colors.text.secondary }}>{analysisResult.feedback}</p>
+                <p className="mt-1" style={{ color: colors.text.secondary }}>{analysisResult.overallScore.feedback}</p>
               </div>
               
               <div>

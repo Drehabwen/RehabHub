@@ -24,6 +24,7 @@ const NavigationContext = createContext<NavigationContextType | undefined>(undef
 const moduleMap: Record<string, { label: string; parent?: string }> = {
   'dashboard': { label: '仪表盘' },
   'movement-selection': { label: '动作选择', parent: 'dashboard' },
+  'assessment-hub': { label: '评估类型', parent: 'dashboard' },
   'video-analysis': { label: '视频分析', parent: 'movement-selection' },
   'deep-squat': { label: '深蹲分析', parent: 'video-analysis' },
   'hurdle-step': { label: '跨步分析', parent: 'video-analysis' },
@@ -35,6 +36,11 @@ const moduleMap: Record<string, { label: string; parent?: string }> = {
   'history': { label: '历史记录', parent: 'dashboard' },
   'statistics': { label: '统计数据', parent: 'dashboard' },
   'patients': { label: '患者管理', parent: 'dashboard' },
+  'scales': { label: '量表评估', parent: 'assessment-hub' },
+  'questionnaire': { label: '问诊', parent: 'assessment-hub' },
+  'adams-test': { label: '亚当斯测试', parent: 'assessment-hub' },
+  'results-history': { label: '评估历史', parent: 'dashboard' },
+  'results-detail': { label: '评估详情', parent: 'results-history' },
   'settings': { label: '设置', parent: 'dashboard' }
 };
 
