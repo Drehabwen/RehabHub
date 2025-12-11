@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { App as CapacitorApp } from '@capacitor/app';
+import type { AppInfo } from '@capacitor/app';
+import { updaterService } from '../../services/updater';
 
 import Card from '../ui/Card';
 import Button from '../ui/Button';
@@ -88,7 +91,52 @@ const mockSettingsData: Setting[] = [
 const Settings: React.FC = () => {
   const { navigateTo } = useNavigation();
   const [mounted, setMounted] = useState(false);
+  const [appVersion, setAppVersion] = useState('1.0.0');
+  const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'downloading' | 'ready' | 'error'>('idle');
+  const [updateMessage, setUpdateMessage] = useState('');
   const [settings, setSettings] = useState<Setting[]>(mockSettingsData);
+
+  useEffect(() => {
+    CapacitorApp.getInfo().then((info: AppInfo) => {
+      setAppVersion(info.version);
+    }).catch(() => {
+      // 在Web端可能失败，保持默认
+    });
+  }, []);
+
+  const checkForUpdate = async () => {
+    setUpdateStatus('checking');
+    setUpdateMessage('正在检查更新...');
+    
+    try {
+      const result = await updaterService.checkForUpdate();
+      
+      if (result.hasUpdate && result.version) {
+        if (confirm(`发现新版本 ${result.version.version}，是否立即下载？\n${result.version.note || ''}`)) {
+          setUpdateStatus('downloading');
+          setUpdateMessage('正在下载更新包...');
+          
+          await updaterService.performUpdate(result.version);
+          
+          setUpdateStatus('ready');
+          setUpdateMessage('更新已就绪，下次启动生效');
+          alert('更新下载完成！应用将在下次启动时应用新版本。');
+        } else {
+          setUpdateStatus('idle');
+          setUpdateMessage('');
+        }
+      } else {
+        setUpdateStatus('idle');
+        alert('当前已是最新版本');
+        setUpdateMessage('当前已是最新版本');
+      }
+    } catch (e) {
+      console.error(e);
+      setUpdateStatus('error');
+      setUpdateMessage('检查更新失败');
+      alert('检查更新失败，请检查网络连接');
+    }
+  };
   const [activeTab, setActiveTab] = useState<'general' | 'privacy' | 'advanced'>('general');
   const [hasChanges, setHasChanges] = useState(false);
   
@@ -309,12 +357,27 @@ const Settings: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-sm" style={{ color: colors.text.secondary }}>
-                <span className="font-medium">应用版本:</span> 1.0.0
+                <span className="font-medium">应用版本:</span> {appVersion}
               </p>
             </div>
             <div>
+              <Button 
+                variant="outline" 
+                size="small" 
+                onClick={checkForUpdate}
+                disabled={updateStatus === 'checking' || updateStatus === 'downloading'}
+              >
+                {updateStatus === 'checking' ? '检查中...' : 
+                 updateStatus === 'downloading' ? '下载中...' : 
+                 '检查更新'}
+              </Button>
+              {updateMessage && (
+                <span className="ml-3 text-xs text-gray-500">{updateMessage}</span>
+              )}
+            </div>
+            <div>
               <p className="text-sm" style={{ color: colors.text.secondary }}>
-                <span className="font-medium">构建日期:</span> 2024-05-20
+                <span className="font-medium">构建日期:</span> 2025-12-10
               </p>
             </div>
             <div>

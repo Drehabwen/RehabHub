@@ -7,13 +7,14 @@ import type { Keypoint } from '../types/keypoints';
 const POSE_DETECTION_CONFIG = {
   modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
   enableSmoothing: false, // 禁用平滑以提高实时性
-  minPoseScore: 0.2
+  minPoseScore: 0.1
 };
 
 // 姿态检测器实例
 let detector: poseDetection.PoseDetector | null = null;
 let isModelLoading = false;
 let modelLoadPromise: Promise<poseDetection.PoseDetector> | null = null;
+let currentBackend: 'webgl' | 'cpu' | null = null;
 
 /**
  * 初始化姿态检测模型（带重试机制）
@@ -48,7 +49,6 @@ export const initializePoseDetection = async (): Promise<poseDetection.PoseDetec
         
         // 性能优化：强制使用WebGL后端并配置内存
         try {
-          // 配置TensorFlow.js内存限制，避免内存泄漏
           await tf.setBackend('webgl');
           await tf.ENV.set('WEBGL_FORCE_F16_TEXTURES', true);
           await tf.ENV.set('WEBGL_CPU_FORWARD', false);
@@ -61,6 +61,7 @@ export const initializePoseDetection = async (): Promise<poseDetection.PoseDetec
               modelType: poseDetection.movenet.modelType.SINGLEPOSE_THUNDER // 使用更轻量的模型
             }
           );
+          currentBackend = 'webgl';
         } catch (webglError) {
           console.warn('WebGL后端加载失败，尝试切换到CPU后端:', webglError);
           await tf.setBackend('cpu');
@@ -71,6 +72,7 @@ export const initializePoseDetection = async (): Promise<poseDetection.PoseDetec
               modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING // CPU模式下使用最轻量模型
             }
           );
+          currentBackend = 'cpu';
         }
         
         console.log('姿态检测模型加载成功');
@@ -97,6 +99,16 @@ export const initializePoseDetection = async (): Promise<poseDetection.PoseDetec
 
   return modelLoadPromise;
 };
+
+export const setBackend = async (backend: 'webgl' | 'cpu') => {
+  await tf.setBackend(backend);
+  detector = null;
+  isModelLoading = false;
+  modelLoadPromise = null;
+  currentBackend = backend;
+};
+
+export const getBackend = () => currentBackend;
 
 /**
  * 检测图像中的姿态
@@ -200,7 +212,11 @@ export const detectPose = async (
 /**
  * 将TensorFlow.js的Pose结果转换为我们的Keypoint格式
  */
-export const convertPoseToKeypoints = (poses: poseDetection.Pose[]): Keypoint[] => {
+export const convertPoseToKeypoints = (
+  poses: poseDetection.Pose[],
+  sourceWidth?: number,
+  sourceHeight?: number
+): Keypoint[] => {
   // 更严格的输入验证
   if (!poses || !Array.isArray(poses) || poses.length === 0) {
     console.warn('姿态数据为空或无效');
@@ -245,14 +261,6 @@ export const convertPoseToKeypoints = (poses: poseDetection.Pose[]): Keypoint[] 
         return;
       }
       
-      // 检查坐标值是否在合理范围内
-      if (isNaN(keypoint.x) || isNaN(keypoint.y) || 
-          keypoint.x < 0 || keypoint.x > 1 || 
-          keypoint.y < 0 || keypoint.y > 1) {
-        console.warn(`关键点${index}坐标超出范围: x=${keypoint.x}, y=${keypoint.y}`);
-        return;
-      }
-      
       // 检查分数是否满足最小阈值要求
       if (keypoint.score <= POSE_DETECTION_CONFIG.minPoseScore) {
         console.debug(`关键点${index}分数低于阈值: ${keypoint.score}`);
@@ -260,10 +268,14 @@ export const convertPoseToKeypoints = (poses: poseDetection.Pose[]): Keypoint[] 
       }
       
       // 只有所有检查都通过才添加关键点
+      const xNorm = sourceWidth && sourceWidth > 0 ? keypoint.x / sourceWidth : keypoint.x;
+      const yNorm = sourceHeight && sourceHeight > 0 ? keypoint.y / sourceHeight : keypoint.y;
+
+      // 归一化到 0-1 范围，保证可视化组件按比例绘制
       keypoints.push({
         name: keypointNames[index] || `keypoint_${index}`,
-        x: keypoint.x,
-        y: keypoint.y,
+        x: xNorm,
+        y: yNorm,
         score: keypoint.score
       });
     } catch (error) {
@@ -313,7 +325,7 @@ export const extractKeypointsFromFrame = async (
     }
     
     const poses = await detectPose(videoElement);
-    const keypoints = convertPoseToKeypoints(poses);
+    const keypoints = convertPoseToKeypoints(poses, videoElement.videoWidth, videoElement.videoHeight);
     
     // 验证返回的关键点数据
     if (!Array.isArray(keypoints)) {

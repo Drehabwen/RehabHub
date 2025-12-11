@@ -8,6 +8,7 @@ import { useCamera } from '../../hooks/useCamera';
 import SkeletonVisualizer from '../../shared/components/SkeletonVisualizer';
 import { postPoseTelemetry } from '../../services/api';
 import { usePoseEstimation } from '../../hooks/usePoseEstimation';
+import { setBackend, getBackend } from '../../services/poseDetection';
 
 const VideoAnalysisPage: React.FC = () => {
   const { navigateTo, goBack } = useNavigation();
@@ -170,8 +171,18 @@ const VideoAnalysisPage: React.FC = () => {
               </button>
             ))}
           </div>
-          <div className="text-xs text-gray-600">
-            FPS: <span className="font-semibold" style={{ color: colors.primary[700] }}>{fps}</span> · 摄像头状态: <span className="font-semibold">{status}</span>
+          <div className="flex items-center gap-3 text-xs text-gray-600">
+            <span>FPS: <span className="font-semibold" style={{ color: colors.primary[700] }}>{fps}</span></span>
+            <span>状态: <span className="font-semibold">{status}</span></span>
+            <span>后端: <span className="font-semibold">{getBackend() || 'n/a'}</span></span>
+            <button
+              onClick={() => setBackend('cpu')}
+              className="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200"
+            >CPU</button>
+            <button
+              onClick={() => setBackend('webgl')}
+              className="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200"
+            >WebGL</button>
           </div>
         </div>
 
@@ -190,6 +201,19 @@ const VideoAnalysisPage: React.FC = () => {
               <SkeletonVisualizer keypoints={keypoints || []} width={overlaySize.w} height={overlaySize.h} />
             )}
           </div>
+          {(() => {
+            const kpCount = (keypoints && keypoints.length) || 0;
+            const avg = kpCount > 0 ? keypoints.reduce((s: number, kp: any) => s + (kp.score || 0), 0) / kpCount : 0;
+            return (
+              <div className="absolute bottom-2 left-2 bg-white/80 rounded-md p-2 text-xs shadow">
+                <div className="flex gap-3">
+                  <span className="text-gray-600">KP: {kpCount}</span>
+                  <span className="text-gray-600">AVG: {avg.toFixed(2)}</span>
+                  <span className="text-gray-600">SZ: {overlaySize.w}x{overlaySize.h}</span>
+                </div>
+              </div>
+            );
+          })()}
           {/* 角度HUD */}
           {movementEvaluation && (
             <div className="absolute top-2 left-2 bg-white/80 rounded-md p-2 text-xs shadow">

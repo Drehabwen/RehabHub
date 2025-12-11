@@ -284,9 +284,26 @@ const AppContent: React.FC = () => {
   );
 };
 
+import { CapacitorUpdater } from '@capgo/capacitor-updater';
+import { updaterService } from './services/updater';
+
 // 主应用组件
 const App: React.FC = () => {
   const [showSplash, setShowSplash] = React.useState(true);
+
+  React.useEffect(() => {
+    CapacitorUpdater.notifyAppReady();
+    
+    // 应用启动时自动检查更新
+    // 注意：真实环境中可能不希望每次启动都检查，或者希望静默下载
+    updaterService.checkForUpdate().then(result => {
+      if (result.hasUpdate && result.version) {
+        console.log('App启动检测到新版本:', result.version);
+        // 这里可以选择静默下载，或者提示用户
+        // updaterService.performUpdate(result.version);
+      }
+    });
+  }, []);
 
   return (
     <>

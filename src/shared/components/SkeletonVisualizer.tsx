@@ -54,7 +54,7 @@ const SkeletonVisualizer: React.FC<SkeletonVisualizerProps> = ({
         const toPoint = keypoints.find(kp => kp.name === connection.to);
 
         if (fromPoint && toPoint && fromPoint.score && toPoint.score &&
-            fromPoint.score > 0.3 && toPoint.score > 0.3) {
+            fromPoint.score > 0.2 && toPoint.score > 0.2) {
           // 根据置信度设置线条颜色
           const avgScore = (fromPoint.score + toPoint.score) / 2;
           let color = '#3498db'; // 默认蓝色
@@ -76,7 +76,7 @@ const SkeletonVisualizer: React.FC<SkeletonVisualizerProps> = ({
 
       // 绘制关键点
       keypoints.forEach(keypoint => {
-        if (keypoint.score && keypoint.score > 0.3) {
+        if (keypoint.score && keypoint.score > 0.2) {
           const x = keypoint.x * width;
           const y = keypoint.y * height;
 
