@@ -49,6 +49,34 @@ export const modulesConfig: ModuleConfig[] = [
 // 为了兼容旧代码，导出一个别名
 export const modules = modulesConfig;
 
+export const movementAngleRanges: Record<string, Record<string, [number, number]>> = {
+  'deep-squat': {
+    knee: [85, 130],
+    hip: [90, 140]
+  },
+  'hurdle-step': {
+    hip: [90, 140],
+    knee: [85, 130]
+  },
+  'inline-lunge': {
+    knee: [85, 130],
+    hip: [90, 140]
+  },
+  'shoulder-mobility': {
+    shoulder: [140, 180]
+  },
+  'active-straight-leg-raise': {
+    hip: [70, 110]
+  },
+  'trunk-stability-pushup': {
+    elbow: [150, 180],
+    shoulder: [140, 180]
+  },
+  'rotary-stability': {
+    trunk: [80, 120]
+  }
+};
+
 // 根据模块ID获取模块配置
 export const getModuleById = (id: string): ModuleConfig | undefined => {
   return modulesConfig.find(module => module.id === id);

@@ -1,7 +1,7 @@
 // 模块化API服务管理系统
 
 // 导入关键点类型
-import { Keypoint } from '../types/keypoints.ts';
+import { Keypoint } from '../types/keypoints';
 
 // 定义类型
 export interface AnalysisRequest {
@@ -229,15 +229,6 @@ export const fetchDashboardStats = async (): Promise<any[]> => {
   ];
 };
 
-// 默认导出
-export default {
-  getModuleApi,
-  registerModuleApi,
-  getAllModuleApis,
-  analyzeVideo,
-  fetchDashboardStats
-};
-
 // 流式上传关键点与角度数据
 export const postPoseTelemetry = async (payload: {
   movementType: string;
@@ -249,6 +240,19 @@ export const postPoseTelemetry = async (payload: {
   const apiClient = getModuleApi('video-analysis');
   return apiClient.post<{ status: string }>('/api/pose/stream', payload);
 };
+
+// 默认导出
+export default {
+  getModuleApi,
+  registerModuleApi,
+  getAllModuleApis,
+  analyzeVideo,
+  fetchDashboardStats,
+  // 兼容使用默认导出访问
+  postPoseTelemetry
+};
+
+
 
 // 历史列表
 export const getResults = async (page = 1, size = 20): Promise<{ items: any[]; total: number; page: number; size: number }> => {

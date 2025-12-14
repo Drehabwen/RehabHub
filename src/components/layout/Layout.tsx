@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 // 使用内联样式和Tailwind CSS代替styled-components
 import { theme } from '../../theme';
 import { useNavigation } from '../../contexts/NavigationContext';
@@ -124,9 +124,14 @@ const Main: React.FC<{ children: React.ReactNode; className?: string }> = ({ chi
 );
 
 // 侧边栏组件
-const Sidebar: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
+interface SidebarProps extends React.HTMLAttributes<HTMLElement> {
+  children: React.ReactNode;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ children, className = '', ...rest }) => (
   <aside 
     className={`w-full md:w-72 p-4 md:p-6 rounded-lg border md:shadow ${className}`}
+    {...rest}
     style={{
       backgroundColor: theme.colors.background.paper,
       borderRadius: theme.borderRadius.md,
@@ -213,6 +218,7 @@ const NavigationLink: React.FC<NavigationLinkProps> = ({
     onMouseEnter: handleMouseEnter,
     onMouseLeave: handleMouseLeave,
     onClick,
+    'aria-current': active ? 'page' : undefined as React.AriaAttributes['aria-current'],
     // 添加触摸反馈
     style: {
       touchAction: 'manipulation' as const,
@@ -250,9 +256,14 @@ const Navigation: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen
         <div 
           className="fixed inset-0 bg-black/40 backdrop-blur-[1px] z-40"
           onClick={onClose}
+          aria-hidden="true"
         />
       )}
-      <Sidebar className={`
+      <Sidebar 
+        role="dialog" 
+        aria-modal="true" 
+        aria-label="功能导航"
+        className={`
         fixed inset-y-0 right-0 transform transition-transform duration-300 ease-in-out 
         ${isOpen ? 'translate-x-0' : 'translate-x-full'} 
         w-[90vw] md:w-[50vw] max-w-[560px] shadow-lg z-50
@@ -378,13 +389,14 @@ const BottomNavigation: React.FC<{ onMenuClick: () => void }> = ({ onMenuClick }
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center pb-safe-area z-40 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+    <div role="navigation" aria-label="底部导航" className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center pb-safe-area z-40 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
       {navItems.map((item) => {
         const isActive = state.currentModule === item.id;
         return (
           <button
             key={item.id}
             onClick={() => item.id === 'menu' ? onMenuClick() : navigateTo(item.id)}
+            aria-current={isActive ? 'page' : undefined}
             className={`flex flex-col items-center justify-center w-full py-2 transition-colors ${
               isActive ? 'text-primary' : 'text-gray-500 hover:text-gray-700'
             }`}
@@ -401,6 +413,18 @@ const BottomNavigation: React.FC<{ onMenuClick: () => void }> = ({ onMenuClick }
 
 const Layout: React.FC<LayoutProps> = ({ children, title }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSidebarOpen(false);
+      }
+    };
+    if (sidebarOpen) {
+      window.addEventListener('keydown', onKeyDown);
+    }
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [sidebarOpen]);
 
   return (
     <LayoutContainer>

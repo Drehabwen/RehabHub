@@ -16,7 +16,32 @@ const ResultsHistory: React.FC = () => {
       const data = await getResults(1, 50);
       setItems(data.items || []);
     } catch (e: any) {
-      setError(e?.message || '加载失败');
+      console.warn('Backend fetch failed, trying local storage:', e);
+      // Fallback to local storage
+      try {
+        const localHistory = localStorage.getItem('analysis_history');
+        if (localHistory) {
+          const parsed = JSON.parse(localHistory);
+          // Adapt local format to display format if needed
+          // Local format from VideoAnalysis.tsx is AnalysisResponse[]
+          // Display expects { id, movementName, timestamp, scoreSummary: { overall } }
+          const adapted = parsed.map((item: any) => ({
+            id: item.id,
+            movementName: item.movementName || item.movementType,
+            movementType: item.movementType,
+            timestamp: item.timestamp,
+            scoreSummary: {
+              overall: item.overallScore?.value || item.score // Handle both formats
+            }
+          }));
+          setItems(adapted);
+          setError(null); // Clear error if local load succeeds
+        } else {
+          setError(e?.message || '加载失败，且无本地记录');
+        }
+      } catch (localErr) {
+        setError(e?.message || '加载失败');
+      }
     } finally {
       setLoading(false);
     }

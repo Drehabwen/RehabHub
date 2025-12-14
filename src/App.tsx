@@ -286,7 +286,7 @@ const AppContent: React.FC = () => {
 
 // 主应用组件
 const App: React.FC = () => {
-  const [showSplash, setShowSplash] = React.useState(true);
+  const [showSplash, setShowSplash] = React.useState(false);
 
   return (
     <>

@@ -11,7 +11,7 @@ import { usePoseEstimation } from '../../hooks/usePoseEstimation';
 
 const VideoAnalysisPage: React.FC = () => {
   const { navigateTo, goBack } = useNavigation();
-  const { getParams } = useNavigationParams<{ movement?: { id: string; name: string } }>();
+  const { getParams, clearParams } = useNavigationParams<{ movement?: { id: string; name: string } }>();
   const [selectedMovement, setSelectedMovement] = useState<{ id: string; name: string } | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -39,8 +39,10 @@ const VideoAnalysisPage: React.FC = () => {
     const params = getParams();
     if (params && params.movement) {
       setSelectedMovement(params.movement);
+      // Clear params to prevent reuse on refresh/navigation
+      clearParams();
     }
-  }, [getParams]);
+  }, [getParams, clearParams]);
 
   // 同步骨骼叠加层尺寸与视频预览尺寸
   useEffect(() => {
@@ -98,8 +100,32 @@ const VideoAnalysisPage: React.FC = () => {
       const processor = new FmsProcessor();
       processor.process(mockRaw).then(assessment => {
         setAnalysisResult(assessment);
-        // 保存到本地，便于报告页读取
+        
+        // 保存到本地 lastAssessment
         localStorage.setItem('lastAssessment', JSON.stringify(assessment));
+        
+        // 同时也保存到 analysis_history 供历史记录页使用
+        try {
+          const historyKey = 'analysis_history';
+          const existingHistory = localStorage.getItem(historyKey);
+          const history = existingHistory ? JSON.parse(existingHistory) : [];
+          
+          const newResult = {
+            id: `analysis_${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            movementName: selectedMovement?.name || '未知动作',
+            movementType: selectedMovement?.id || 'unknown',
+            overallScore: assessment.overallScore, // 匹配 FmsAssessment 结构
+            mobilityScore: assessment.mobilityScore,
+            stabilityScore: assessment.stabilityScore,
+            recommendations: assessment.recommendations
+          };
+          
+          history.unshift(newResult);
+          localStorage.setItem(historyKey, JSON.stringify(history.slice(0, 20))); // 保留最近20条
+        } catch (e) {
+          console.error('Failed to save history', e);
+        }
       });
       setIsAnalyzing(false);
     }, 3000);

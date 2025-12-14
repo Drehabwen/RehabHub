@@ -41,7 +41,13 @@ const moduleMap: Record<string, { label: string; parent?: string }> = {
   'adams-test': { label: '亚当斯测试', parent: 'assessment-hub' },
   'results-history': { label: '评估历史', parent: 'dashboard' },
   'results-detail': { label: '评估详情', parent: 'results-history' },
-  'settings': { label: '设置', parent: 'dashboard' }
+  'settings': { label: '设置', parent: 'dashboard' },
+  'reports': { label: '评估报告', parent: 'dashboard' },
+  'help': { label: '帮助', parent: 'dashboard' },
+  'admin': { label: '后台管理', parent: 'dashboard' },
+  'tests': { label: '测试页', parent: 'dashboard' },
+  'status-indicator-example': { label: '状态指示示例', parent: 'dashboard' },
+  'component-test': { label: '组件测试', parent: 'dashboard' }
 };
 
 // 导航提供者组件
@@ -170,9 +176,8 @@ export const NavigationProvider: React.FC<{ children: ReactNode }> = ({ children
       console.log('⬅️ goBack called, using history.back()');
       window.history.back();
     } else {
-      console.log('⚠️ No history to go back to');
-      // 可选：如果没有历史记录，可能跳转到仪表盘？
-      // navigateTo('dashboard');
+      const parent = moduleMap[state.currentModule]?.parent || 'dashboard';
+      window.location.hash = `/${parent}`;
     }
   };
 

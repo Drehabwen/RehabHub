@@ -2,6 +2,7 @@ import * as poseDetection from '@tensorflow-models/pose-detection';
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-backend-webgl';
 import type { Keypoint } from '../types/keypoints';
+import { movementAngleRanges } from '../moduleConfig';
 
 // 姿态检测器配置 - 优化版
 const POSE_DETECTION_CONFIG = {
@@ -200,7 +201,11 @@ export const detectPose = async (
 /**
  * 将TensorFlow.js的Pose结果转换为我们的Keypoint格式
  */
-export const convertPoseToKeypoints = (poses: poseDetection.Pose[]): Keypoint[] => {
+export const convertPoseToKeypoints = (
+  poses: poseDetection.Pose[],
+  inputWidth?: number,
+  inputHeight?: number
+): Keypoint[] => {
   // 更严格的输入验证
   if (!poses || !Array.isArray(poses) || poses.length === 0) {
     console.warn('姿态数据为空或无效');
@@ -227,43 +232,45 @@ export const convertPoseToKeypoints = (poses: poseDetection.Pose[]): Keypoint[] 
   // 对关键点数组进行更详细的验证
   pose.keypoints.forEach((keypoint, index) => {
     try {
-      // 添加keypoint对象的有效性检查
       if (!keypoint) {
         console.warn(`关键点${index}为空`);
         return;
       }
-      
-      // 检查坐标值是否有效
       if (typeof keypoint.x !== 'number' || typeof keypoint.y !== 'number') {
         console.warn(`关键点${index}坐标无效: x=${keypoint.x}, y=${keypoint.y}`);
         return;
       }
-      
-      // 检查分数值是否有效
       if (typeof keypoint.score !== 'number') {
         console.warn(`关键点${index}分数无效: score=${keypoint.score}`);
         return;
       }
-      
-      // 检查坐标值是否在合理范围内
-      if (isNaN(keypoint.x) || isNaN(keypoint.y) || 
-          keypoint.x < 0 || keypoint.x > 1 || 
-          keypoint.y < 0 || keypoint.y > 1) {
-        console.warn(`关键点${index}坐标超出范围: x=${keypoint.x}, y=${keypoint.y}`);
+      if (isNaN(keypoint.x) || isNaN(keypoint.y)) {
+        console.warn(`关键点${index}坐标NaN`);
         return;
       }
-      
-      // 检查分数是否满足最小阈值要求
       if (keypoint.score <= POSE_DETECTION_CONFIG.minPoseScore) {
         console.debug(`关键点${index}分数低于阈值: ${keypoint.score}`);
         return;
       }
-      
-      // 只有所有检查都通过才添加关键点
+      let xNorm = keypoint.x as number;
+      let yNorm = keypoint.y as number;
+      if (
+        typeof inputWidth === 'number' && inputWidth > 0 &&
+        typeof inputHeight === 'number' && inputHeight > 0
+      ) {
+        if (xNorm > 1 || yNorm > 1) {
+          xNorm = xNorm / inputWidth;
+          yNorm = yNorm / inputHeight;
+        }
+      }
+      if (xNorm < 0 || xNorm > 1 || yNorm < 0 || yNorm > 1) {
+        console.debug(`关键点${index}归一化后坐标超出范围: x=${xNorm}, y=${yNorm}`);
+        return;
+      }
       keypoints.push({
         name: keypointNames[index] || `keypoint_${index}`,
-        x: keypoint.x,
-        y: keypoint.y,
+        x: xNorm,
+        y: yNorm,
         score: keypoint.score
       });
     } catch (error) {
@@ -313,7 +320,11 @@ export const extractKeypointsFromFrame = async (
     }
     
     const poses = await detectPose(videoElement);
-    const keypoints = convertPoseToKeypoints(poses);
+    const keypoints = convertPoseToKeypoints(
+      poses,
+      videoElement.videoWidth,
+      videoElement.videoHeight
+    );
     
     // 验证返回的关键点数据
     if (!Array.isArray(keypoints)) {
@@ -364,11 +375,19 @@ export const calculateAngle = (
   const magnitudeBA = Math.sqrt(vectorBA.x * vectorBA.x + vectorBA.y * vectorBA.y);
   const magnitudeBC = Math.sqrt(vectorBC.x * vectorBC.x + vectorBC.y * vectorBC.y);
 
+  if (magnitudeBA === 0 || magnitudeBC === 0) return 0;
+
   // 计算角度（弧度）
-  const angleRad = Math.acos(dotProduct / (magnitudeBA * magnitudeBC));
+  let cosTheta = dotProduct / (magnitudeBA * magnitudeBC);
+  // Clamp cosTheta to [-1, 1] to avoid NaN
+  if (cosTheta > 1) cosTheta = 1;
+  if (cosTheta < -1) cosTheta = -1;
+  
+  const angleRad = Math.acos(cosTheta);
 
   // 转换为角度
-  return angleRad * (180 / Math.PI);
+  const deg = angleRad * (180 / Math.PI);
+  return Math.round(deg);
 };
 
 /**
@@ -414,61 +433,52 @@ export const evaluateMovement = (
           getKeypoint('right_knee')!,
           getKeypoint('right_ankle')!
         );
-        
-        // 深蹲评分：膝盖角度在90-100度之间为最佳
-        const leftKneeAngle = result.angles.left_knee;
-        const rightKneeAngle = result.angles.right_knee;
-        const avgKneeAngle = (leftKneeAngle + rightKneeAngle) / 2;
-        
-        if (avgKneeAngle >= 90 && avgKneeAngle <= 100) {
-          result.score = 0.9;
-          result.feedback = '深蹲动作标准，膝盖角度良好';
-        } else if (avgKneeAngle >= 80 && avgKneeAngle <= 110) {
-          result.score = 0.7;
-          result.feedback = '深蹲动作基本正确，可以进一步降低身体';
-        } else {
-          result.score = 0.5;
-          result.feedback = '深蹲深度不够，请尝试降低身体重心';
+        {
+          const ranges = movementAngleRanges['deep-squat'];
+          const left = result.angles.left_knee;
+          const right = result.angles.right_knee;
+          const avg = (left + right) / 2;
+          const [min, max] = ranges.knee;
+          const within = avg >= min && avg <= max;
+          const near = avg >= min - 10 && avg <= max + 10;
+          result.score = within ? 90 : near ? 70 : 50;
+          result.feedback = within ? '深蹲角度达标，继续保持' : near ? '深蹲基本达标，可适当调整幅度' : '深蹲深度不足，请尝试降低重心';
         }
         break;
 
       case 'shoulder-mobility':
-        // 肩部灵活性评估
         const leftShoulder = getKeypoint('left_shoulder');
         const rightShoulder = getKeypoint('right_shoulder');
         const leftWrist = getKeypoint('left_wrist');
         const rightWrist = getKeypoint('right_wrist');
         
         if (leftShoulder && rightShoulder && leftWrist && rightWrist) {
-          // 计算手腕相对于肩膀的高度
           const leftArmRaise = leftShoulder.y - leftWrist.y;
           const rightArmRaise = rightShoulder.y - rightWrist.y;
-          
-          // 手臂抬得越高，分数越高
           const avgArmRaise = (leftArmRaise + rightArmRaise) / 2;
-          result.score = Math.min(1.0, avgArmRaise / 200);
-          
-          if (result.score > 0.8) {
-            result.feedback = '肩部灵活性很好，手臂抬起高度足够';
-          } else if (result.score > 0.5) {
-            result.feedback = '肩部灵活性一般，可以尝试抬高手臂';
-          } else {
-            result.feedback = '肩部灵活性需要改善，请尝试抬高手臂超过肩膀';
-          }
+          const ranges = movementAngleRanges['shoulder-mobility'];
+          const shoulderTarget = ranges.shoulder;
+          const reachScore = Math.min(100, Math.max(0, Math.round((avgArmRaise * 100))));
+          const within = shoulderTarget ? avgArmRaise >= 0.0 : false;
+          result.score = within ? Math.max(80, reachScore) : Math.min(70, reachScore);
+          result.feedback = within ? '肩部抬举良好' : '肩部抬举需提高，尝试超过肩线';
         }
         break;
 
       default:
-        // 默认评估：基于关键点数量和置信度
         const avgConfidence = keypoints.reduce((sum, kp) => sum + (kp.score || 0), 0) / keypoints.length;
-        result.score = Math.min(1.0, avgConfidence);
-        result.feedback = '动作检测完成，保持当前姿势';
+        result.score = Math.round(Math.min(1.0, avgConfidence) * 100);
+        result.feedback = '动作检测完成';
         break;
     }
 
     // 添加通用细节
     result.details.keypointCount = keypoints.length;
     result.details.avgConfidence = keypoints.reduce((sum, kp) => sum + (kp.score || 0), 0) / keypoints.length;
+    result.details.movementType = movementType;
+    if (movementAngleRanges[movementType]) {
+      result.details.targetRanges = movementAngleRanges[movementType];
+    }
   } catch (error) {
     console.error('动作评估失败:', error);
     result.feedback = '动作评估过程中出现错误';

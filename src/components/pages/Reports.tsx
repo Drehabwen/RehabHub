@@ -56,9 +56,33 @@ const Reports: React.FC = () => {
       setReports(data || []);
     } catch (err) {
       console.error('获取报告数据失败:', err);
-      setError('无法加载报告数据，请稍后重试');
-      // 如果API调用失败，设置为空数组而不是使用模拟数据
-      setReports([]);
+      // Fallback to local storage
+      try {
+        const localHistory = localStorage.getItem('analysis_history');
+        if (localHistory) {
+          const parsed = JSON.parse(localHistory);
+          const adapted: Report[] = parsed.map((item: any) => ({
+            id: item.id,
+            patientId: 'local',
+            patientName: 'Local User',
+            testId: item.movementType,
+            testName: item.movementName,
+            date: new Date(item.timestamp).toISOString().split('T')[0],
+            score: item.overallScore?.value || 0,
+            status: 'completed',
+            summary: item.recommendations ? item.recommendations.join('. ') : 'Completed assessment',
+            details: JSON.stringify(item.overallScore)
+          }));
+          setReports(adapted);
+          setError(null);
+        } else {
+          setError('无法加载报告数据，请稍后重试');
+          setReports([]);
+        }
+      } catch (localErr) {
+        setError('无法加载报告数据，请稍后重试');
+        setReports([]);
+      }
     } finally {
       setIsLoading(false);
     }

@@ -119,11 +119,11 @@ const Dashboard: React.FC<DashboardProps> = ({ isStatisticsPage = false }) => {
               <span className="text-3xl">👋</span>
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight">
+              <h1 className="text-xl md:text-2xl font-bold text-gray-800 tracking-tight">
                 {new Date().getHours() < 12 ? '早上好' : new Date().getHours() < 18 ? '下午好' : '晚上好'}，治疗师
               </h1>
-              <p className="text-gray-500 mt-1 font-medium">
-                准备好开始今天的康复评估工作了吗？
+              <p className="text-gray-500 mt-1">
+                今日安排已就绪，请按流程完成评估。
               </p>
             </div>
           </div>
@@ -145,10 +145,9 @@ const Dashboard: React.FC<DashboardProps> = ({ isStatisticsPage = false }) => {
           
           {/* 板块1: 康复评估 (Assessment) - 占据主要位置 */}
           <div 
-            className="col-span-2 md:col-span-1 md:row-span-2 relative overflow-hidden rounded-3xl shadow-lg cursor-pointer group transition-all duration-300 hover:shadow-2xl"
-            onClick={() => navigateTo('assessment-hub')}
+            className="col-span-2 md:col-span-1 md:row-span-2 relative overflow-hidden rounded-3xl shadow-sm cursor-pointer group transition-all duration-300 hover:shadow-md bg-white"
+            onClick={() => navigateTo('patients')}
             style={{
-              background: `linear-gradient(135deg, ${colors.primary[500]} 0%, ${colors.primary[600]} 100%)`,
               ...(mounted && animations.fadeInUp('0.6s', '0.2s'))
             }}
           >
@@ -156,32 +155,14 @@ const Dashboard: React.FC<DashboardProps> = ({ isStatisticsPage = false }) => {
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full -ml-12 -mb-12 blur-2xl"></div>
             
-            <div className="relative z-10 p-8 h-full flex flex-col justify-between">
-              <div>
-                <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6">
-                  <span className="text-4xl">🧘</span>
-                </div>
-                <h2 className="text-3xl font-bold text-white mb-2">康复评估</h2>
-                <p className="text-blue-100 text-lg">AI智能驱动的动作分析</p>
-                
-                {/* 快速统计 */}
-                <div className="mt-8 flex gap-4">
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
-                    <div className="text-2xl font-bold text-white">85%</div>
-                    <div className="text-xs text-blue-100">完成率</div>
-                  </div>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
-                    <div className="text-2xl font-bold text-white">12</div>
-                    <div className="text-xs text-blue-100">今日评估</div>
-                  </div>
-                </div>
+            <div className="relative z-10 p-8 h-full flex flex-col justify-center items-center">
+              <div className="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center mb-4">
+                <span className="text-4xl">➕</span>
               </div>
-              
-              <div className="flex items-center text-white font-semibold group-hover:translate-x-2 transition-transform">
-                开始评估 
-                <svg className="w-6 h-6 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">添加患者</h2>
+              <p className="text-sm text-gray-500">创建患者档案，开始评估流程</p>
+              <div className="mt-6">
+                <Button onClick={() => navigateTo('patients')} size="large">立即添加</Button>
               </div>
             </div>
           </div>
@@ -189,7 +170,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isStatisticsPage = false }) => {
           {/* 板块2: 综合管理 (Management) */}
           <div 
             className="col-span-1 relative overflow-hidden rounded-3xl shadow-lg cursor-pointer group transition-all duration-300 hover:shadow-2xl bg-white"
-            onClick={() => navigateTo('patients')}
+            onClick={() => navigateTo('assessment-hub')}
             style={{
               ...(mounted && animations.fadeInUp('0.6s', '0.3s'))
             }}
@@ -200,8 +181,8 @@ const Dashboard: React.FC<DashboardProps> = ({ isStatisticsPage = false }) => {
               <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4 text-green-600">
                 <span className="text-2xl">👥</span>
               </div>
-              <h3 className="text-xl font-bold text-gray-800">综合管理</h3>
-              <p className="text-sm text-gray-500 mb-4">患者档案与历史记录</p>
+              <h3 className="text-xl font-bold text-gray-800">康复评估</h3>
+              <p className="text-sm text-gray-500 mb-4">动作选择与视频分析</p>
               
               <div className="mt-auto flex items-center justify-between">
                 <div className="flex -space-x-2">

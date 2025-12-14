@@ -25,12 +25,17 @@ const FileDropzone: React.FC<FileDropzoneProps> = ({ onFileSelect, accept = 'vid
   return (
     <div 
       {...getRootProps()} 
+      role="button"
+      tabIndex={0}
+      aria-label="上传评估视频"
+      aria-describedby="upload-help"
       className={`flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer ${
         isDragActive ? 'border-green-500 bg-green-50' : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
       }`}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.preventDefault(); }}
     >
       <input {...getInputProps()} />
-      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+      <div id="upload-help" className="flex flex-col items-center justify-center pt-5 pb-6">
         <svg 
           className="w-8 h-8 mb-4 text-gray-500" 
           aria-hidden="true" 
@@ -48,14 +53,14 @@ const FileDropzone: React.FC<FileDropzoneProps> = ({ onFileSelect, accept = 'vid
         </svg>
         {isDragActive ? (
           <p className="mb-2 text-sm text-gray-500">
-            <span className="font-semibold">Drop the file here</span>
+            <span className="font-semibold">松开鼠标以上传文件</span>
           </p>
         ) : (
           <>
             <p className="mb-2 text-sm text-gray-500">
-              <span className="font-semibold">Click to upload</span> or drag and drop
+              <span className="font-semibold">点击选择</span> 或拖拽到此处
             </p>
-            <p className="text-xs text-gray-500">MP4, AVI, MOV (MAX. 100MB)</p>
+            <p className="text-xs text-gray-500">支持 MP4、AVI、MOV（最大 100MB）</p>
           </>
         )}
       </div>

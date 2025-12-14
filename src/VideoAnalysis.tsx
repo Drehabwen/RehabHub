@@ -124,6 +124,16 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
     isModelLoading,
     error: poseError
   } = usePoseEstimation();
+  const [poseErrorDismissed, setPoseErrorDismissed] = useState(false);
+
+  const uiStatus = (() => {
+    if (error) return 'error';
+    if (poseError && !poseErrorDismissed) return 'poseError';
+    if (isModelLoading) return 'modelLoading';
+    if (isPoseProcessing) return 'poseProcessing';
+    if (isAnalyzing) return 'analyzing';
+    return null as null | 'error' | 'poseError' | 'modelLoading' | 'poseProcessing' | 'analyzing';
+  })();
 
   // 监听姿态估计错误
   useEffect(() => {
@@ -595,20 +605,19 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
       </div>
 
       {/* 分析中加载状态 */}
-      {isAnalyzing && (
+      {uiStatus === 'analyzing' && (
         <div className="flex flex-col items-center justify-center my-12 py-8 border" style={{ backgroundColor: '#ffffff', borderRadius: borderRadius.lg, boxShadow: shadows.default, borderColor: '#8faa9d' }}>
           <div className="mb-4 w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: '#f4f7f0' }}>
             <LoadingSpinner size="large" message={``} />
           </div>
           <h3 className="text-lg font-semibold mb-2" style={{ color: '#6b8475', fontWeight: typography.fontWeight.semibold }}>正在分析 {movementName} 动作...</h3>
-        <p className="text-sm max-w-md text-center" style={{ color: '#5a6f61' }}>
+          <p className="text-sm max-w-md text-center" style={{ color: '#5a6f61' }}>
             系统正在进行精确的动作识别和姿态评估，请稍候...
           </p>
         </div>
       )}
 
-      {/* 错误状态 */}
-      {error && (
+      {uiStatus === 'error' && (
         <div className="mb-8 p-6 rounded-xl shadow-sm transition-all duration-300 hover:shadow-md" style={{ backgroundColor: '#f8f4f4', borderColor: '#e8d4d4' }}>
           <div className="flex items-start gap-4">
             <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: '#e8d4d4', color: '#d45454' }}>
@@ -631,8 +640,46 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
         </div>
       )}
 
+      {uiStatus === 'poseError' && (
+        <div className="mb-8 p-6 rounded-xl shadow-sm transition-all duration-300 hover:shadow-md" style={{ backgroundColor: '#f8f4f4', borderColor: '#e8d4d4' }}>
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: '#e8d4d4', color: '#d45454' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <h4 className="font-semibold text-lg mb-2" style={{ color: '#d45454' }}>姿态估计失败</h4>
+              <p className="text-sm" style={{ color: '#a04040' }}>{poseError}</p>
+              <div className="mt-3 flex gap-2">
+                <button 
+                  onClick={() => {
+                    const v = uploadVideoRef.current;
+                    if (v) {
+                      processFrame(v, movementType);
+                    }
+                    setPoseErrorDismissed(true);
+                  }} 
+                  className="text-sm px-3 py-1 rounded transition-colors"
+                  style={{ backgroundColor: '#2e7d32', color: '#ffffff' }}
+                >
+                  重试
+                </button>
+                <button 
+                  onClick={() => setPoseErrorDismissed(true)} 
+                  className="text-sm px-3 py-1 rounded transition-colors"
+                  style={{ backgroundColor: '#d45454', color: '#ffffff' }}
+                >
+                  关闭
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 姿态处理中状态 */}
-      {isPoseProcessing && (
+      {uiStatus === 'poseProcessing' && (
         <div className="flex flex-col items-center justify-center my-12 py-8 rounded-xl shadow-sm border" style={{ backgroundColor: '#ffffff', borderColor: '#d0ddd5' }}>
           <div className="mb-4 w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: '#e8f0ec' }}>
             <LoadingSpinner size="large" message={``} />
@@ -645,13 +692,13 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
       )}
 
       {/* 模型加载中状态 */}
-      {isModelLoading && (
-        <div className="flex flex-col items-center justify-center my-12 py-8 rounded-xl shadow-sm border" style={{ backgroundColor: '#ffffff', borderColor: '#d0ddd5' }}>
-          <div className="mb-4 w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: '#e8f0ec' }}>
+      {uiStatus === 'modelLoading' && (
+        <div className="flex flex-col items-center justify中心 my-12 py-8 rounded-xl shadow-sm border" style={{ backgroundColor: '#ffffff', borderColor: '#d0ddd5' }}>
+          <div className="mb-4 w-16 h-16 rounded-full flex items中心 justify中心" style={{ backgroundColor: '#e8f0ec' }}>
             <LoadingSpinner size="large" message={``} />
           </div>
           <h3 className="text-lg font-semibold mb-2" style={{ color: '#6b8475' }}>正在加载姿态估计模型...</h3>
-          <p className="text-sm max-w-md text-center" style={{ color: '#5a6f61' }}>
+          <p className="text-sm max-w-md text中心" style={{ color: '#5a6f61' }}>
             首次使用需要加载模型资源，请稍候...
           </p>
         </div>
@@ -702,24 +749,24 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
                       strokeWidth="12"
                       fill="transparent"
                       strokeDasharray={440}
-                      strokeDashoffset={440 - (440 * movementEvaluation.score) / 100}
+                      strokeDashoffset={440 - (440 * Math.round(movementEvaluation.score * 100)) / 100}
                       className={`transition-all duration-1000 ease-out ${
-                        getScoreColor(movementEvaluation.score).color === colors.primary[700] ? 'text-emerald-500' : 
-                        getScoreColor(movementEvaluation.score).color === colors.secondary[600] ? 'text-amber-500' : 'text-rose-500'
+                        getScoreColor(Math.round(movementEvaluation.score * 100)).color === colors.primary[700] ? 'text-emerald-500' : 
+                        getScoreColor(Math.round(movementEvaluation.score * 100)).color === colors.secondary[600] ? 'text-amber-500' : 'text-rose-500'
                       }`}
                       strokeLinecap="round"
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-4xl font-black text-gray-800">{movementEvaluation.score}</span>
+                    <span className="text-4xl font-black text-gray-800">{Math.round(movementEvaluation.score * 100)}</span>
                     <span className="text-xs text-gray-400 font-medium uppercase tracking-wider mt-1">Total Score</span>
                   </div>
                 </div>
                 <div className={`mt-4 px-4 py-1.5 rounded-full text-sm font-bold shadow-sm ${
-                  getScoreColor(movementEvaluation.score).color === colors.primary[700] ? 'bg-emerald-100 text-emerald-800' : 
-                  getScoreColor(movementEvaluation.score).color === colors.secondary[600] ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800'
+                  getScoreColor(Math.round(movementEvaluation.score * 100)).color === colors.primary[700] ? 'bg-emerald-100 text-emerald-800' : 
+                  getScoreColor(Math.round(movementEvaluation.score * 100)).color === colors.secondary[600] ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800'
                 }`}>
-                  {getScoreColor(movementEvaluation.score).level}
+                  {getScoreColor(Math.round(movementEvaluation.score * 100)).level}
                 </div>
               </div>
 
@@ -741,12 +788,12 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
                   <div>
                     <div className="flex justify-between text-xs mb-1.5 font-medium">
                       <span className="text-gray-500">动作准确度</span>
-                      <span className="text-gray-700">{movementEvaluation.score}%</span>
+                      <span className="text-gray-700">{Math.round(movementEvaluation.score * 100)}%</span>
                     </div>
                     <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
                       <div 
                         className="h-full rounded-full transition-all duration-1000 ease-out bg-gradient-to-r from-emerald-400 to-green-500 shadow-sm"
-                        style={{ width: `${movementEvaluation.score}%` }}
+                        style={{ width: `${Math.round(movementEvaluation.score * 100)}%` }}
                       ></div>
                     </div>
                   </div>
@@ -763,7 +810,9 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {Object.entries(movementEvaluation.angles).map(([joint, angle]) => {
-                    const isGoodAngle = angle >= 80 && angle <= 110; 
+                    const ranges = (movementEvaluation as any)?.details?.targetRanges;
+                    const [min, max] = ranges && ranges[joint] ? ranges[joint] : [80, 110];
+                    const isGoodAngle = angle >= min && angle <= max; 
                     return (
                       <div 
                         key={joint} 
@@ -789,6 +838,7 @@ const VideoAnalysis: React.FC<VideoAnalysisProps> = ({ movementType = 'general',
                           <span className={`text-xl font-bold ${isGoodAngle ? 'text-emerald-700' : 'text-amber-700'}`}>
                             {angle}°
                           </span>
+                          <span className="text-[10px] text-gray-500">(目标 {min}–{max}°)</span>
                         </div>
                       </div>
                     );

@@ -39,6 +39,7 @@ const Breadcrumbs: React.FC<BreadcrumbProps> = ({ className = '' }) => {
             {isLast ? (
               <span 
                 className="font-medium"
+                aria-current="page"
                 style={{ 
                   color: colors.text.primary,
                   fontWeight: typography.fontWeight.medium
@@ -52,6 +53,7 @@ const Breadcrumbs: React.FC<BreadcrumbProps> = ({ className = '' }) => {
                 style={{ 
                   color: colors.primary[600]
                 }}
+                aria-label={'转到 ' + breadcrumb.label}
                 onClick={() => navigateTo(breadcrumb.path)}
               >
                 {breadcrumb.label}
