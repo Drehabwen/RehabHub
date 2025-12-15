@@ -236,9 +236,10 @@ export const postPoseTelemetry = async (payload: {
   timestamp: string;
   angles: Record<string, number>;
   keypoints: Keypoint[];
-}): Promise<{ status: string }> => {
+}): Promise<any> => {
   const apiClient = getModuleApi('video-analysis');
-  return apiClient.post<{ status: string }>('/api/pose/stream', payload);
+  // 指向 Python 后端的新端点
+  return apiClient.post<any>('/api/v1/assessment/analyze', payload);
 };
 
 // 默认导出

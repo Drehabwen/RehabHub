@@ -293,12 +293,12 @@ const Navigation: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen
           </NavigationItem>
           <NavigationItem>
             <NavigationLink 
-              active={state.currentModule === 'movement-selection'} 
-              onClick={() => handleNavigationClick('movement-selection')} 
+              active={state.currentModule === 'assessment-hub'} 
+              onClick={() => handleNavigationClick('assessment-hub')} 
               className="py-3"
             >
               <span className="mr-3 text-lg">🧘</span>
-              康复评估
+              评估中心
             </NavigationLink>
           </NavigationItem>
           <NavigationItem>
@@ -346,7 +346,7 @@ const Navigation: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen
         {/* 底部快速操作区 */}
         <div className="mt-8 pt-4 border-t border-gray-100">
           <button
-            onClick={() => handleNavigationClick('movement-selection')}
+            onClick={() => handleNavigationClick('assessment-hub')}
             className="w-full py-3 px-4 bg-primary text-white rounded-lg shadow hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 font-medium"
             style={{ backgroundColor: theme.colors.primary[500] }}
           >
@@ -371,11 +371,11 @@ const BottomNavigation: React.FC<{ onMenuClick: () => void }> = ({ onMenuClick }
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
       </svg>
     )},
-    { id: 'movement-selection', label: '评估', icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-      </svg>
-    )},
+    { id: 'assessment-hub', label: '评估', icon: (
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+        )},
     { id: 'history', label: '历史', icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />

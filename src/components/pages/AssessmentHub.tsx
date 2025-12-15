@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { colors } from '../../theme';
 import { useNavigation } from '../../contexts/NavigationContext';
+import Button from '../ui/Button';
 
 const AssessmentHub: React.FC = () => {
   const { navigateTo } = useNavigation();
@@ -19,102 +20,113 @@ const AssessmentHub: React.FC = () => {
     navigateTo('video-analysis', { movement: m });
   };
 
+  const [todayCount, setTodayCount] = useState<number>(0);
+  const [currentPatientId, setCurrentPatientId] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('analysis_history');
+      if (raw) {
+        const list = JSON.parse(raw) || [];
+        const today = new Date().toISOString().slice(0, 10);
+        const count = list.filter((r: any) => (r.timestamp || '').slice(0, 10) === today).length;
+        setTodayCount(count);
+      }
+    } catch {}
+    try {
+      const pid = sessionStorage.getItem('currentPatientId');
+      setCurrentPatientId(pid);
+    } catch {}
+  }, []);
+
   return (
     <div className="mx-auto max-w-6xl p-4 w-full">
-      <div className="grid grid-cols-2 gap-4 h-auto md:h-[520px]">
-        {/* 大便当：FMS七个具体动作 */}
-        <div
-          className="col-span-2 md:col-span-1 md:row-span-2 relative overflow-hidden rounded-3xl shadow-lg cursor-pointer group transition-all duration-300 hover:shadow-2xl"
-          style={{
-            background: `linear-gradient(135deg, ${colors.primary[500]} 0%, ${colors.primary[600]} 100%)`
-          }}
-        >
-          <div className="relative z-10 p-8 h-full flex flex-col justify-between text-white">
-            <div>
-              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
-                <span className="text-4xl">🧘</span>
-              </div>
-              <h2 className="text-3xl font-bold mb-2">FMS 功能性动作评估</h2>
-              <p className="text-blue-100 text-lg">基于关键点与角度的标准化评估</p>
-              <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-2">
-                {fmsMovements.map((m) => (
-                  <button
-                    key={m.id}
-                    onClick={() => startMovement(m)}
-                    className="px-3 py-2 rounded-lg text-sm bg-white/15 hover:bg-white/25 transition-colors text-white"
-                  >
-                    {m.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="flex items-center font-semibold group-hover:translate-x-2 transition-transform">
-              进入评估
-              <svg className="w-6 h-6 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </div>
+      <div className="flex justify-between items-center mb-3">
+        <h1 className="text-xl md:text-2xl font-bold" style={{ color: colors.primary[800] }}>评估中心</h1>
+        <div className="hidden md:flex items-center gap-2">
+          <div className="px-3 py-1 rounded-full text-xs bg-gray-100" style={{ color: colors.primary[700] }}>
+            {currentPatientId ? `当前患者ID：${currentPatientId}` : '未选择患者'}
+          </div>
+          <div className="px-3 py-1 rounded-full text-xs bg-gray-100" style={{ color: colors.primary[700] }}>
+            今日评估：{todayCount}
           </div>
         </div>
-
-        {/* 量表评估 */}
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
         <div
-          className="col-span-1 relative overflow-hidden rounded-3xl shadow-lg cursor-pointer group transition-all duration-300 hover:shadow-2xl bg-white"
-          onClick={() => navigateTo('scales')}
-        >
-          <div className="p-6 h-full flex flex-col">
-            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4 text-green-600">
-              <span className="text-2xl">📋</span>
-            </div>
-            <h3 className="text-xl font-bold text-gray-800">量表评估</h3>
-            <p className="text-sm text-gray-500 mb-4">疼痛、功能障碍、风险筛查</p>
-            <div className="mt-auto flex justify-end">
-              <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-green-500 group-hover:text-white transition-colors">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 问诊 */}
-        <div
-          className="col-span-1 relative overflow-hidden rounded-3xl shadow-lg cursor-pointer group transition-all duration-300 hover:shadow-2xl bg-white"
+          className="md:col-start-2 relative overflow-hidden rounded-2xl shadow-sm cursor-pointer bg-white md:h-[340px]"
           onClick={() => navigateTo('questionnaire')}
         >
-          <div className="p-6 h-full flex flex-col">
-            <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4 text-purple-600">
-              <span className="text-2xl">🗣️</span>
+          <div className="p-5 h-full flex flex-col items-center text-center">
+            <div className="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center mb-3 text-purple-600">
+              <span className="text-3xl">🗣️</span>
             </div>
-            <h3 className="text-xl font-bold text-gray-800">问诊</h3>
-            <p className="text-sm text-gray-500 mb-4">病史采集与主诉记录</p>
-            <div className="mt-auto grid grid-cols-2 gap-2">
+            <h2 className="text-2xl font-bold mb-1 text-gray-800">问诊</h2>
+            <p className="text-xs text-gray-500 mb-3">病史与主诉采集，含录音与转写</p>
+            <div className="grid grid-cols-2 gap-2 w-full max-w-sm">
               <div className="bg-gray-50 rounded-lg p-2 text-center text-xs text-gray-600">基础信息</div>
               <div className="bg-gray-50 rounded-lg p-2 text-center text-xs text-gray-600">症状时间轴</div>
             </div>
           </div>
         </div>
 
-        {/* 其他动作评估 */}
-        <div
-          className="col-span-2 md:col-span-2 relative overflow-hidden rounded-3xl shadow-lg cursor-pointer group transition-all duration-300 hover:shadow-2xl bg-white"
-          onClick={() => navigateTo('tests')}
-        >
-          <div className="p-6 h-full flex flex-col md:flex-row items-start md:items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600">
-                <span className="text-2xl">🧍‍♂️</span>
+        <div className="relative overflow-hidden rounded-2xl shadow-sm bg-white md:h-[340px]">
+          <div className="p-5 h-full flex flex-col">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
+                <span className="text-xl">🏃</span>
               </div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-800">其他动作评估</h3>
-                <p className="text-sm text-gray-500">更多专项评估与实验功能</p>
+              <h3 className="text-lg font-bold text-gray-800">动作评估</h3>
+            </div>
+            <div className="grid grid-cols-1 gap-3">
+              <div className="rounded-xl border p-3">
+                <div className="text-xs font-semibold mb-2 text-gray-800">FMS</div>
+                <div className="grid grid-cols-2 gap-1">
+                  {fmsMovements.map((m) => (
+                    <button
+                      key={m.id}
+                      onClick={() => startMovement(m)}
+                      className="px-2 py-1 rounded-md text-xs bg-gray-100 hover:bg-gray-200 transition-colors text-gray-800"
+                    >
+                      {m.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-xl border p-3">
+                <div className="text-xs font-semibold mb-2 text-gray-800">其他动作评估</div>
+                <div className="flex justify-end">
+                  <Button
+                    variant="primary"
+                    onClick={() => navigateTo('tests')}
+                    style={{ backgroundColor: colors.primary[500], color: '#fff' }}
+                  >
+                    进入
+                  </Button>
+                </div>
               </div>
             </div>
-            <div className="mt-4 md:mt-0">
-              <button className="px-4 py-2 rounded-lg text-white" style={{ backgroundColor: colors.primary[500] }}>
-                开始测试
-              </button>
+          </div>
+        </div>
+
+        <div
+          className="relative overflow-hidden rounded-2xl shadow-sm bg-white md:h-[340px]"
+          onClick={() => navigateTo('scales')}
+        >
+          <div className="p-5 h-full flex flex-col">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-green-600">
+                <span className="text-xl">📋</span>
+              </div>
+              <h3 className="text-lg font-bold text-gray-800">量表评估</h3>
+            </div>
+            <p className="text-xs text-gray-500">疼痛、功能障碍、风险筛查</p>
+            <div className="mt-auto flex justify-end">
+              <div className="w-7 h-7 rounded-full bg-gray-50 flex items-center justify-center">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
             </div>
           </div>
         </div>

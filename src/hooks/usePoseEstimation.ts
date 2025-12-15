@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-backend-webgl';
 import { extractKeypointsFromFrame, evaluateMovement } from '../services/poseDetection';
+import { postPoseTelemetry } from '../services/api';
 
 // 导入标准关键点接口
 import { Keypoint } from '../types/keypoints';
@@ -138,6 +139,19 @@ export const usePoseEstimation = () => {
         requestIdleCallback(() => {
           const evaluation = evaluateMovement(extractedKeypoints, movementType);
           setMovementEvaluation(evaluation);
+          
+          // 发送数据到 Python 后端 (fire-and-forget)
+          postPoseTelemetry({
+              movementType,
+              timestamp: new Date().toISOString(),
+              angles: evaluation.angles || {},
+              keypoints: extractedKeypoints
+          }).catch(e => {
+              // 仅在开发环境打印错误，避免刷屏
+              if (process.env.NODE_ENV === 'development') {
+                  console.warn("Backend sync failed:", e);
+              }
+          });
         });
       }
     } catch (err) {

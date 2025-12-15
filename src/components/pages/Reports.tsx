@@ -22,7 +22,7 @@ interface Report {
 }
 
 const Reports: React.FC = () => {
-  const { navigateTo } = useNavigation();
+  const { navigateTo, goBack } = useNavigation();
   const [mounted, setMounted] = useState(false);
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -37,11 +37,19 @@ const Reports: React.FC = () => {
     summary: '',
     details: ''
   });
+  const [voiceIntake, setVoiceIntake] = useState<{ audioUrl?: string; transcript?: string; ts?: number } | null>(null);
   
   // 组件挂载后设置动画并获取数据
   useEffect(() => {
     setMounted(true);
     fetchReports();
+    try {
+      const raw = sessionStorage.getItem('voice_intake_latest');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        setVoiceIntake(parsed);
+      }
+    } catch {}
   }, []);
   
   // 从API获取报告数据
@@ -216,7 +224,46 @@ const Reports: React.FC = () => {
   };
   
   return (
-    <div className="mx-auto max-w-6xl p-4 w-full">
+      <div className="mx-auto max-w-6xl p-4 w-full">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold" style={{ color: colors.text.primary }}>评估报告</h1>
+          <Button variant="secondary" onClick={goBack}>返回</Button>
+        </div>
+        {voiceIntake && (
+          <Card className="p-4 mb-4 border" style={{ borderColor: colors.neutral[200] }}>
+            <div className="flex items-start justify-between">
+              <div className="flex-1 mr-4">
+                <div className="text-sm font-medium mb-2" style={{ color: colors.text.primary }}>最近问诊转写</div>
+                <div className="text-sm" style={{ color: colors.text.secondary }}>{voiceIntake.transcript || ''}</div>
+                {voiceIntake.audioUrl && (
+                  <div className="mt-2">
+                    <a href={voiceIntake.audioUrl} target="_blank" rel="noreferrer" className="text-sm underline" style={{ color: colors.primary[600] }}>试听录音</a>
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCreateForm(true)}
+                  style={{ borderColor: colors.primary[300], color: colors.primary[700] }}
+                >
+                  新建报告
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => setNewReport({
+                    ...newReport,
+                    summary: (newReport.summary || '') + (voiceIntake.transcript ? `\n问诊转写：${voiceIntake.transcript}` : ''),
+                    details: (newReport.details || '') + (voiceIntake.audioUrl ? `\n录音链接：${voiceIntake.audioUrl}` : '')
+                  })}
+                  style={{ backgroundColor: colors.primary[500], color: '#fff' }}
+                >
+                  填充到新报告
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
       <style>{animationKeyframes}</style>
       {/* 返回按钮 */}
       <div className="mb-6 flex justify-start">
