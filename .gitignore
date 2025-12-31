@@ -27,6 +27,12 @@ dist-ssr
 android/app/build/
 android/.gradle/
 
+# Local build artifacts
+DEV/*.apk
+
+# Accidental absolute-path copies
+Users/
+
 # iOS
 ios/Pods/
 ios/build/
