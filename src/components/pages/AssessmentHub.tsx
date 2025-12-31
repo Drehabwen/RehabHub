@@ -22,6 +22,11 @@ const AssessmentHub: React.FC = () => {
 
   const [todayCount, setTodayCount] = useState<number>(0);
   const [currentPatientId, setCurrentPatientId] = useState<string | null>(null);
+  const [currentPatientName, setCurrentPatientName] = useState<string | null>(null);
+  const [currentPatientAge, setCurrentPatientAge] = useState<string | null>(null);
+  const [currentPatientGender, setCurrentPatientGender] = useState<string | null>(null);
+  const [progress, setProgress] = useState<{ questionnaire: boolean; scales: boolean; video: boolean }>({ questionnaire: false, scales: false, video: false });
+  const [hasLastAssessment, setHasLastAssessment] = useState<boolean>(false);
 
   useEffect(() => {
     try {
@@ -35,9 +40,27 @@ const AssessmentHub: React.FC = () => {
     } catch {}
     try {
       const pid = sessionStorage.getItem('currentPatientId');
+      const pname = sessionStorage.getItem('currentPatientName');
+      const page = sessionStorage.getItem('currentPatientAge');
+      const pgender = sessionStorage.getItem('currentPatientGender');
       setCurrentPatientId(pid);
+      setCurrentPatientName(pname);
+      setCurrentPatientAge(page);
+      setCurrentPatientGender(pgender);
+    } catch {}
+    try {
+      setProgress({
+        questionnaire: sessionStorage.getItem('completed_questionnaire') === 'true',
+        scales: sessionStorage.getItem('completed_scales') === 'true',
+        video: sessionStorage.getItem('completed_video_analysis') === 'true'
+      });
+    } catch {}
+    try {
+      setHasLastAssessment(Boolean(localStorage.getItem('lastAssessment')));
     } catch {}
   }, []);
+
+  const canGenerateReport = (progress.questionnaire && progress.scales && progress.video) || hasLastAssessment;
 
   return (
     <div className="mx-auto max-w-6xl p-4 w-full">
@@ -45,12 +68,51 @@ const AssessmentHub: React.FC = () => {
         <h1 className="text-xl md:text-2xl font-bold" style={{ color: colors.primary[800] }}>评估中心</h1>
         <div className="hidden md:flex items-center gap-2">
           <div className="px-3 py-1 rounded-full text-xs bg-gray-100" style={{ color: colors.primary[700] }}>
-            {currentPatientId ? `当前患者ID：${currentPatientId}` : '未选择患者'}
+            {currentPatientName ? `当前患者：${currentPatientName}${currentPatientAge ? `（${currentPatientAge}岁${currentPatientGender === 'male' ? '·男' : currentPatientGender === 'female' ? '·女' : ''}）` : ''}` : (currentPatientId ? `当前患者ID：${currentPatientId}` : '未选择患者')}
           </div>
           <div className="px-3 py-1 rounded-full text-xs bg-gray-100" style={{ color: colors.primary[700] }}>
             今日评估：{todayCount}
           </div>
         </div>
+      </div>
+      <div className="mb-4">
+        <div className="flex items-center justify-center gap-2">
+        <div className={`px-2 py-1 rounded-full border text-xs ${progress.questionnaire ? 'bg-green-50 border-green-200 text-green-700' : 'bg-gray-50 border-gray-200 text-gray-700'}`}>
+          问诊 {progress.questionnaire ? '已完成' : '未完成'}
+          {progress.questionnaire && (
+            <span className="ml-1 text-[10px] opacity-70">{(sessionStorage.getItem('completed_questionnaire_at') || '').slice(11,16)}</span>
+          )}
+        </div>
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: colors.primary[500] }}>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        <div className={`px-2 py-1 rounded-full border text-xs ${progress.scales ? 'bg-green-50 border-green-200 text-green-700' : 'bg-gray-50 border-gray-200 text-gray-700'}`}>
+          量表评估 {progress.scales ? '已完成' : '未完成'}
+          {progress.scales && (
+            <span className="ml-1 text-[10px] opacity-70">{(sessionStorage.getItem('completed_scales_at') || '').slice(11,16)}</span>
+          )}
+        </div>
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: colors.primary[500] }}>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        <div className={`px-2 py-1 rounded-full border text-xs ${progress.video ? 'bg-green-50 border-green-200 text-green-700' : 'bg-gray-50 border-gray-200 text-gray-700'}`}>
+          动作评估 {progress.video ? '已完成' : '未完成'}
+          {progress.video && (
+            <span className="ml-1 text-[10px] opacity-70">{(sessionStorage.getItem('completed_video_analysis_at') || '').slice(11,16)}</span>
+          )}
+        </div>
+        </div>
+        {canGenerateReport && (
+          <div className="mt-2 flex justify-center">
+            <Button
+              variant="primary"
+              onClick={() => navigateTo('reports', { patientId: currentPatientId || '', autoGenerate: true, openLatest: true })}
+              style={{ backgroundColor: colors.primary[500], color: '#fff' }}
+            >
+              {(progress.questionnaire && progress.scales && progress.video) ? '一键生成报告' : '一键生成报告（最近评估）'}
+            </Button>
+          </div>
+        )}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
         <div

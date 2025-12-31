@@ -69,6 +69,86 @@ interface LoginResponse {
 - `POST /api/v1/auth/refresh` - 刷新令牌
 - `POST /api/v1/auth/logout` - 用户登出
 
+## 统一评估数据模型
+
+### 1. 核心数据结构
+```typescript
+// 通用评分类型
+interface Score {
+  value: number;
+  maxValue: number;
+  description?: string;
+  feedback?: string;
+}
+
+// 评估指标类型
+interface Metric {
+  id: string;
+  name: string;
+  score: Score;
+  category: string;
+  details?: Record<string, any>;
+}
+
+// 评估类型基础接口
+interface Assessment {
+  id: string;
+  type: string; // 例如: 'FMS', 'YBT', 'SFMA', 'VAS', 'OSWESTRY', 'SF36', 'TUG'
+  subtype: string; // 更具体的分类，如FMS中的具体动作名称
+  patientId: string;
+  assessorId?: string;
+  timestamp: string;
+  metrics: Metric[];
+  overallScore: Score;
+  recommendations?: string[];
+  notes?: string;
+  status: 'draft' | 'completed' | 'reviewed';
+}
+
+// 分页查询参数
+interface PaginationParams {
+  page?: number;
+  pageSize?: number;
+}
+
+// 评估查询参数
+interface AssessmentQueryParams extends PaginationParams {
+  patientId?: string;
+  type?: string;
+  subtype?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  status?: 'draft' | 'completed' | 'reviewed';
+}
+```
+
+### 2. 评估数据存储接口
+```typescript
+// 评估数据存储接口
+interface AssessmentStorage {
+  // 保存评估数据
+  save(assessment: Assessment): Promise<void>;
+  
+  // 根据ID获取评估数据
+  getById(id: string): Promise<Assessment | null>;
+  
+  // 根据类型获取评估数据
+  getByType(type: string, params?: PaginationParams): Promise<Assessment[]>;
+  
+  // 查询评估数据
+  query(params: AssessmentQueryParams): Promise<Assessment[]>;
+  
+  // 获取所有评估数据
+  getAll(params?: PaginationParams): Promise<Assessment[]>;
+  
+  // 删除评估数据
+  delete(id: string): Promise<void>;
+  
+  // 更新评估数据
+  update(id: string, assessment: Partial<Assessment>): Promise<void>;
+}
+```
+
 ## 视频分析模块
 
 ### 1. 视频上传与分析
@@ -229,6 +309,92 @@ interface RealTimeAnalysisMessage {
 **WebSocket端点**:
 - `ws://localhost:8000/api/v1/realtime/analysis` - 实时分析连接
 
+## 量表评估模块
+
+### 1. 量表类型定义
+```typescript
+// 量表类型枚举
+type ScaleType = 'VAS' | 'OSWESTRY' | 'SF36' | 'TUG';
+
+// 量表基本信息
+interface ScaleInfo {
+  id: string;              // 量表ID
+  type: ScaleType;         // 量表类型
+  name: string;            // 量表名称
+  description: string;     // 量表描述
+  version: string;         // 量表版本
+  questions_count: number; // 题目数量
+  completion_time: string; // 预计完成时间
+  scoring_method: string;  // 计分方法说明
+}
+
+// 量表题目
+interface ScaleQuestion {
+  id: string;              // 题目ID
+  scale_id: string;        // 所属量表ID
+  question_number: number; // 题号
+  content: string;         // 题目内容
+  type: 'single_choice' | 'multiple_choice' | 'slider' | 'text_input' | 'numerical'; // 题目类型
+  options?: Array<{
+    value: string | number; // 选项值
+    label: string;          // 选项标签
+    score?: number;         // 选项得分
+  }>;
+  required: boolean;       // 是否必答
+  help_text?: string;      // 帮助文本
+}
+```
+
+**API端点**:
+- `GET /api/v1/scales` - 获取所有支持的量表类型
+- `GET /api/v1/scales/{scale_id}` - 获取特定量表详情
+- `GET /api/v1/scales/{scale_id}/questions` - 获取量表的所有题目
+
+### 2. 量表评估记录
+```typescript
+// 量表评估记录
+interface ScaleAssessment extends Assessment {
+  scaleType: ScaleType;           // 量表类型
+  scaleId: string;               // 量表ID
+  answers: Array<{
+    questionId: string;          // 题目ID
+    answer: string | number | Array<string | number>; // 回答
+    score?: number;               // 得分（如适用）
+  }>;
+  totalScore?: number;           // 总分（如适用）
+  interpretation?: string;        // 结果解释
+}
+
+// 创建量表评估请求
+interface CreateScaleAssessmentRequest {
+  patientId: string;             // 患者ID
+  scaleType: ScaleType;          // 量表类型
+  scaleId: string;               // 量表ID
+  answers: Array<{
+    questionId: string;          // 题目ID
+    answer: string | number | Array<string | number>; // 回答
+  }>;
+  notes?: string;                 // 备注
+}
+
+// 更新量表评估请求
+interface UpdateScaleAssessmentRequest {
+  answers?: Array<{
+    questionId: string;          // 题目ID
+    answer: string | number | Array<string | number>; // 回答
+  }>;
+  notes?: string;                 // 备注
+  status?: 'draft' | 'completed' | 'reviewed'; // 状态
+}
+```
+
+**API端点**:
+- `GET /api/v1/scale-assessments` - 获取量表评估记录列表（分页）
+- `POST /api/v1/scale-assessments` - 创建新的量表评估记录
+- `GET /api/v1/scale-assessments/{assessment_id}` - 获取特定评估记录详情
+- `PUT /api/v1/scale-assessments/{assessment_id}` - 更新评估记录
+- `DELETE /api/v1/scale-assessments/{assessment_id}` - 删除评估记录
+
 ## 系统管理模块
 
 ### 1. 系统配置
@@ -287,6 +453,10 @@ interface ErrorResponse {
 | 1003 | 视频质量过低 | 请上传更高分辨率的视频 |
 | 2001 | 患者不存在 | 检查患者ID是否正确 |
 | 3001 | 动作类型不支持 | 检查动作类型参数 |
+| 5001 | 量表不存在 | 检查量表ID是否正确 |
+| 5002 | 量表评估记录不存在 | 检查评估记录ID是否正确 |
+| 5003 | 量表题目回答不完整 | 确保所有必答题都已回答 |
+| 5004 | 数值超出有效范围 | 检查输入数值是否在允许范围内 |
 
 ## 前端适配建议
 
@@ -334,6 +504,7 @@ apiClient.interceptors.response.use(
 - [ ] 认证授权测试
 - [ ] 错误处理测试
 - [ ] 性能压力测试
+- [ ] 量表评估功能测试
 
 ### 2. 集成测试
 建议使用Postman或类似的API测试工具创建测试集合，确保所有接口正常工作。
@@ -363,6 +534,6 @@ apiClient.interceptors.response.use(
 
 ---
 
-**文档版本**: v1.0  
+**文档版本**: v1.1  
 **最后更新**: 2024-12-19  
 **维护团队**: 前后端开发团队

@@ -286,11 +286,25 @@ const AppContent: React.FC = () => {
 
 // 主应用组件
 const App: React.FC = () => {
-  const [showSplash, setShowSplash] = React.useState(false);
+  const [showSplash, setShowSplash] = React.useState(() => {
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const last = localStorage.getItem('splash_last_shown');
+      return last !== today;
+    } catch {
+      return true;
+    }
+  });
 
   return (
     <>
-      {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
+      {showSplash && <SplashScreen onFinish={() => {
+        try {
+          const today = new Date().toISOString().slice(0, 10);
+          localStorage.setItem('splash_last_shown', today);
+        } catch {}
+        setShowSplash(false);
+      }} />}
       <NavigationProvider>
         <AppContent />
       </NavigationProvider>

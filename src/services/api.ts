@@ -23,7 +23,7 @@ export interface AnalysisResponse {
 
 // API基础配置
 const API_CONFIG = {
-  baseUrl: process.env.VITE_BACKEND_URL || process.env.VITE_API_URL || 'http://localhost:8000', // 优先使用环境变量，默认8000
+  baseUrl: import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_URL || 'http://localhost:8000', // 优先使用环境变量，默认8000
   timeout: 30000,
   defaultHeaders: {
     'Content-Type': 'application/json',

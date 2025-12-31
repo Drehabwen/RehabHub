@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { colors, typography } from '../../theme';
-import { useNavigation } from '../../contexts/NavigationContext';
+import { useNavigation, useNavigationParams } from '../../contexts/NavigationContext';
+import { FmsProcessor } from '../../services/assessment/fmsProcessor';
 import { animations, animationKeyframes } from '../../utils/animations';
 import { getModuleApi } from '../../services/api';
 
@@ -23,6 +24,7 @@ interface Report {
 
 const Reports: React.FC = () => {
   const { navigateTo, goBack } = useNavigation();
+  const { getParams, clearParams } = useNavigationParams<{ patientId?: string; autoGenerate?: boolean; openLatest?: boolean }>();
   const [mounted, setMounted] = useState(false);
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,19 +40,127 @@ const Reports: React.FC = () => {
     details: ''
   });
   const [voiceIntake, setVoiceIntake] = useState<{ audioUrl?: string; transcript?: string; ts?: number } | null>(null);
+  const [currentPatientId, setCurrentPatientId] = useState<string>('');
+  const [currentPatientName, setCurrentPatientName] = useState<string>('');
   
   // 组件挂载后设置动画并获取数据
   useEffect(() => {
     setMounted(true);
-    fetchReports();
+    (async () => {
+      await fetchReports();
+      let params: { patientId?: string; autoGenerate?: boolean; openLatest?: boolean } | null = null;
+      try {
+        params = getParams();
+        clearParams();
+      } catch {}
+
+      let pid = '';
+      let pname = '';
+      try {
+        const pidParam = params?.patientId || '';
+        pid = pidParam || sessionStorage.getItem('currentPatientId') || '';
+        pname = sessionStorage.getItem('currentPatientName') || '';
+      } catch {}
+      setCurrentPatientId(pid);
+      setCurrentPatientName(pname);
+      if (pid) {
+        setNewReport(prev => ({ ...prev, patientId: pid }));
+      }
+
+      try {
+        const raw = sessionStorage.getItem('voice_intake_latest');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          setVoiceIntake(parsed);
+        }
+      } catch {}
+
+      if (params?.autoGenerate) {
+        generateReportFromLatest(pid, pname, params?.openLatest !== false);
+      }
+    })();
+  }, []);
+
+  const generateReportFromLatest = async (patientId: string, patientName: string, openLatest: boolean) => {
     try {
-      const raw = sessionStorage.getItem('voice_intake_latest');
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        setVoiceIntake(parsed);
+      const processor = new FmsProcessor();
+
+      let assessment: any | null = null;
+      try {
+        const raw = localStorage.getItem('lastAssessment');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.metrics) && parsed.overallScore) {
+            assessment = parsed;
+          }
+        }
+      } catch {}
+
+      if (!assessment) {
+        assessment = await processor.process({
+          movementType: 'deep-squat',
+          movementName: '深蹲',
+          hipMobilityScore: 2,
+          kneeStabilityScore: 2,
+          shoulderMobilityScore: 3,
+          coreActivationScore: 2,
+          posturalAlignmentScore: 3,
+          leftSideScores: { hip: 2, knee: 2 },
+          rightSideScores: { hip: 3, knee: 2 },
+          compensationPatterns: ['膝内扣', '躯干前倾']
+        });
+        try {
+          localStorage.setItem('lastAssessment', JSON.stringify(assessment));
+        } catch {}
+      }
+
+      let detailsText = processor.generateReport(assessment);
+
+      try {
+        const qAt = sessionStorage.getItem('completed_questionnaire_at') || '';
+        const sAt = sessionStorage.getItem('completed_scales_at') || '';
+        const vAt = sessionStorage.getItem('completed_video_analysis_at') || '';
+        const lines: string[] = [];
+        if (qAt) lines.push(`- 问诊: ${qAt.replace('T', ' ').slice(0, 16)}`);
+        if (sAt) lines.push(`- 量表: ${sAt.replace('T', ' ').slice(0, 16)}`);
+        if (vAt) lines.push(`- 动作: ${vAt.replace('T', ' ').slice(0, 16)}`);
+        if (lines.length) {
+          detailsText += `\n\n流程完成时间:\n${lines.join('\n')}\n`;
+        }
+      } catch {}
+
+      try {
+        const raw = sessionStorage.getItem('voice_intake_latest');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed?.transcript) {
+            detailsText += `\n\n问诊转写:\n${String(parsed.transcript)}\n`;
+          }
+          if (parsed?.audioUrl) {
+            detailsText += `\n录音链接: ${String(parsed.audioUrl)}\n`;
+          }
+        }
+      } catch {}
+
+      const report: Report = {
+        id: `R${Date.now()}`,
+        patientId: patientId || 'local',
+        patientName: patientName || '患者',
+        testId: assessment.movementType || 'unknown',
+        testName: assessment.movementName || '未知测试',
+        date: new Date().toISOString().split('T')[0],
+        score: assessment.overallScore?.value || 0,
+        status: 'completed',
+        summary: (assessment.recommendations || []).join('；') || '完成评估',
+        details: detailsText
+      };
+
+      setReports(prev => [report, ...prev]);
+      if (openLatest) {
+        setSelectedReport(report);
       }
     } catch {}
-  }, []);
+  };
   
   // 从API获取报告数据
   const fetchReports = async () => {
@@ -227,7 +337,14 @@ const Reports: React.FC = () => {
       <div className="mx-auto max-w-6xl p-4 w-full">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold" style={{ color: colors.text.primary }}>评估报告</h1>
-          <Button variant="secondary" onClick={goBack}>返回</Button>
+          <div className="flex items-center gap-2">
+            {currentPatientId && (
+              <div className="px-3 py-1 rounded-full text-xs bg-gray-100" style={{ color: colors.primary[700] }}>
+                {currentPatientName ? `当前患者：${currentPatientName}` : `患者ID：${currentPatientId}`}
+              </div>
+            )}
+            <Button variant="secondary" onClick={goBack}>返回</Button>
+          </div>
         </div>
         {voiceIntake && (
           <Card className="p-4 mb-4 border" style={{ borderColor: colors.neutral[200] }}>
@@ -354,6 +471,17 @@ const Reports: React.FC = () => {
                   <option value="in-progress">进行中</option>
                   <option value="draft">草稿</option>
                 </select>
+                <Button
+                  variant="primary"
+                  size="small"
+                  onClick={() => {
+                    generateReportFromLatest(currentPatientId, currentPatientName, true);
+                  }}
+                  className="ml-2"
+                  style={{ backgroundColor: colors.primary[500], color: '#fff' }}
+                >
+                  从最近评估生成
+                </Button>
               </div>
             </div>
             

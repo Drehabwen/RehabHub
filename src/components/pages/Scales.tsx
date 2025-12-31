@@ -3,14 +3,17 @@ import { colors } from '../../theme';
 import { useNavigation } from '../../contexts/NavigationContext';
 
 const Scales: React.FC = () => {
-  const { goBack } = useNavigation();
+  const { navigateTo, goBack } = useNavigation();
   const items = ['VAS 疼痛', 'Oswestry 功能障碍', 'SF-36 健康调查', 'TUG 行走测试'];
 
   return (
     <div className="mx-auto max-w-5xl p-4 w-full">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold" style={{ color: colors.primary[800] }}>量表评估</h1>
-        <button className="px-4 py-2 rounded-lg text-white" style={{ backgroundColor: colors.primary[500] }} onClick={goBack}>返回</button>
+        <div className="flex items-center gap-2">
+          <button className="px-4 py-2 rounded-lg text-white" style={{ backgroundColor: colors.primary[500] }} onClick={() => { try { sessionStorage.setItem('completed_scales', 'true'); sessionStorage.setItem('completed_scales_at', new Date().toISOString()); } catch {}; navigateTo('assessment-hub'); }}>完成量表</button>
+          <button className="px-4 py-2 rounded-lg text-white" style={{ backgroundColor: colors.primary[500] }} onClick={goBack}>返回</button>
+        </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {items.map((name) => (

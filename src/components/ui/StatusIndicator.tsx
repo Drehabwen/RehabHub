@@ -144,7 +144,7 @@ const StatusIndicator: React.FC<StatusIndicatorProps> = ({
 }) => {
   const getStatusText = () => {
     // 在本地开发环境中隐藏连接错误提示
-    const backendUrl = process.env.VITE_BACKEND_URL || 'http://localhost:8000';
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
     const isLocalDevelopment = backendUrl.includes('localhost') || backendUrl.includes('127.0.0.1');
     
     switch (status) {
@@ -163,7 +163,7 @@ const StatusIndicator: React.FC<StatusIndicatorProps> = ({
   };
 
   // 如果是本地开发环境且状态为error，不显示任何内容
-  const backendUrl = process.env.VITE_BACKEND_URL || 'http://localhost:8000';
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
   const isLocalDevelopment = backendUrl.includes('localhost') || backendUrl.includes('127.0.0.1');
   const statusText = getStatusText();
   

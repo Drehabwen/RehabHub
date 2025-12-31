@@ -104,32 +104,32 @@ const Dashboard: React.FC<DashboardProps> = ({ isStatisticsPage = false }) => {
         </div>
       )}
       {/* 顶部医疗风格的欢迎区域 */}
-      <div className="relative mb-8 p-8 rounded-2xl shadow-sm overflow-hidden group" style={{ 
+      <div className="relative mb-4 p-4 rounded-2xl shadow-sm overflow-hidden group" style={{ 
         background: `linear-gradient(135deg, ${colors.primary[50]} 0%, ${colors.background.paper} 100%)`,
         borderColor: colors.primary[100], 
         borderWidth: '1px',
         ...(mounted && animations.fadeInDown('0.6s', '0.1s'))
       }}>
-        <div className="absolute top-0 right-0 w-64 h-64 rounded-full -mr-16 -mt-16 blur-3xl transition-transform duration-700 group-hover:scale-110" style={{ backgroundColor: `${colors.primary[100]}4D` }}></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full -ml-12 -mb-12 blur-2xl transition-transform duration-700 group-hover:scale-110" style={{ backgroundColor: `${colors.primary[200]}4D` }}></div>
+        <div className="absolute top-0 right-0 w-40 h-40 rounded-full -mr-10 -mt-10 blur-3xl transition-transform duration-700 group-hover:scale-110" style={{ backgroundColor: `${colors.primary[100]}4D` }}></div>
+        <div className="absolute bottom-0 left-0 w-36 h-36 rounded-full -ml-10 -mb-10 blur-2xl transition-transform duration-700 group-hover:scale-110" style={{ backgroundColor: `${colors.primary[200]}4D` }}></div>
         
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex items-center gap-5">
-            <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center ring-4 ring-white/50">
-              <span className="text-3xl">👋</span>
+            <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center ring-4 ring-white/50">
+              <span className="text-2xl">👋</span>
             </div>
             <div>
-              <h1 className="text-xl md:text-2xl font-bold text-gray-800 tracking-tight">
+              <h1 className="text-base md:text-lg font-bold text-gray-800 tracking-tight">
                 {new Date().getHours() < 12 ? '早上好' : new Date().getHours() < 18 ? '下午好' : '晚上好'}，治疗师
               </h1>
-              <p className="text-gray-500 mt-1">
+              <p className="text-gray-500 mt-0.5 text-sm">
                 今日安排已就绪，请按流程完成评估。
               </p>
             </div>
           </div>
           
           <div className="hidden md:flex flex-col items-end">
-            <div className="text-3xl font-bold font-mono tracking-tight" style={{ color: `${colors.primary[700]}CC` }}>
+            <div className="text-2xl font-bold font-mono tracking-tight" style={{ color: `${colors.primary[700]}CC` }}>
               {new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
             </div>
             <div className="text-sm text-gray-400 font-medium">
@@ -141,7 +141,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isStatisticsPage = false }) => {
       
       {/* 核心功能区域 - 便当式布局 (Bento Grid) */}
       <div ref={movementsRef} className="mb-8">
-        <div className="grid grid-cols-2 gap-4 h-auto md:h-[500px]">
+        <div className="grid grid-cols-2 gap-4 h-auto md:h-[420px]">
           
           {/* 板块1: 康复评估 (Assessment) - 占据主要位置 */}
           <div 

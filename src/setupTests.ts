@@ -1,4 +1,10 @@
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/vitest';
+import { afterEach } from 'vitest';
+import { cleanup } from '@testing-library/react';
+
+afterEach(() => {
+  cleanup();
+});
 
 // 模拟localStorage
 const localStorageMock = {
@@ -14,13 +20,13 @@ Object.defineProperty(window, 'localStorage', {
 });
 
 // 模拟fetch
-Object.defineProperty(global, 'fetch', {
+Object.defineProperty(globalThis, 'fetch', {
   value: () => Promise.resolve({}),
   writable: true,
 });
 
 // 添加空的Jest对象以避免引用错误
-Object.defineProperty(global, 'jest', {
+Object.defineProperty(globalThis, 'jest', {
   value: {
     clearAllMocks: () => {},
     fn: () => () => {},

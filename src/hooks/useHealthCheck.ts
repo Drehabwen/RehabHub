@@ -19,7 +19,7 @@ export const useHealthCheck = () => {
 
   const checkHealth = async () => {
     // 在开发环境中，如果后端URL是localhost但服务未运行，则降级为健康状态
-    const backendUrl = process.env.VITE_BACKEND_URL || 'http://localhost:8000';
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
     const isLocalhost = backendUrl.includes('localhost') || backendUrl.includes('127.0.0.1');
     
     try {

@@ -107,6 +107,13 @@ const Patients: React.FC = () => {
         diagnosis: ''
       });
       setShowAddForm(false);
+      try {
+        sessionStorage.setItem('currentPatientId', patient.id);
+        sessionStorage.setItem('currentPatientName', patient.name);
+        sessionStorage.setItem('currentPatientAge', String(patient.age));
+        sessionStorage.setItem('currentPatientGender', patient.gender);
+      } catch {}
+      navigateTo('assessment-hub');
     }
   };
   
@@ -117,9 +124,25 @@ const Patients: React.FC = () => {
   
   // 开始评估
   const handleStartAssessment = (patient: Patient) => {
-    // 存储患者ID到会话存储
-    sessionStorage.setItem('currentPatientId', patient.id);
-    navigateTo('movement-selection');
+    // 存储患者信息到会话存储
+    try {
+      sessionStorage.setItem('currentPatientId', patient.id);
+      sessionStorage.setItem('currentPatientName', patient.name);
+      sessionStorage.setItem('currentPatientAge', String(patient.age));
+      sessionStorage.setItem('currentPatientGender', patient.gender);
+    } catch {}
+    navigateTo('assessment-hub');
+  };
+
+  // 双击卡片快速进入评估中心
+  const handleCardDoubleClick = (patient: Patient) => {
+    try {
+      sessionStorage.setItem('currentPatientId', patient.id);
+      sessionStorage.setItem('currentPatientName', patient.name);
+      sessionStorage.setItem('currentPatientAge', String(patient.age));
+      sessionStorage.setItem('currentPatientGender', patient.gender);
+    } catch {}
+    navigateTo('assessment-hub');
   };
   
   return (
@@ -305,6 +328,7 @@ const Patients: React.FC = () => {
               style={{
                 ...(mounted && animations.fadeInUp('0.6s', `${0.1 + index * 0.1}s`))
               }}
+              onDoubleClick={() => handleCardDoubleClick(patient)}
             >
               <div className="flex justify-between items-start mb-4">
                 <div>
@@ -360,7 +384,7 @@ const Patients: React.FC = () => {
                 <Button
                   variant="primary"
                   size="small"
-                  onClick={() => handleStartAssessment(patient)}
+                  onClick={(e: any) => { e.stopPropagation(); handleStartAssessment(patient); }}
                   className="flex-1"
                 >
                   开始评估
@@ -368,7 +392,7 @@ const Patients: React.FC = () => {
                 <Button
                   variant="outline"
                   size="small"
-                  onClick={() => navigateTo('history', { patientId: patient.id })}
+                  onClick={(e: any) => { e.stopPropagation(); navigateTo('history', { patientId: patient.id }); }}
                   style={{ borderColor: colors.primary[300], color: colors.primary[600] }}
                 >
                   历史
@@ -376,7 +400,7 @@ const Patients: React.FC = () => {
                 <Button
                   variant="outline"
                   size="small"
-                  onClick={() => handleDeletePatient(patient.id)}
+                  onClick={(e: any) => { e.stopPropagation(); handleDeletePatient(patient.id); }}
                   style={{ borderColor: colors.error[100], color: colors.error[500] }}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

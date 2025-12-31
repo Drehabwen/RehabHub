@@ -148,7 +148,7 @@ export const usePoseEstimation = () => {
               keypoints: extractedKeypoints
           }).catch(e => {
               // 仅在开发环境打印错误，避免刷屏
-              if (process.env.NODE_ENV === 'development') {
+              if (import.meta.env.DEV) {
                   console.warn("Backend sync failed:", e);
               }
           });

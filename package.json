@@ -8,7 +8,9 @@
     "build": "tsc && vite build",
     "dev": "vite --host 0.0.0.0 --port 3000",
     "server": "node server.js",
-    "dev:all": "concurrently \"npm run server\" \"npm run dev\""
+    "dev:all": "concurrently \"npm run server\" \"npm run dev\"",
+    "apk:release": "powershell -ExecutionPolicy Bypass -File scripts\\release-apk-to.ps1",
+    "apk:release:to": "powershell -ExecutionPolicy Bypass -File scripts\\release-apk-to.ps1"
   },
   "keywords": [],
   "author": "",

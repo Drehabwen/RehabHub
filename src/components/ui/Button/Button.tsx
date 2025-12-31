@@ -1,6 +1,5 @@
 import React from 'react';
-// 使用require代替import以避免TypeScript模块解析问题
-const styles: any = require('./Button.module.css');
+import styles from './Button.module.css';
 import { ButtonProps } from './types';
 
 export const Button: React.FC<ButtonProps> = ({

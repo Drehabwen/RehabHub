@@ -13,11 +13,14 @@ export class FmsProcessor implements AssessmentProcessor {
     const assessment: FmsAssessment = {
       id: `fms_${Date.now()}`,
       type: 'FMS',
+      subtype: data.movementName || data.movementType || 'unknown',
+      patientId: (typeof window !== 'undefined' ? sessionStorage.getItem('currentPatientId') : null) || data.patientId || 'unknown',
       movementType: data.movementType || 'unknown',
       movementName: data.movementName || 'Unknown Movement',
       timestamp: new Date().toISOString(),
       metrics,
       overallScore,
+      status: 'completed',
       mobilityScore,
       stabilityScore,
       asymmetryDetected,
@@ -65,7 +68,7 @@ export class FmsProcessor implements AssessmentProcessor {
     
     let report = `功能性动作评估报告\n`;
     report += `评估日期: ${new Date(assessment.timestamp).toLocaleDateString()}\n`;
-    report += `动作类型: ${assessment.movementName}\n`;
+    report += `动作类型: ${fmsAssessment.movementName}\n`;
     report += `总分: ${assessment.overallScore.value}/${assessment.overallScore.maxValue}\n\n`;
     
     report += `评估指标:\n`;

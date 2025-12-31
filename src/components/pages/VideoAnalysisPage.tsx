@@ -78,12 +78,8 @@ const VideoAnalysisPage: React.FC = () => {
     return () => clearInterval(interval);
   }, [videoRef, status, selectedMovement, movementEvaluation, keypoints, processFrame]);
 
-  const handleAnalyzeVideo = () => {
-    if (!videoFile) return;
-    
+  const analyzeWithMockResult = (delayMs: number) => {
     setIsAnalyzing(true);
-    
-    // 模拟视频分析过程，并使用FmsProcessor生成结构化评估
     setTimeout(() => {
       const mockRaw = {
         movementType: selectedMovement?.id || 'unknown',
@@ -100,35 +96,47 @@ const VideoAnalysisPage: React.FC = () => {
       const processor = new FmsProcessor();
       processor.process(mockRaw).then(assessment => {
         setAnalysisResult(assessment);
-        
-        // 保存到本地 lastAssessment
+        try {
+          sessionStorage.setItem('completed_video_analysis', 'true');
+          sessionStorage.setItem('completed_video_analysis_at', new Date().toISOString());
+        } catch {}
+
         localStorage.setItem('lastAssessment', JSON.stringify(assessment));
-        
-        // 同时也保存到 analysis_history 供历史记录页使用
+
         try {
           const historyKey = 'analysis_history';
           const existingHistory = localStorage.getItem(historyKey);
           const history = existingHistory ? JSON.parse(existingHistory) : [];
-          
+
           const newResult = {
             id: `analysis_${Date.now()}`,
             timestamp: new Date().toISOString(),
             movementName: selectedMovement?.name || '未知动作',
             movementType: selectedMovement?.id || 'unknown',
-            overallScore: assessment.overallScore, // 匹配 FmsAssessment 结构
+            overallScore: assessment.overallScore,
             mobilityScore: assessment.mobilityScore,
             stabilityScore: assessment.stabilityScore,
             recommendations: assessment.recommendations
           };
-          
+
           history.unshift(newResult);
-          localStorage.setItem(historyKey, JSON.stringify(history.slice(0, 20))); // 保留最近20条
+          localStorage.setItem(historyKey, JSON.stringify(history.slice(0, 20)));
         } catch (e) {
           console.error('Failed to save history', e);
         }
+      }).finally(() => {
+        setIsAnalyzing(false);
       });
-      setIsAnalyzing(false);
-    }, 3000);
+    }, delayMs);
+  };
+
+  const handleAnalyzeVideo = () => {
+    if (!videoFile) return;
+    analyzeWithMockResult(3000);
+  };
+
+  const handleUseDemoResult = () => {
+    analyzeWithMockResult(600);
   };
 
   const handleReset = () => {
@@ -309,6 +317,19 @@ const VideoAnalysisPage: React.FC = () => {
                   )}
                 </Button>
               </div>
+
+              <div className="flex justify-center">
+                <Button
+                  variant="outline"
+                  size="medium"
+                  onClick={handleUseDemoResult}
+                  disabled={isAnalyzing}
+                  className="transition-colors duration-300"
+                  style={{ borderColor: colors.primary[300], color: colors.primary[700] }}
+                >
+                  使用示例数据分析
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="space-y-4">
@@ -407,7 +428,11 @@ const VideoAnalysisPage: React.FC = () => {
               <Button
                 variant="primary"
                 size="medium"
-                onClick={() => navigateTo('reports')}
+                onClick={() => {
+                  let pid = '';
+                  try { pid = sessionStorage.getItem('currentPatientId') || ''; } catch {}
+                  navigateTo('reports', { patientId: pid, autoGenerate: true, openLatest: true });
+                }}
                 className="transition-colors duration-300"
                 style={{ backgroundColor: colors.primary[500], color: 'white' }}
                 aria-label="生成报告"

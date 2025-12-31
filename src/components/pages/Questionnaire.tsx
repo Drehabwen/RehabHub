@@ -5,7 +5,7 @@ import Button from '../ui/Button';
 import AudioRecorder from '../ui/AudioRecorder';
 
 const Questionnaire: React.FC = () => {
-  const { goBack } = useNavigation();
+  const { navigateTo, goBack } = useNavigation();
   const [showRecorder, setShowRecorder] = useState(false);
   const [lastTranscript, setLastTranscript] = useState<string>('');
 
@@ -20,6 +20,19 @@ const Questionnaire: React.FC = () => {
             style={{ borderColor: colors.primary[400], color: colors.primary[700] }}
           >
             录音并转写病例
+          </Button>
+          <Button
+            variant="primary"
+            onClick={() => { 
+              try { 
+                sessionStorage.setItem('completed_questionnaire', 'true'); 
+                sessionStorage.setItem('completed_questionnaire_at', new Date().toISOString());
+              } catch {}; 
+              navigateTo('assessment-hub'); 
+            }}
+            style={{ backgroundColor: colors.primary[500], color: '#fff' }}
+          >
+            完成问诊
           </Button>
           <Button
             variant="primary"
