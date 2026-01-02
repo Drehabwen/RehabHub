@@ -21,3 +21,10 @@ class AssessmentResponse(BaseModel):
     feedback: str
     angles: Dict[str, float]
     details: Dict[str, Any]
+
+
+class ApiEnvelopeAssessmentResponse(BaseModel):
+    code: int = Field(default=200)
+    message: str = Field(default="ok")
+    data: AssessmentResponse
+    timestamp: str

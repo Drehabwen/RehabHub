@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from typing import Dict
-from app.schemas.assessment import AssessmentRequest, AssessmentResponse
+from app.schemas.assessment import AssessmentRequest, AssessmentResponse, ApiEnvelopeAssessmentResponse
 import math
 
 router = APIRouter()
@@ -33,7 +33,7 @@ def calculate_angle(a_x, a_y, b_x, b_y, c_x, c_y):
     angle = math.degrees(math.acos(cosine_angle))
     return angle
 
-@router.post("/analyze", response_model=AssessmentResponse)
+@router.post("/analyze", response_model=ApiEnvelopeAssessmentResponse)
 async def analyze_movement(request: AssessmentRequest):
     """
     接收关键点数据，返回评估结果
@@ -92,11 +92,18 @@ async def analyze_movement(request: AssessmentRequest):
             score = 80.0
             feedback = f"已收到 {request.movementType} 动作数据，后端分析引擎运行正常。"
 
-        return AssessmentResponse(
-            score=score,
-            feedback=feedback,
-            angles=angles,
-            details={"processed_by": "Python FastAPI MVP"}
+        from datetime import datetime, timezone
+
+        return ApiEnvelopeAssessmentResponse(
+            code=200,
+            message="ok",
+            data=AssessmentResponse(
+                score=score,
+                feedback=feedback,
+                angles=angles,
+                details={"processed_by": "Python FastAPI MVP"},
+            ),
+            timestamp=datetime.now(timezone.utc).isoformat(),
         )
 
     except Exception as e:

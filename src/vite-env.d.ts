@@ -5,3 +5,6 @@ declare module '*.module.css' {
   export default classes;
 }
 
+declare module '../types/Assessment' {
+  export * from './types/assessment';
+}

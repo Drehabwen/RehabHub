@@ -25,7 +25,14 @@ def read_root():
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy", "version": "0.1.0"}
+    from datetime import datetime, timezone
+
+    return {
+        "code": 200,
+        "message": "ok",
+        "data": {"status": "ok", "version": "0.1.0"},
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
 
 if __name__ == "__main__":
     import uvicorn

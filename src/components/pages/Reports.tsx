@@ -7,6 +7,7 @@ import { useNavigation, useNavigationParams } from '../../contexts/NavigationCon
 import { FmsProcessor } from '../../services/assessment/fmsProcessor';
 import { animations, animationKeyframes } from '../../utils/animations';
 import { getModuleApi } from '../../services/api';
+import { LLMService, type AIReport, type RehabilitationData } from '../../services/LLMService';
 
 // 定义报告类型
 interface Report {
@@ -20,6 +21,26 @@ interface Report {
   status: 'completed' | 'in-progress' | 'draft';
   summary: string;
   details?: string;
+}
+
+interface AssessmentHistoryItem {
+  id: string;
+  timestamp: string;
+  movementType: string;
+  movementName: string;
+  overallScore?: { value: number; maxValue: number };
+  mobilityScore?: { value: number; maxValue: number };
+  stabilityScore?: { value: number; maxValue: number };
+  recommendations?: string[];
+}
+
+interface AssessmentSummary {
+  count: number;
+  avgOverallScore: number;
+  avgMobilityScore: number | null;
+  avgStabilityScore: number | null;
+  latestTimestamp: string | null;
+  byMovement: Array<{ movementType: string; movementName: string; count: number; avgScore: number }>;
 }
 
 const Reports: React.FC = () => {
@@ -42,6 +63,16 @@ const Reports: React.FC = () => {
   const [voiceIntake, setVoiceIntake] = useState<{ audioUrl?: string; transcript?: string; ts?: number } | null>(null);
   const [currentPatientId, setCurrentPatientId] = useState<string>('');
   const [currentPatientName, setCurrentPatientName] = useState<string>('');
+  const [assessmentHistory, setAssessmentHistory] = useState<AssessmentHistoryItem[]>([]);
+  const [assessmentSummary, setAssessmentSummary] = useState<AssessmentSummary | null>(null);
+  const [llmApiKey, setLlmApiKey] = useState<string>('');
+  const [llmPatientName, setLlmPatientName] = useState<string>('');
+  const [llmAge, setLlmAge] = useState<number | ''>('');
+  const [llmPainLevel, setLlmPainLevel] = useState<number>(0);
+  const [llmComplaints, setLlmComplaints] = useState<string>('');
+  const [aiReport, setAiReport] = useState<AIReport | null>(null);
+  const [aiReportError, setAiReportError] = useState<string | null>(null);
+  const [isGeneratingAiReport, setIsGeneratingAiReport] = useState<boolean>(false);
   
   // 组件挂载后设置动画并获取数据
   useEffect(() => {
@@ -63,6 +94,7 @@ const Reports: React.FC = () => {
       } catch {}
       setCurrentPatientId(pid);
       setCurrentPatientName(pname);
+      setLlmPatientName(pname);
       if (pid) {
         setNewReport(prev => ({ ...prev, patientId: pid }));
       }
@@ -72,6 +104,19 @@ const Reports: React.FC = () => {
         if (raw) {
           const parsed = JSON.parse(raw);
           setVoiceIntake(parsed);
+          if (parsed?.transcript) {
+            setLlmComplaints(String(parsed.transcript));
+          }
+        }
+      } catch {}
+
+      refreshAssessmentSummary();
+
+      try {
+        const storedKey = sessionStorage.getItem('llm_api_key') || '';
+        if (storedKey) {
+          setLlmApiKey(storedKey);
+          LLMService.setApiKey(storedKey);
         }
       } catch {}
 
@@ -80,6 +125,189 @@ const Reports: React.FC = () => {
       }
     })();
   }, []);
+
+  const loadAssessmentHistoryFromLocal = (): AssessmentHistoryItem[] => {
+    const items: AssessmentHistoryItem[] = [];
+
+    try {
+      const rawHistory = localStorage.getItem('analysis_history');
+      if (rawHistory) {
+        const parsed = JSON.parse(rawHistory);
+        if (Array.isArray(parsed)) {
+          parsed.forEach((item: any) => {
+            if (item && item.id && item.timestamp) {
+              items.push({
+                id: String(item.id),
+                timestamp: String(item.timestamp),
+                movementType: String(item.movementType || 'unknown'),
+                movementName: String(item.movementName || item.movementType || '未知动作'),
+                overallScore: item.overallScore,
+                mobilityScore: item.mobilityScore,
+                stabilityScore: item.stabilityScore,
+                recommendations: Array.isArray(item.recommendations) ? item.recommendations.map(String) : undefined,
+              });
+            }
+          });
+        }
+      }
+    } catch {}
+
+    try {
+      const rawLast = localStorage.getItem('lastAssessment');
+      if (rawLast) {
+        const parsed = JSON.parse(rawLast);
+        if (parsed && parsed.timestamp && parsed.movementType) {
+          const last: AssessmentHistoryItem = {
+            id: String(parsed.id || `last_${Date.now()}`),
+            timestamp: String(parsed.timestamp || new Date().toISOString()),
+            movementType: String(parsed.movementType || 'unknown'),
+            movementName: String(parsed.movementName || parsed.movementType || '未知动作'),
+            overallScore: parsed.overallScore,
+            mobilityScore: parsed.mobilityScore,
+            stabilityScore: parsed.stabilityScore,
+            recommendations: Array.isArray(parsed.recommendations) ? parsed.recommendations.map(String) : undefined,
+          };
+          if (!items.some(i => i.id === last.id)) {
+            items.unshift(last);
+          }
+        }
+      }
+    } catch {}
+
+    const deduped = new Map<string, AssessmentHistoryItem>();
+    for (const item of items) {
+      deduped.set(item.id, item);
+    }
+    return Array.from(deduped.values()).sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
+  };
+
+  const computeAssessmentSummary = (items: AssessmentHistoryItem[]): AssessmentSummary | null => {
+    if (!items.length) return null;
+
+    const count = items.length;
+    const scores = items
+      .map(i => i.overallScore?.value)
+      .filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
+    const mobility = items
+      .map(i => i.mobilityScore?.value)
+      .filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
+    const stability = items
+      .map(i => i.stabilityScore?.value)
+      .filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
+
+    const avgOverallScore = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+    const avgMobilityScore = mobility.length ? mobility.reduce((a, b) => a + b, 0) / mobility.length : null;
+    const avgStabilityScore = stability.length ? stability.reduce((a, b) => a + b, 0) / stability.length : null;
+
+    const latestTimestamp = items.reduce<string | null>((latest, item) => {
+      if (!item.timestamp) return latest;
+      if (!latest) return item.timestamp;
+      return item.timestamp > latest ? item.timestamp : latest;
+    }, null);
+
+    const grouped = new Map<string, { movementType: string; movementName: string; scores: number[] }>();
+    for (const item of items) {
+      const key = String(item.movementType || 'unknown');
+      if (!grouped.has(key)) {
+        grouped.set(key, { movementType: key, movementName: item.movementName || key, scores: [] });
+      }
+      if (typeof item.overallScore?.value === 'number') {
+        grouped.get(key)!.scores.push(item.overallScore.value);
+      }
+    }
+
+    const byMovement = Array.from(grouped.values())
+      .map(g => ({
+        movementType: g.movementType,
+        movementName: g.movementName,
+        count: g.scores.length,
+        avgScore: g.scores.length ? g.scores.reduce((a, b) => a + b, 0) / g.scores.length : 0,
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    return {
+      count,
+      avgOverallScore,
+      avgMobilityScore,
+      avgStabilityScore,
+      latestTimestamp,
+      byMovement,
+    };
+  };
+
+  const refreshAssessmentSummary = () => {
+    const history = loadAssessmentHistoryFromLocal();
+    setAssessmentHistory(history);
+    setAssessmentSummary(computeAssessmentSummary(history));
+  };
+
+  const buildRehabilitationDataFromSummary = (summary: AssessmentSummary, history: AssessmentHistoryItem[]): RehabilitationData => {
+    const angles: Record<string, number> = {
+      avg_overall_score: Math.round(summary.avgOverallScore * 10) / 10,
+      assessment_count: summary.count,
+    };
+
+    if (typeof summary.avgMobilityScore === 'number') {
+      angles.avg_mobility_score = Math.round(summary.avgMobilityScore * 10) / 10;
+    }
+    if (typeof summary.avgStabilityScore === 'number') {
+      angles.avg_stability_score = Math.round(summary.avgStabilityScore * 10) / 10;
+    }
+
+    summary.byMovement.slice(0, 10).forEach(item => {
+      const key = `movement_${item.movementType.replace(/[^a-zA-Z0-9_\-]/g, '_')}_avg`;
+      angles[key] = Math.round(item.avgScore * 10) / 10;
+    });
+
+    const timeline = history.slice(0, 8).map(h => {
+      const date = (h.timestamp || '').replace('T', ' ').slice(0, 16);
+      const score = typeof h.overallScore?.value === 'number' ? h.overallScore.value : 0;
+      return `- ${date} ${h.movementName} 得分 ${score}`;
+    }).join('\n');
+
+    const complaints = [
+      llmComplaints ? `主诉/备注：${llmComplaints}` : '',
+      '历史记录：',
+      timeline,
+    ].filter(Boolean).join('\n');
+
+    return {
+      patientName: llmPatientName || currentPatientName || undefined,
+      age: typeof llmAge === 'number' ? llmAge : undefined,
+      movementType: '多次评估汇总',
+      score: Math.round(summary.avgOverallScore),
+      angles,
+      painLevel: llmPainLevel,
+      complaints,
+    };
+  };
+
+  const handleGenerateAiReport = async () => {
+    if (!assessmentSummary) return;
+
+    setIsGeneratingAiReport(true);
+    setAiReportError(null);
+    setAiReport(null);
+
+    try {
+      const key = (llmApiKey || '').trim();
+      if (key) {
+        try {
+          sessionStorage.setItem('llm_api_key', key);
+        } catch {}
+        LLMService.setApiKey(key);
+      }
+
+      const data = buildRehabilitationDataFromSummary(assessmentSummary, assessmentHistory);
+      const report = await LLMService.generateReport(data);
+      setAiReport(report);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : '生成失败';
+      setAiReportError(message);
+    } finally {
+      setIsGeneratingAiReport(false);
+    }
+  };
 
   const generateReportFromLatest = async (patientId: string, patientName: string, openLatest: boolean) => {
     try {
@@ -332,6 +560,215 @@ const Reports: React.FC = () => {
     if (score >= 60) return colors.warning[500];
     return colors.error[500];
   };
+
+  const AssessmentSummaryPanel: React.FC = () => (
+    <Card className="p-6 border shadow-md">
+      <div className="flex items-start justify-between gap-3 mb-4">
+        <div>
+          <h2 className="text-xl font-semibold" style={{ color: colors.text.primary }}>评估数据汇总</h2>
+          <div className="text-sm mt-1" style={{ color: colors.text.secondary }}>基于本地历史（analysis_history / lastAssessment）</div>
+        </div>
+        <Button
+          variant="outline"
+          size="small"
+          onClick={refreshAssessmentSummary}
+          style={{ borderColor: colors.primary[300], color: colors.primary[700] }}
+        >
+          刷新
+        </Button>
+      </div>
+
+      {assessmentSummary ? (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-3 rounded" style={{ backgroundColor: colors.neutral[50], border: `1px solid ${colors.neutral[200]}` }}>
+              <div className="text-xs" style={{ color: colors.text.secondary }}>评估次数</div>
+              <div className="text-2xl font-bold" style={{ color: colors.text.primary }}>{assessmentSummary.count}</div>
+            </div>
+            <div className="p-3 rounded" style={{ backgroundColor: colors.neutral[50], border: `1px solid ${colors.neutral[200]}` }}>
+              <div className="text-xs" style={{ color: colors.text.secondary }}>平均得分</div>
+              <div className="text-2xl font-bold" style={{ color: getScoreColor(assessmentSummary.avgOverallScore) }}>{assessmentSummary.avgOverallScore.toFixed(1)}</div>
+            </div>
+            <div className="p-3 rounded" style={{ backgroundColor: colors.neutral[50], border: `1px solid ${colors.neutral[200]}` }}>
+              <div className="text-xs" style={{ color: colors.text.secondary }}>平均灵活性</div>
+              <div className="text-2xl font-bold" style={{ color: colors.text.primary }}>{assessmentSummary.avgMobilityScore === null ? '—' : assessmentSummary.avgMobilityScore.toFixed(1)}</div>
+            </div>
+            <div className="p-3 rounded" style={{ backgroundColor: colors.neutral[50], border: `1px solid ${colors.neutral[200]}` }}>
+              <div className="text-xs" style={{ color: colors.text.secondary }}>平均稳定性</div>
+              <div className="text-2xl font-bold" style={{ color: colors.text.primary }}>{assessmentSummary.avgStabilityScore === null ? '—' : assessmentSummary.avgStabilityScore.toFixed(1)}</div>
+            </div>
+          </div>
+
+          <div className="text-sm" style={{ color: colors.text.secondary }}>
+            最近一次：{assessmentSummary.latestTimestamp ? assessmentSummary.latestTimestamp.replace('T', ' ').slice(0, 16) : '—'}
+          </div>
+
+          <div>
+            <div className="text-sm font-medium mb-2" style={{ color: colors.text.primary }}>按动作</div>
+            <div className="space-y-2">
+              {assessmentSummary.byMovement.slice(0, 6).map(item => (
+                <div key={item.movementType} className="flex items-center justify-between">
+                  <div className="text-sm" style={{ color: colors.text.primary }}>{item.movementName}</div>
+                  <div className="text-sm" style={{ color: colors.text.secondary }}>{item.count} 次 · {item.avgScore.toFixed(1)}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="text-sm" style={{ color: colors.text.secondary }}>
+          暂无本地评估数据。先完成一次“动作评估/量表/问诊”，再回来生成汇总与AI报告。
+        </div>
+      )}
+    </Card>
+  );
+
+  const AiAnalysisPanel: React.FC = () => (
+    <Card className="p-6 border shadow-md">
+      <div className="flex items-start justify-between gap-3 mb-4">
+        <div>
+          <h2 className="text-xl font-semibold" style={{ color: colors.text.primary }}>AI 分析报告</h2>
+          <div className="text-sm mt-1" style={{ color: colors.text.secondary }}>将汇总结果发送到 LLM 生成康复分析建议</div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label className="block text-sm font-medium mb-1" style={{ color: colors.text.primary }}>患者姓名</label>
+          <input
+            type="text"
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            style={{ borderColor: colors.neutral[300] }}
+            value={llmPatientName}
+            onChange={(e) => setLlmPatientName(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1" style={{ color: colors.text.primary }}>年龄</label>
+          <input
+            type="number"
+            min={0}
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            style={{ borderColor: colors.neutral[300] }}
+            value={llmAge}
+            onChange={(e) => setLlmAge(e.target.value === '' ? '' : Number(e.target.value))}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1" style={{ color: colors.text.primary }}>疼痛等级（0-10）</label>
+          <input
+            type="number"
+            min={0}
+            max={10}
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            style={{ borderColor: colors.neutral[300] }}
+            value={llmPainLevel}
+            onChange={(e) => setLlmPainLevel(Number(e.target.value) || 0)}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1" style={{ color: colors.text.primary }}>LLM API Key（可选）</label>
+          <input
+            type="password"
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            style={{ borderColor: colors.neutral[300] }}
+            value={llmApiKey}
+            onChange={(e) => setLlmApiKey(e.target.value)}
+            placeholder="未填写则使用模拟报告"
+          />
+        </div>
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium mb-1" style={{ color: colors.text.primary }}>主诉/补充信息</label>
+          <textarea
+            rows={4}
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            style={{ borderColor: colors.neutral[300] }}
+            value={llmComplaints}
+            onChange={(e) => setLlmComplaints(e.target.value)}
+            placeholder="可粘贴问诊要点、疼痛诱因、既往史等"
+          />
+        </div>
+      </div>
+
+      <div className="mt-3 text-xs" style={{ color: colors.text.secondary }}>
+        仅供康复建议参考，不能替代线下诊疗与医生诊断。
+      </div>
+
+      <div className="flex justify-end gap-3 mt-4">
+        <Button
+          variant="primary"
+          size="medium"
+          onClick={handleGenerateAiReport}
+          disabled={!assessmentSummary || isGeneratingAiReport}
+          style={{ backgroundColor: colors.primary[500], color: '#fff' }}
+        >
+          {isGeneratingAiReport ? '生成中...' : '生成AI报告'}
+        </Button>
+      </div>
+
+      {aiReportError && (
+        <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          {aiReportError}
+        </div>
+      )}
+
+      {aiReport && (
+        <div className="mt-5 space-y-4">
+          <div>
+            <div className="text-sm font-medium mb-1" style={{ color: colors.text.primary }}>总结</div>
+            <div className="text-sm" style={{ color: colors.text.secondary, whiteSpace: 'pre-wrap' }}>{aiReport.summary}</div>
+          </div>
+          <div>
+            <div className="text-sm font-medium mb-1" style={{ color: colors.text.primary }}>临床印象</div>
+            <div className="text-sm" style={{ color: colors.text.secondary, whiteSpace: 'pre-wrap' }}>{aiReport.clinicalImpression}</div>
+          </div>
+          <div>
+            <div className="text-sm font-medium mb-1" style={{ color: colors.text.primary }}>建议</div>
+            <ul className="list-disc pl-5" style={{ color: colors.text.secondary }}>
+              {aiReport.recommendations?.map((r, idx) => (
+                <li key={idx} className="text-sm" style={{ whiteSpace: 'pre-wrap' }}>{r}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <div className="text-sm font-medium mb-1" style={{ color: colors.text.primary }}>风险提示</div>
+            {aiReport.riskFlags?.length ? (
+              <ul className="list-disc pl-5" style={{ color: colors.text.secondary }}>
+                {aiReport.riskFlags.map((r, idx) => (
+                  <li key={idx} className="text-sm" style={{ whiteSpace: 'pre-wrap' }}>{r}</li>
+                ))}
+              </ul>
+            ) : (
+              <div className="text-sm" style={{ color: colors.text.secondary }}>—</div>
+            )}
+          </div>
+          {aiReport.soapNote && (
+            <div>
+              <div className="text-sm font-medium mb-2" style={{ color: colors.text.primary }}>SOAP</div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="p-3 rounded" style={{ backgroundColor: colors.neutral[50], border: `1px solid ${colors.neutral[200]}` }}>
+                  <div className="text-xs font-medium mb-1" style={{ color: colors.text.primary }}>S</div>
+                  <div className="text-sm" style={{ color: colors.text.secondary, whiteSpace: 'pre-wrap' }}>{aiReport.soapNote.s}</div>
+                </div>
+                <div className="p-3 rounded" style={{ backgroundColor: colors.neutral[50], border: `1px solid ${colors.neutral[200]}` }}>
+                  <div className="text-xs font-medium mb-1" style={{ color: colors.text.primary }}>O</div>
+                  <div className="text-sm" style={{ color: colors.text.secondary, whiteSpace: 'pre-wrap' }}>{aiReport.soapNote.o}</div>
+                </div>
+                <div className="p-3 rounded" style={{ backgroundColor: colors.neutral[50], border: `1px solid ${colors.neutral[200]}` }}>
+                  <div className="text-xs font-medium mb-1" style={{ color: colors.text.primary }}>A</div>
+                  <div className="text-sm" style={{ color: colors.text.secondary, whiteSpace: 'pre-wrap' }}>{aiReport.soapNote.a}</div>
+                </div>
+                <div className="p-3 rounded" style={{ backgroundColor: colors.neutral[50], border: `1px solid ${colors.neutral[200]}` }}>
+                  <div className="text-xs font-medium mb-1" style={{ color: colors.text.primary }}>P</div>
+                  <div className="text-sm" style={{ color: colors.text.secondary, whiteSpace: 'pre-wrap' }}>{aiReport.soapNote.p}</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </Card>
+  );
   
   return (
       <div className="mx-auto max-w-6xl p-4 w-full">
@@ -483,6 +920,11 @@ const Reports: React.FC = () => {
                   从最近评估生成
                 </Button>
               </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <AssessmentSummaryPanel />
+              <AiAnalysisPanel />
             </div>
             
             {/* 创建报告表单 */}

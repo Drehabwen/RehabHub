@@ -5,7 +5,20 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 8001;
+
+const ok = (res, data, message = 'ok') => {
+  res.json({ code: 200, message, data, timestamp: new Date().toISOString() });
+};
+
+const fail = (res, httpStatus, message, code = httpStatus, details) => {
+  res.status(httpStatus).json({
+    code,
+    message,
+    data: details ?? null,
+    timestamp: new Date().toISOString()
+  });
+};
 
 // 中间件
 app.use(cors());
@@ -89,7 +102,7 @@ app.post(['/api/analyze', '/analyze'], upload.single('file'), (req, res) => {
       keypoints: generateMockKeypoints()
     };
 
-    res.json(mockResponse);
+    ok(res, mockResponse);
   }, 300); // 模拟300ms的处理延迟
 });
 
@@ -106,9 +119,9 @@ app.post('/api/pose/stream', (req, res) => {
     }
     existing.push(record);
     fs.writeFileSync(resultsFile, JSON.stringify(existing, null, 2));
-    res.json({ status: 'ok', id });
+    ok(res, { status: 'ok', id });
   } catch (e) {
-    res.status(500).json({ status: 'error', message: 'failed to store pose telemetry' });
+    fail(res, 500, 'failed to store pose telemetry');
   }
 });
 
@@ -131,32 +144,32 @@ app.get('/api/results', (req, res) => {
     scoreSummary: r.overallScore ? `${r.overallScore.value}/${r.overallScore.maxValue}` : undefined,
     anglesSummary: r.angles || {}
   }));
-  res.json({ items, total, page, size });
+  ok(res, { items, total, page, size });
 });
 
 app.get('/api/results/:id', (req, res) => {
   const resultsFile = path.join(__dirname, 'data', 'results.json');
-  if (!fs.existsSync(resultsFile)) return res.status(404).json({ message: 'not found' });
+  if (!fs.existsSync(resultsFile)) return fail(res, 404, 'not found');
   try {
     const data = JSON.parse(fs.readFileSync(resultsFile, 'utf-8'));
     const found = data.find((r) => r.id === req.params.id);
-    if (!found) return res.status(404).json({ message: 'not found' });
-    res.json(found);
+    if (!found) return fail(res, 404, 'not found');
+    ok(res, found);
   } catch {
-    res.status(500).json({ message: 'read error' });
+    fail(res, 500, 'read error');
   }
 });
 
 app.delete('/api/results/:id', (req, res) => {
   const resultsFile = path.join(__dirname, 'data', 'results.json');
-  if (!fs.existsSync(resultsFile)) return res.status(404).json({ message: 'not found' });
+  if (!fs.existsSync(resultsFile)) return fail(res, 404, 'not found');
   try {
     const data = JSON.parse(fs.readFileSync(resultsFile, 'utf-8'));
     const next = data.filter((r) => r.id !== req.params.id);
     fs.writeFileSync(resultsFile, JSON.stringify(next, null, 2));
-    res.json({ status: 'ok' });
+    ok(res, { status: 'ok' });
   } catch {
-    res.status(500).json({ message: 'write error' });
+    fail(res, 500, 'write error');
   }
 });
 
@@ -184,9 +197,9 @@ app.post('/api/results', (req, res) => {
     };
     data.push(record);
     fs.writeFileSync(resultsFile, JSON.stringify(data, null, 2));
-    res.json(record);
+    ok(res, record);
   } catch (e) {
-    res.status(500).json({ message: 'create error' });
+    fail(res, 500, 'create error');
   }
 });
 
@@ -194,12 +207,12 @@ app.post('/api/results', (req, res) => {
 app.get('/api/results/:id/export', (req, res) => {
   const format = (req.query.format || 'pdf').toString();
   // 直接返回一个提示（真实环境应生成PDF/Excel并返回下载）
-  res.json({ status: 'ok', id: req.params.id, format });
+  ok(res, { status: 'ok', id: req.params.id, format });
 });
 
 // 健康检查端点
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  ok(res, { status: 'ok' });
 });
 
 // 仪表盘统计数据端点
@@ -251,7 +264,7 @@ app.get('/dashboard/stats', (req, res) => {
     }
   ];
   
-  res.json(stats);
+  ok(res, stats);
 });
 
 // 启动服务器

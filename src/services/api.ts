@@ -23,13 +23,36 @@ export interface AnalysisResponse {
 
 // API基础配置
 const API_CONFIG = {
-  baseUrl: import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_URL || 'http://localhost:8000', // 优先使用环境变量，默认8000
+  baseUrl: import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001',
   timeout: 30000,
   defaultHeaders: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
   }
 };
+
+const BACKEND_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+
+type ApiEnvelope<T> = {
+  code: number;
+  message: string;
+  data: T;
+  timestamp: string;
+};
+
+function isApiEnvelope<T>(value: unknown): value is ApiEnvelope<T> {
+  if (!value || typeof value !== 'object') return false;
+  const v = value as Record<string, unknown>;
+  return typeof v.code === 'number' && typeof v.message === 'string' && 'data' in v && typeof v.timestamp === 'string';
+}
+
+async function readJsonSafe(response: Response): Promise<unknown> {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
 
 // 模块API配置接口
 export interface ModuleApiConfig {
@@ -89,10 +112,18 @@ class ApiClient {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const payload = await readJsonSafe(response);
+      if (isApiEnvelope<any>(payload)) throw new Error(payload.message || `HTTP错误: ${response.status}`);
+      const message = (payload as any)?.message;
+      throw new Error(message || `HTTP错误: ${response.status}`);
     }
 
-    return response.json();
+    const payload = await readJsonSafe(response);
+    if (isApiEnvelope<T>(payload)) {
+      if (payload.code !== 200) throw new Error(payload.message || '请求失败');
+      return payload.data;
+    }
+    return payload as T;
   }
 
   // 通用POST请求
@@ -106,11 +137,17 @@ class ApiClient {
       body: JSON.stringify(data)
     });
 
+    const payload = await readJsonSafe(response);
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      if (isApiEnvelope<any>(payload)) throw new Error(payload.message || `HTTP错误: ${response.status}`);
+      const message = (payload as any)?.message;
+      throw new Error(message || `HTTP错误: ${response.status}`);
     }
-
-    return response.json();
+    if (isApiEnvelope<T>(payload)) {
+      if (payload.code !== 200) throw new Error(payload.message || '请求失败');
+      return payload.data;
+    }
+    return payload as T;
   }
 
   // 文件上传POST请求
@@ -120,11 +157,17 @@ class ApiClient {
       body: formData
     });
 
+    const payload = await readJsonSafe(response);
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      if (isApiEnvelope<any>(payload)) throw new Error(payload.message || `HTTP错误: ${response.status}`);
+      const message = (payload as any)?.message;
+      throw new Error(message || `HTTP错误: ${response.status}`);
     }
-
-    return response.json();
+    if (isApiEnvelope<T>(payload)) {
+      if (payload.code !== 200) throw new Error(payload.message || '请求失败');
+      return payload.data;
+    }
+    return payload as T;
   }
 
   // 通用DELETE请求
@@ -134,11 +177,17 @@ class ApiClient {
       headers: this.defaultHeaders
     });
 
+    const payload = await readJsonSafe(response);
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      if (isApiEnvelope<any>(payload)) throw new Error(payload.message || `HTTP错误: ${response.status}`);
+      const message = (payload as any)?.message;
+      throw new Error(message || `HTTP错误: ${response.status}`);
     }
-
-    return response.json();
+    if (isApiEnvelope<T>(payload)) {
+      if (payload.code !== 200) throw new Error(payload.message || '请求失败');
+      return payload.data;
+    }
+    return payload as T;
   }
 }
 
@@ -237,9 +286,25 @@ export const postPoseTelemetry = async (payload: {
   angles: Record<string, number>;
   keypoints: Keypoint[];
 }): Promise<any> => {
-  const apiClient = getModuleApi('video-analysis');
-  // 指向 Python 后端的新端点
-  return apiClient.post<any>('/api/v1/assessment/analyze', payload);
+  const response = await fetch(`${BACKEND_BASE_URL}/api/v1/assessment/analyze`, {
+    method: 'POST',
+    headers: API_CONFIG.defaultHeaders,
+    body: JSON.stringify(payload)
+  });
+
+  const data = await readJsonSafe(response);
+  if (!response.ok) {
+    if (isApiEnvelope<any>(data)) throw new Error(data.message || `HTTP错误: ${response.status}`);
+    const message = (data as any)?.message;
+    throw new Error(message || `HTTP错误: ${response.status}`);
+  }
+
+  if (isApiEnvelope<any>(data)) {
+    if (data.code !== 200) throw new Error(data.message || '请求失败');
+    return data.data;
+  }
+
+  return data;
 };
 
 // 默认导出
