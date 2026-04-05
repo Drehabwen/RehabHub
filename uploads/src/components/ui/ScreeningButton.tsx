@@ -22,8 +22,8 @@ export const ScreeningButton: React.FC<ScreeningButtonProps> = ({
   icon,
   disabled = false,
   className = '',
-  primaryColor = colors.primary,
-  primaryLightColor = colors.primaryLight
+  primaryColor = colors.primary[500],
+  primaryLightColor = colors.primary[400]
 }) => {
   return (
     <button

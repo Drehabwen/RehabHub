@@ -16,18 +16,18 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 md:p-8" style={{ backgroundColor: colors.backgroundSecondary }}>
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 md:p-8" style={{ backgroundColor: colors.background.secondary }}>
       {/* 主标题 */}
       <div className="text-center mb-8 sm:mb-10 md:mb-12 w-full max-w-2xl">
         <h1 
           className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-3 sm:mb-4 leading-tight"
-          style={{ color: colors.textPrimary }}
+          style={{ color: colors.text.primary }}
         >
           亚当斯数字化筛查
         </h1>
         <p 
           className="text-base sm:text-lg md:text-xl lg:text-2xl"
-          style={{ color: colors.textSecondary }}
+          style={{ color: colors.text.secondary }}
         >
           脊柱侧弯快速筛查系统
         </p>
@@ -59,7 +59,7 @@ const Dashboard: React.FC = () => {
       <div className="mt-6 sm:mt-8 text-center px-4">
         <p 
           className="text-xs sm:text-sm md:text-base"
-          style={{ color: colors.textLight }}
+          style={{ color: colors.text.hint }}
         >
           点击按钮开始亚当斯前屈测试筛查
         </p>
