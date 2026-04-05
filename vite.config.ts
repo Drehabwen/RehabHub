@@ -14,13 +14,15 @@ export default defineConfig(({ mode }) => {
     ].filter(Boolean),
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, './src'),
+        '@': path.resolve(__dirname, './uploads/src'),
       },
       dedupe: ['react', 'react-dom']
     },
+    root: '.',
+    source: './uploads/src',
     build: isPlugin ? {
       lib: {
-        entry: path.resolve(__dirname, 'src/plugin-entry.tsx'),
+        entry: path.resolve(__dirname, 'uploads/src/plugin-entry.tsx'),
         name: 'RehabHub',
         formats: ['umd', 'es'],
         fileName: (format) => `rehab-hub-plugin.${format}.js`,
@@ -42,7 +44,7 @@ export default defineConfig(({ mode }) => {
     test: {
       globals: true,
       environment: 'jsdom',
-      setupFiles: ['./src/setupTests.ts']
+      setupFiles: ['./uploads/src/setupTests.ts']
     },
     server: {
       host: '0.0.0.0',
