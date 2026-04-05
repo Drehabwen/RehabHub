@@ -289,127 +289,23 @@ const Navigation: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen
               onClick={() => handleNavigationClick('dashboard')} 
               className="py-3"
             >
-              <span className="mr-3 text-lg">📊</span>
-              仪表盘
+              <span className="mr-3 text-lg">�</span>
+              亚当斯筛查
             </NavigationLink>
           </NavigationItem>
           <NavigationItem>
             <NavigationLink 
-              active={state.currentModule === 'assessment-hub'} 
-              onClick={() => handleNavigationClick('assessment-hub')} 
+              active={state.currentModule === 'adams-test'} 
+              onClick={() => handleNavigationClick('adams-test')} 
               className="py-3"
             >
-              <span className="mr-3 text-lg">🧘</span>
-              评估中心
-            </NavigationLink>
-          </NavigationItem>
-          <NavigationItem>
-            <NavigationLink 
-              active={state.currentModule === 'patients'} 
-              onClick={() => handleNavigationClick('patients')} 
-              className="py-3"
-            >
-              <span className="mr-3 text-lg">👥</span>
-              患者管理
-            </NavigationLink>
-          </NavigationItem>
-          <NavigationItem>
-            <NavigationLink 
-              active={state.currentModule === 'history'} 
-              onClick={() => handleNavigationClick('history')} 
-              className="py-3"
-            >
-              <span className="mr-3 text-lg">🕒</span>
-              历史记录
-            </NavigationLink>
-          </NavigationItem>
-          <NavigationItem>
-            <NavigationLink 
-              active={state.currentModule === 'reports'} 
-              onClick={() => handleNavigationClick('reports')} 
-              className="py-3"
-            >
-              <span className="mr-3 text-lg">📄</span>
-              评估报告
-            </NavigationLink>
-          </NavigationItem>
-          <NavigationItem>
-            <NavigationLink 
-              active={state.currentModule === 'settings'} 
-              onClick={() => handleNavigationClick('settings')} 
-              className="py-3"
-            >
-              <span className="mr-3 text-lg">⚙️</span>
-              设置
+              <span className="mr-3 text-lg">✅</span>
+              开始测试
             </NavigationLink>
           </NavigationItem>
         </NavigationList>
-        
-        {/* 底部快速操作区 */}
-        <div className="mt-8 pt-4 border-t border-gray-100">
-          <button
-            onClick={() => handleNavigationClick('assessment-hub')}
-            className="w-full py-3 px-4 bg-primary text-white rounded-lg shadow hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 font-medium"
-            style={{ backgroundColor: theme.colors.primary[500] }}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            新建评估
-          </button>
-        </div>
       </Sidebar>
     </>
-  );
-};
-
-// 底部导航栏组件
-const BottomNavigation: React.FC<{ onMenuClick: () => void }> = ({ onMenuClick }) => {
-  const { state, navigateTo } = useNavigation();
-
-  const navItems = [
-    { id: 'dashboard', label: '主页', icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-      </svg>
-    )},
-    { id: 'assessment-hub', label: '评估', icon: (
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-          </svg>
-        )},
-    { id: 'history', label: '历史', icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    )},
-    { id: 'menu', label: '更多', icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-      </svg>
-    )}
-  ];
-
-  return (
-    <div role="navigation" aria-label="底部导航" className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center pb-safe-area z-40 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
-      {navItems.map((item) => {
-        const isActive = state.currentModule === item.id;
-        return (
-          <button
-            key={item.id}
-            onClick={() => item.id === 'menu' ? onMenuClick() : navigateTo(item.id)}
-            aria-current={isActive ? 'page' : undefined}
-            className={`flex flex-col items-center justify-center w-full py-2 transition-colors ${
-              isActive ? 'text-primary' : 'text-gray-500 hover:text-gray-700'
-            }`}
-            style={{ color: isActive ? theme.colors.primary[500] : undefined }}
-          >
-            {item.icon}
-            <span className="text-xs mt-1">{item.label}</span>
-          </button>
-        );
-      })}
-    </div>
   );
 };
 
@@ -460,13 +356,11 @@ const Layout: React.FC<LayoutProps> = ({ children, title, hideNavigation: hideNa
         </>
       )}
 
-      <Main className={`md:flex-row flex flex-col p-0 md:p-4 ${!hideNavigation ? 'pb-20 md:pb-4' : ''} bg-gray-50`}>
+      <Main className={`md:flex-row flex flex-col p-0 md:p-4 ${!hideNavigation ? 'pb-0 md:pb-4' : ''} bg-gray-50`}>
         
         <div className="flex-1 px-4 py-4 md:p-0">
           <Content>{children}</Content>
         </div>
-
-        {!hideNavigation && <BottomNavigation onMenuClick={() => setSidebarOpen(true)} />}
       </Main>
     </LayoutContainer>
   );
