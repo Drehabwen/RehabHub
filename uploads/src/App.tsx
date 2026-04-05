@@ -45,7 +45,7 @@ const AppContent: React.FC = () => {
   const hideNavigation = pluginConfig?.hideNavigation ?? false;
 
   const renderModule = () => {
-    // 渲染仪表盘
+    // 渲染仪表盘 - Dashboard 不使用 Layout，直接全屏显示
     if (state.currentModule === 'dashboard' || state.currentModule === 'statistics') {
       return <Dashboard isStatisticsPage={state.currentModule === 'statistics'} />;
     }
@@ -279,12 +279,23 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <Layout>
-      {!hideNavigation && <Breadcrumbs className="mb-4" />}
-      <div className="flex-1">
-        {renderModule()}
-      </div>
-    </Layout>
+    <>
+      {state.currentModule === 'dashboard' || state.currentModule === 'statistics' ? (
+        // Dashboard 页面不使用 Layout
+        <>
+          {!hideNavigation && <Breadcrumbs className="mb-4" />}
+          {renderModule()}
+        </>
+      ) : (
+        // 其他页面使用 Layout 包裹
+        <Layout>
+          {!hideNavigation && <Breadcrumbs className="mb-4" />}
+          <div className="flex-1">
+            {renderModule()}
+          </div>
+        </Layout>
+      )}
+    </>
   );
 };
 
