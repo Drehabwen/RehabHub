@@ -5,7 +5,6 @@ import { useNavigation, NavigationProvider } from './contexts/NavigationContext'
 import { usePluginConfig } from './contexts/PluginContext';
 import Breadcrumbs from './components/ui/Breadcrumbs';
 import SplashScreen from './components/ui/SplashScreen';
-import MobileDebugToolbar from './components/ui/MobileDebugToolbar';
 import { colors } from './theme';
 
 // 导入页面组件
@@ -328,8 +327,6 @@ const App: React.FC = () => {
       <NavigationProvider>
         <AppContent />
       </NavigationProvider>
-      {/* 仅在开发环境显示移动端调试工具 */}
-      {import.meta.env.DEV && <MobileDebugToolbar />}
     </>
   );
 };
