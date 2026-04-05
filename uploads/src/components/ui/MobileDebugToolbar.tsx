@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { colors } from '../theme';
+import { colors } from '../../theme';
 
 /**
  * 移动端调试工具栏
