@@ -45,8 +45,12 @@ const AppContent: React.FC = () => {
 
   const renderModule = () => {
     // 渲染仪表盘 - Dashboard 不使用 Layout，直接全屏显示
-    if (state.currentModule === 'dashboard' || state.currentModule === 'statistics') {
-      return <Dashboard isStatisticsPage={state.currentModule === 'statistics'} />;
+    if (state.currentModule === 'dashboard') {
+      return <Dashboard />;
+    }
+    
+    if (state.currentModule === 'statistics') {
+      return <Dashboard />;
     }
     
     if (state.currentModule === 'status-indicator-example') {
@@ -278,24 +282,24 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <>
-      {state.currentModule === 'dashboard' || state.currentModule === 'statistics' ? (
-        // Dashboard 页面不使用 Layout
-        <>
-          {!hideNavigation && <Breadcrumbs className="mb-4" />}
-          {renderModule()}
-        </>
-      ) : (
-        // 其他页面使用 Layout 包裹
-        <Layout>
-          {!hideNavigation && <Breadcrumbs className="mb-4" />}
-          <div className="flex-1">
+      <>
+        {state.currentModule === 'dashboard' || state.currentModule === 'statistics' ? (
+          // Dashboard 页面不使用 Layout
+          <>
+            {!hideNavigation && <Breadcrumbs className="mb-4" />}
             {renderModule()}
-          </div>
-        </Layout>
-      )}
-    </>
-  );
+          </>
+        ) : (
+          // 其他页面使用 Layout 包裹
+          <Layout>
+            {!hideNavigation && <Breadcrumbs className="mb-4" />}
+            <div className="flex-1">
+              {renderModule()}
+            </div>
+          </Layout>
+        )}
+      </>
+    );
 };
 
 // 主应用组件

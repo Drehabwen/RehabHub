@@ -54,8 +54,7 @@ const Dashboard: React.FC = () => {
           focus:ring-opacity-50
         "
         style={{ 
-          background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryLight} 100%)`,
-          focusRing: colors.primaryLight
+          background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryLight} 100%)`
         }}
       >
         <div className="flex items-center justify-center gap-3">

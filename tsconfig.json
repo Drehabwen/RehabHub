@@ -17,6 +17,6 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src"],
-  "exclude": ["Users/**"]
+  "include": ["uploads/src"],
+  "exclude": ["node_modules"]
 }
