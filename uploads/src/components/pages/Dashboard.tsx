@@ -1,6 +1,7 @@
 import React from 'react';
 import { colors } from '../../theme';
 import { useNavigation } from '../../contexts/NavigationContext';
+import { ScreeningButton } from '../ui/ScreeningButton';
 
 /**
  * 极简版仪表盘
@@ -32,35 +33,11 @@ const Dashboard: React.FC = () => {
         </p>
       </div>
 
-      {/* 筛查按钮 */}
-      <button
+      {/* 筛查按钮 - 使用可复用组件 */}
+      <ScreeningButton
         onClick={handleStartScreening}
-        className="
-          w-full max-w-xs sm:max-w-sm md:max-w-md 
-          py-5 px-6 sm:py-6 sm:px-8
-          rounded-2xl 
-          text-white 
-          text-lg sm:text-xl md:text-2xl 
-          font-bold
-          shadow-lg
-          transform 
-          transition-all 
-          duration-300
-          hover:shadow-xl
-          hover:scale-105
-          active:scale-95
-          focus:outline-none
-          focus:ring-4
-          focus:ring-opacity-50
-          disabled:opacity-50
-          disabled:cursor-not-allowed
-          disabled:transform-none
-        "
-        style={{ 
-          background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryLight} 100%)`
-        }}
-      >
-        <div className="flex items-center justify-center gap-2 sm:gap-3">
+        label="开始筛查"
+        icon={
           <svg 
             xmlns="http://www.w3.org/2000/svg" 
             className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10" 
@@ -75,9 +52,8 @@ const Dashboard: React.FC = () => {
               d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" 
             />
           </svg>
-          <span className="truncate">开始筛查</span>
-        </div>
-      </button>
+        }
+      />
 
       {/* 底部说明文字 */}
       <div className="mt-6 sm:mt-8 text-center px-4">
