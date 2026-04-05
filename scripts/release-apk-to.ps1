@@ -30,7 +30,7 @@ if (-not $gitTag -or $gitTag -eq "") {
   try { $gitTag = (git tag --points-at HEAD 2>$null).Trim() } catch { $gitTag = "" }
 }
 $effectiveTag = if ($Tag -and $Tag -ne "") { $Tag } elseif ($gitTag -and $gitTag -ne "") { $gitTag } else { "" }
-if ($effectiveTag -ne "") { $name = "RehabHub-" + $effectiveTag + "-debug.apk" } else { $name = "RehabHub-" + $version + "-" + $date + "-debug.apk" }
+if ($effectiveTag -ne "") { $name = "康复宝-" + $effectiveTag + "-debug.apk" } else { $name = "康复宝-" + $version + "-" + $date + "-debug.apk" }
 $src = Join-Path $repoRoot "android/app/build/outputs/apk/debug/app-debug.apk"
 if (!(Test-Path $DestRoot)) { New-Item -ItemType Directory -Path $DestRoot -Force | Out-Null }
 Copy-Item $src (Join-Path $DestRoot $name) -Force

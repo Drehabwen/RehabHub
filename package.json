@@ -1,11 +1,22 @@
 {
   "name": "deeprehab-video",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "RehabHub Pluggable Widget for Movement Analysis and Rehabilitation",
+  "main": "dist-plugin/rehab-hub-plugin.umd.js",
+  "module": "dist-plugin/rehab-hub-plugin.es.js",
+  "files": [
+    "dist-plugin"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist-plugin/rehab-hub-plugin.es.js",
+      "require": "./dist-plugin/rehab-hub-plugin.umd.js"
+    }
+  },
   "scripts": {
     "test": "vitest run",
     "build": "tsc && vite build",
+    "build:plugin": "tsc && vite build --config vite.config.plugin.ts",
     "dev": "vite --host 0.0.0.0 --port 3000",
     "server": "node server.js",
     "dev:all": "concurrently \"npm run server\" \"npm run dev\"",
@@ -45,10 +56,12 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
+    "cross-env": "^10.1.0",
     "happy-dom": "^20.0.11",
     "jsdom": "^27.2.0",
     "typescript": "^5.9.3",
     "vite": "^7.2.6",
+    "vite-plugin-css-injected-by-js": "^3.5.2",
     "vitest": "^4.0.14"
   },
   "repository": {

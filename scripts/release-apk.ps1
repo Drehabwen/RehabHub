@@ -16,7 +16,7 @@ Pop-Location
 $pkg = Get-Content (Join-Path $repoRoot "package.json") -Raw | ConvertFrom-Json
 $version = $pkg.version
 $date = Get-Date -Format "yyyyMMdd"
-if ($Tag -ne "") { $name = "RehabHub-" + $Tag + "-debug.apk" } else { $name = "RehabHub-" + $version + "-" + $date + "-debug.apk" }
+if ($Tag -ne "") { $name = "康复宝-" + $Tag + "-debug.apk" } else { $name = "康复宝-" + $version + "-" + $date + "-debug.apk" }
 $src = Join-Path $repoRoot "android/app/build/outputs/apk/debug/app-debug.apk"
 $destDir = Join-Path $repoRoot "DEV"
 if (!(Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir -Force | Out-Null }

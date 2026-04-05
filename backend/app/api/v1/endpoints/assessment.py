@@ -1,6 +1,13 @@
 from fastapi import APIRouter, HTTPException
 from typing import Dict
 from app.schemas.assessment import AssessmentRequest, AssessmentResponse, ApiEnvelopeAssessmentResponse
+from app.services.json_store import (
+    ASSESSMENT_RESULTS_FILE,
+    build_id,
+    normalize_assessment_result,
+    read_json_array,
+    write_json_array,
+)
 import math
 
 router = APIRouter()
@@ -42,7 +49,7 @@ async def analyze_movement(request: AssessmentRequest):
     try:
         # 1. 解析关键点
         # MoveNet / PoseNet keypoints map needs to be known.
-        # 假设前端传来的 keypoints 已经包含 name 字段 (RehabHub 前端逻辑似乎是这样)
+        # 假设前端传来的 keypoints 已经包含 name 字段 (康复宝 前端逻辑似乎是这样)
         # 如果没有 name，需要根据索引映射。这里先假设有 name 或者通过索引查找
         
         kp_map = {kp.name: kp for kp in request.keypoints if kp.name}
@@ -59,7 +66,7 @@ async def analyze_movement(request: AssessmentRequest):
                  if i < len(request.keypoints):
                      kp_map[name] = request.keypoints[i]
         
-        angles = {}
+        angles = dict(request.angles or {})
         score = 60.0 # 基础分
         feedback = "动作分析中..."
         
@@ -94,6 +101,34 @@ async def analyze_movement(request: AssessmentRequest):
 
         from datetime import datetime, timezone
 
+        overall_value = round(score, 1)
+        recommendations = [feedback]
+        if overall_value < 70:
+            recommendations.append("建议在治疗师指导下重复练习并关注动作深度。")
+        elif overall_value < 85:
+            recommendations.append("动作基本完成，建议继续优化稳定性与控制。")
+        else:
+            recommendations.append("动作完成质量较好，可逐步提高训练难度。")
+
+        records = read_json_array(ASSESSMENT_RESULTS_FILE)
+        result_record = normalize_assessment_result(
+            {
+                "id": build_id("result"),
+                "patientId": request.patientId or "guest",
+                "movementType": request.movementType,
+                "movementName": request.movementName or request.movementType,
+                "timestamp": request.timestamp or datetime.now(timezone.utc).isoformat(),
+                "overallScore": {"value": overall_value, "maxValue": 100},
+                "mobilityScore": {"value": overall_value, "maxValue": 100},
+                "stabilityScore": {"value": overall_value, "maxValue": 100},
+                "angles": angles,
+                "recommendations": recommendations,
+                "feedback": feedback,
+            }
+        )
+        records.append(result_record)
+        write_json_array(ASSESSMENT_RESULTS_FILE, records)
+
         return ApiEnvelopeAssessmentResponse(
             code=200,
             message="ok",
@@ -101,7 +136,11 @@ async def analyze_movement(request: AssessmentRequest):
                 score=score,
                 feedback=feedback,
                 angles=angles,
-                details={"processed_by": "Python FastAPI MVP"},
+                details={
+                    "processed_by": "Python FastAPI MVP",
+                    "result_id": result_record["id"],
+                    "saved": True,
+                },
             ),
             timestamp=datetime.now(timezone.utc).isoformat(),
         )

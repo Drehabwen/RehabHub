@@ -20,20 +20,60 @@ const fail = (res, httpStatus, message, code = httpStatus, details) => {
   });
 };
 
-// 中间件
 app.use(cors());
 app.use(express.json({ limit: '2mb' }));
 
-// 目录初始化
 const ensureDir = (dirPath) => {
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath, { recursive: true });
   }
 };
+
 ensureDir(path.join(__dirname, 'uploads'));
 ensureDir(path.join(__dirname, 'data'));
 
-// 配置文件上传到磁盘
+const assessmentResultsFile = path.join(__dirname, 'data', 'assessment-results.json');
+const reportsFile = path.join(__dirname, 'data', 'reports.json');
+const poseTelemetryFile = path.join(__dirname, 'data', 'pose-telemetry.json');
+
+const readJsonArray = (filePath) => {
+  if (!fs.existsSync(filePath)) {
+    return [];
+  }
+
+  try {
+    const content = fs.readFileSync(filePath, 'utf-8');
+    const parsed = JSON.parse(content);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const writeJsonArray = (filePath, value) => {
+  fs.writeFileSync(filePath, JSON.stringify(value, null, 2));
+};
+
+const getPaging = (req) => {
+  const page = Math.max(1, parseInt(String(req.query.page ?? '1'), 10) || 1);
+  const pageSize = Math.max(1, parseInt(String(req.query.pageSize ?? req.query.size ?? '20'), 10) || 20);
+  return { page, pageSize };
+};
+
+const paginate = (items, page, pageSize) => {
+  const total = items.length;
+  const start = (page - 1) * pageSize;
+  return {
+    items: items.slice(start, start + pageSize),
+    pagination: {
+      page,
+      pageSize,
+      total,
+      totalPages: pageSize > 0 ? Math.ceil(total / pageSize) : 0,
+    },
+  };
+};
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, path.join(__dirname, 'uploads'));
@@ -44,9 +84,9 @@ const storage = multer.diskStorage({
     cb(null, name);
   }
 });
+
 const upload = multer({ storage });
 
-// 模拟姿态估计数据
 const generateMockKeypoints = () => {
   const keypoints = [
     { name: 'nose', x: 320, y: 120, score: 0.9 },
@@ -68,8 +108,7 @@ const generateMockKeypoints = () => {
     { name: 'right_ankle', x: 390, y: 500, score: 0.75 }
   ];
 
-  // 添加一些随机变化，使关键点看起来更自然
-  return keypoints.map(kp => ({
+  return keypoints.map((kp) => ({
     ...kp,
     x: kp.x + (Math.random() - 0.5) * 10,
     y: kp.y + (Math.random() - 0.5) * 10,
@@ -77,151 +116,284 @@ const generateMockKeypoints = () => {
   }));
 };
 
-// API路由
+const normalizeAssessmentResult = (record) => ({
+  id: record.id,
+  movementType: record.movementType || 'unknown',
+  movementName: record.movementName || record.movementType || 'Unknown Movement',
+  timestamp: record.timestamp || new Date().toISOString(),
+  overallScore: record.overallScore || undefined,
+  mobilityScore: record.mobilityScore || undefined,
+  stabilityScore: record.stabilityScore || undefined,
+  angles: record.angles || {},
+  recommendations: Array.isArray(record.recommendations) ? record.recommendations : [],
+});
+
+const normalizeReport = (record) => ({
+  id: record.id,
+  patientId: record.patientId || '',
+  patientName: record.patientName || '',
+  testId: record.testId || '',
+  testName: record.testName || '',
+  date: record.date || new Date().toISOString().split('T')[0],
+  score: Number(record.score || 0),
+  status: record.status || 'draft',
+  summary: record.summary || '',
+  details: record.details || ''
+});
+
 app.post(['/api/analyze', '/analyze'], upload.single('file'), (req, res) => {
-  // 模拟处理延迟
   setTimeout(() => {
     const savedFile = req.file ? req.file.filename : null;
     const mockResponse = {
-      score: Math.random() * 0.5 + 0.5, // 0.5-1.0之间的随机分数
-      feedback: "动作完成良好，继续保持",
-      reason: "关节活动度正常，动作稳定性良好",
+      score: Math.random() * 0.5 + 0.5,
+      feedback: '动作完成良好，请继续保持',
+      reason: '关节活动度正常，动作稳定性良好',
       angles: {
-        left_elbow: Math.floor(Math.random() * 30 + 150), // 150-180度
+        left_elbow: Math.floor(Math.random() * 30 + 150),
         right_elbow: Math.floor(Math.random() * 30 + 150),
         left_knee: Math.floor(Math.random() * 30 + 150),
         right_knee: Math.floor(Math.random() * 30 + 150),
         left_shoulder: Math.floor(Math.random() * 30 + 150),
         right_shoulder: Math.floor(Math.random() * 30 + 150)
       },
-      processing_time: "0.5s",
+      processing_time: '0.5s',
       keypoints_detected: true,
-      annotated_image: "",
+      annotated_image: '',
       details: { file: savedFile },
       timestamp: new Date().toISOString(),
       keypoints: generateMockKeypoints()
     };
 
     ok(res, mockResponse);
-  }, 300); // 模拟300ms的处理延迟
+  }, 300);
 });
 
-// 实时姿态流上报（角度与关键点）
 app.post('/api/pose/stream', (req, res) => {
   try {
     const payload = req.body || {};
-    const id = `result_${Date.now()}`;
-    const record = { id, ...payload };
-    const resultsFile = path.join(__dirname, 'data', 'results.json');
-    let existing = [];
-    if (fs.existsSync(resultsFile)) {
-      try { existing = JSON.parse(fs.readFileSync(resultsFile, 'utf-8')); } catch { existing = []; }
-    }
-    existing.push(record);
-    fs.writeFileSync(resultsFile, JSON.stringify(existing, null, 2));
+    const telemetry = readJsonArray(poseTelemetryFile);
+    const id = `telemetry_${Date.now()}`;
+    telemetry.push({
+      id,
+      ...payload,
+      timestamp: payload.timestamp || new Date().toISOString(),
+    });
+    writeJsonArray(poseTelemetryFile, telemetry);
     ok(res, { status: 'ok', id });
-  } catch (e) {
+  } catch {
     fail(res, 500, 'failed to store pose telemetry');
   }
 });
 
-// 结果列表与详情
-app.get('/api/results', (req, res) => {
-  const resultsFile = path.join(__dirname, 'data', 'results.json');
-  const page = parseInt(req.query.page || '1', 10);
-  const size = parseInt(req.query.size || '20', 10);
-  let data = [];
-  if (fs.existsSync(resultsFile)) {
-    try { data = JSON.parse(fs.readFileSync(resultsFile, 'utf-8')); } catch { data = []; }
-  }
-  const total = data.length;
-  const start = (page - 1) * size;
-  const items = data.slice(start, start + size).map((r) => ({
-    id: r.id,
-    movementType: r.movementType,
-    movementName: r.movementName,
-    timestamp: r.timestamp,
-    scoreSummary: r.overallScore ? `${r.overallScore.value}/${r.overallScore.maxValue}` : undefined,
-    anglesSummary: r.angles || {}
-  }));
-  ok(res, { items, total, page, size });
+app.get('/api/assessment-results', (req, res) => {
+  const { page, pageSize } = getPaging(req);
+  const records = readJsonArray(assessmentResultsFile)
+    .map(normalizeAssessmentResult)
+    .sort((a, b) => String(b.timestamp).localeCompare(String(a.timestamp)));
+
+  ok(res, paginate(records, page, pageSize));
 });
 
-app.get('/api/results/:id', (req, res) => {
-  const resultsFile = path.join(__dirname, 'data', 'results.json');
-  if (!fs.existsSync(resultsFile)) return fail(res, 404, 'not found');
+app.post('/api/assessment-results', (req, res) => {
   try {
-    const data = JSON.parse(fs.readFileSync(resultsFile, 'utf-8'));
-    const found = data.find((r) => r.id === req.params.id);
-    if (!found) return fail(res, 404, 'not found');
-    ok(res, found);
-  } catch {
-    fail(res, 500, 'read error');
-  }
-});
-
-app.delete('/api/results/:id', (req, res) => {
-  const resultsFile = path.join(__dirname, 'data', 'results.json');
-  if (!fs.existsSync(resultsFile)) return fail(res, 404, 'not found');
-  try {
-    const data = JSON.parse(fs.readFileSync(resultsFile, 'utf-8'));
-    const next = data.filter((r) => r.id !== req.params.id);
-    fs.writeFileSync(resultsFile, JSON.stringify(next, null, 2));
-    ok(res, { status: 'ok' });
-  } catch {
-    fail(res, 500, 'write error');
-  }
-});
-
-// 创建报告（用于Reports页的快速创建）
-app.post('/api/results', (req, res) => {
-  try {
-    const resultsFile = path.join(__dirname, 'data', 'results.json');
-    let data = [];
-    if (fs.existsSync(resultsFile)) {
-      try { data = JSON.parse(fs.readFileSync(resultsFile, 'utf-8')); } catch { data = []; }
-    }
-    const id = `report_${Date.now()}`;
+    const records = readJsonArray(assessmentResultsFile);
     const payload = req.body || {};
-    const record = {
-      id,
-      patientId: payload.patientId || '',
-      patientName: payload.patientName || '',
-      testId: payload.testId || '',
-      testName: payload.testName || '评估报告',
-      date: payload.date || new Date().toISOString().split('T')[0],
-      score: payload.score || 0,
-      status: payload.status || 'draft',
-      summary: payload.summary || '',
-      details: payload.details || ''
-    };
-    data.push(record);
-    fs.writeFileSync(resultsFile, JSON.stringify(data, null, 2));
+    const record = normalizeAssessmentResult({
+      id: `result_${Date.now()}`,
+      movementType: payload.movementType,
+      movementName: payload.movementName,
+      timestamp: payload.timestamp,
+      overallScore: payload.overallScore,
+      mobilityScore: payload.mobilityScore,
+      stabilityScore: payload.stabilityScore,
+      angles: payload.angles,
+      recommendations: payload.recommendations,
+    });
+
+    records.push(record);
+    writeJsonArray(assessmentResultsFile, records);
     ok(res, record);
-  } catch (e) {
+  } catch {
     fail(res, 500, 'create error');
   }
 });
 
-// 导出报告（Mock）
-app.get('/api/results/:id/export', (req, res) => {
-  const format = (req.query.format || 'pdf').toString();
-  // 直接返回一个提示（真实环境应生成PDF/Excel并返回下载）
+app.get('/api/assessment-results/:id', (req, res) => {
+  const records = readJsonArray(assessmentResultsFile);
+  const found = records.find((item) => item.id === req.params.id);
+  if (!found) {
+    return fail(res, 404, 'not found');
+  }
+
+  ok(res, normalizeAssessmentResult(found));
+});
+
+app.delete('/api/assessment-results/:id', (req, res) => {
+  const records = readJsonArray(assessmentResultsFile);
+  const next = records.filter((item) => item.id !== req.params.id);
+  if (next.length === records.length) {
+    return fail(res, 404, 'not found');
+  }
+
+  writeJsonArray(assessmentResultsFile, next);
+  ok(res, { status: 'ok' });
+});
+
+app.get('/api/results', (req, res) => {
+  const { page, pageSize } = getPaging(req);
+  const records = readJsonArray(assessmentResultsFile)
+    .map(normalizeAssessmentResult)
+    .map((item) => ({
+      id: item.id,
+      movementType: item.movementType,
+      movementName: item.movementName,
+      timestamp: item.timestamp,
+      scoreSummary: item.overallScore ? `${item.overallScore.value}/${item.overallScore.maxValue}` : undefined,
+      anglesSummary: item.angles || {}
+    }))
+    .sort((a, b) => String(b.timestamp).localeCompare(String(a.timestamp)));
+
+  const paged = paginate(records, page, pageSize);
+  ok(res, {
+    items: paged.items,
+    total: paged.pagination.total,
+    page: paged.pagination.page,
+    size: paged.pagination.pageSize,
+  });
+});
+
+app.get('/api/results/:id', (req, res) => {
+  const records = readJsonArray(assessmentResultsFile);
+  const found = records.find((item) => item.id === req.params.id);
+  if (!found) {
+    return fail(res, 404, 'not found');
+  }
+
+  ok(res, normalizeAssessmentResult(found));
+});
+
+app.delete('/api/results/:id', (req, res) => {
+  const records = readJsonArray(assessmentResultsFile);
+  const next = records.filter((item) => item.id !== req.params.id);
+  if (next.length === records.length) {
+    return fail(res, 404, 'not found');
+  }
+
+  writeJsonArray(assessmentResultsFile, next);
+  ok(res, { status: 'ok' });
+});
+
+app.get('/api/reports', (req, res) => {
+  const { page, pageSize } = getPaging(req);
+  const records = readJsonArray(reportsFile)
+    .map(normalizeReport)
+    .sort((a, b) => String(b.date).localeCompare(String(a.date)));
+
+  ok(res, paginate(records, page, pageSize));
+});
+
+app.post('/api/reports', (req, res) => {
+  try {
+    const records = readJsonArray(reportsFile);
+    const payload = req.body || {};
+    const record = normalizeReport({
+      id: `report_${Date.now()}`,
+      patientId: payload.patientId,
+      patientName: payload.patientName,
+      testId: payload.testId,
+      testName: payload.testName || '评估报告',
+      date: payload.date,
+      score: payload.score,
+      status: payload.status,
+      summary: payload.summary,
+      details: payload.details,
+    });
+
+    records.push(record);
+    writeJsonArray(reportsFile, records);
+    ok(res, record);
+  } catch {
+    fail(res, 500, 'create error');
+  }
+});
+
+app.get('/api/reports/:id', (req, res) => {
+  const records = readJsonArray(reportsFile);
+  const found = records.find((item) => item.id === req.params.id);
+  if (!found) {
+    return fail(res, 404, 'not found');
+  }
+
+  ok(res, normalizeReport(found));
+});
+
+app.delete('/api/reports/:id', (req, res) => {
+  const records = readJsonArray(reportsFile);
+  const next = records.filter((item) => item.id !== req.params.id);
+  if (next.length === records.length) {
+    return fail(res, 404, 'not found');
+  }
+
+  writeJsonArray(reportsFile, next);
+  ok(res, { status: 'ok' });
+});
+
+app.get('/api/reports/:id/export', (req, res) => {
+  const format = String(req.query.format || 'pdf');
   ok(res, { status: 'ok', id: req.params.id, format });
 });
 
-// 健康检查端点
+app.post('/api/results', (req, res) => {
+  try {
+    const records = readJsonArray(reportsFile);
+    const payload = req.body || {};
+    const record = normalizeReport({
+      id: `report_${Date.now()}`,
+      patientId: payload.patientId,
+      patientName: payload.patientName,
+      testId: payload.testId,
+      testName: payload.testName,
+      date: payload.date,
+      score: payload.score,
+      status: payload.status,
+      summary: payload.summary,
+      details: payload.details,
+    });
+
+    records.push(record);
+    writeJsonArray(reportsFile, records);
+    ok(res, record);
+  } catch {
+    fail(res, 500, 'create error');
+  }
+});
+
+app.get('/api/results/:id/export', (req, res) => {
+  const format = String(req.query.format || 'pdf');
+  ok(res, { status: 'ok', id: req.params.id, format });
+});
+
 app.get('/health', (req, res) => {
   ok(res, { status: 'ok' });
 });
 
-// 仪表盘统计数据端点
+app.get('/api/system/stats', (req, res) => {
+  const results = readJsonArray(assessmentResultsFile);
+  const reports = readJsonArray(reportsFile);
+  ok(res, {
+    totalAssessmentResults: results.length,
+    totalReports: reports.length,
+  });
+});
+
 app.get('/dashboard/stats', (req, res) => {
+  const results = readJsonArray(assessmentResultsFile);
+  const reports = readJsonArray(reportsFile);
   const stats = [
     {
       title: '今日评估次数',
-      value: '12',
-      icon: '📊',
+      value: String(results.length),
+      icon: 'activity',
       bgColor: '#E1F5FE',
       textColor: '#0288D1',
       trend: {
@@ -230,9 +402,9 @@ app.get('/dashboard/stats', (req, res) => {
       }
     },
     {
-      title: '活跃患者',
-      value: '6',
-      icon: '👥',
+      title: '已生成报告',
+      value: String(reports.length),
+      icon: 'file-text',
       bgColor: '#E8F5E8',
       textColor: '#388E3C',
       trend: {
@@ -241,9 +413,9 @@ app.get('/dashboard/stats', (req, res) => {
       }
     },
     {
-      title: '评估完成率',
+      title: '完成率',
       value: '85%',
-      icon: '✅',
+      icon: 'check-circle',
       bgColor: '#FFF3E0',
       textColor: '#F57C00',
       trend: {
@@ -252,9 +424,9 @@ app.get('/dashboard/stats', (req, res) => {
       }
     },
     {
-      title: '治疗师满意度',
-      value: '92%',
-      icon: '⭐',
+      title: '待处理',
+      value: '3',
+      icon: 'clock',
       bgColor: '#F3E5F5',
       textColor: '#7B1FA2',
       trend: {
@@ -263,16 +435,16 @@ app.get('/dashboard/stats', (req, res) => {
       }
     }
   ];
-  
+
   ok(res, stats);
 });
 
-// 启动服务器
 app.listen(PORT, () => {
-  console.log(`模拟API服务器运行在 http://localhost:${PORT}`);
-  console.log('健康检查端点: http://localhost:' + PORT + '/health');
-  console.log('分析端点: http://localhost:' + PORT + '/api/analyze');
-  console.log('姿态流端点: http://localhost:' + PORT + '/api/pose/stream');
+  console.log(`Mock API server running at http://localhost:${PORT}`);
+  console.log(`Health check: http://localhost:${PORT}/health`);
+  console.log(`Video analysis: http://localhost:${PORT}/api/analyze`);
+  console.log(`Assessment results: http://localhost:${PORT}/api/assessment-results`);
+  console.log(`Reports: http://localhost:${PORT}/api/reports`);
 });
 
 module.exports = app;

@@ -3,9 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.router import api_router
 
 app = FastAPI(
-    title="RehabHub AI Backend",
-    description="Python backend for RehabHub movement analysis",
-    version="0.1.0"
+    title="康复宝 AI Backend",
+    description="Python backend for 康复宝 movement analysis",
+    version="0.2.0"
 )
 
 # 配置 CORS，允许前端访问
@@ -21,7 +21,7 @@ app.include_router(api_router, prefix="/api/v1")
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to RehabHub Python Backend"}
+    return {"message": "Welcome to 康复宝 Python Backend"}
 
 @app.get("/health")
 def health_check():
@@ -30,7 +30,7 @@ def health_check():
     return {
         "code": 200,
         "message": "ok",
-        "data": {"status": "ok", "version": "0.1.0"},
+        "data": {"status": "ok", "version": "0.2.0"},
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 

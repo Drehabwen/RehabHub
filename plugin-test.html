@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plugin Test Host</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+        .host-content {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #rehab-plugin-container {
+            margin-top: 40px;
+            border: 2px dashed #ccc;
+            min-height: 500px;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="host-content">
+        <h1>第三方网站 (Host Website)</h1>
+        <p>这是一个模拟的第三方网站，我们将把 RehabHub 作为一个插件插入到下方容器中。</p>
+        
+        <div class="controls" style="margin-top: 20px; display: flex; gap: 10px;">
+            <button onclick="navigateTo('deep-squat')">跳转到深蹲评估</button>
+            <button onclick="navigateTo('assessment-hub')">跳转到评估中心</button>
+            <button onclick="reInit(true)">重新初始化 (隐藏导航)</button>
+            <button onclick="reInit(false)">重新初始化 (显示导航)</button>
+        </div>
+        
+        <div id="rehab-plugin-container">
+            <!-- 插件将加载到这里 -->
+            <p style="text-align: center; color: #999; padding-top: 200px;">正在加载插件...</p>
+        </div>
+    </div>
+
+    <!-- 加载插件脚本 -->
+    <script src="./dist-plugin/rehab-hub-plugin.umd.js"></script>
+    <script>
+        let currentPlugin = null;
+
+        function initPlugin(hideNav = false) {
+            if (currentPlugin) {
+                currentPlugin.destroy();
+            }
+
+            if (window.RehabHub) {
+                currentPlugin = window.RehabHub.init({
+                    containerId: 'rehab-plugin-container',
+                    apiUrl: 'http://localhost:8000',
+                    hideNavigation: hideNav,
+                    defaultModule: hideNav ? 'deep-squat' : 'dashboard'
+                });
+                console.log('RehabHub Plugin initialized', currentPlugin);
+            }
+        }
+
+        function navigateTo(moduleName) {
+            if (currentPlugin) {
+                currentPlugin.navigateTo(moduleName);
+            }
+        }
+
+        function reInit(hideNav) {
+            initPlugin(hideNav);
+        }
+
+        // 初始化插件
+        window.addEventListener('load', function() {
+            initPlugin(false);
+        });
+    </script>
+</body>
+</html>
