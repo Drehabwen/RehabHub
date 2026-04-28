@@ -1,0 +1,17 @@
+[Unit]
+Description=Rehab Screening Backend
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/rehab-app/backend
+EnvironmentFile=/opt/rehab-app/.env.production
+ExecStart=/opt/rehab-app/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8002
+Restart=always
+RestartSec=5
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target

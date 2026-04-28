@@ -1,0 +1,228 @@
+// UI 样式常量
+export const COLORS = {
+  // 主题颜色
+  primary: {
+    blue: 'bg-blue-500',
+    blueLight: 'bg-blue-400',
+    blueHover: 'hover:bg-blue-600',
+    blueText: 'text-blue-400',
+    blueBg: 'bg-blue-500/20',
+    blueBorder: 'border-blue-500/20',
+    blueShadow: 'shadow-[0_0_15px_rgba(59,130,246,0.1)]',
+  },
+  secondary: {
+    purple: 'bg-purple-600',
+    purpleLight: 'bg-purple-400',
+    purpleHover: 'hover:bg-purple-700',
+    purpleText: 'text-purple-400',
+    purpleBg: 'bg-purple-500/20',
+    purpleBorder: 'border-purple-500/20',
+    purpleShadow: 'shadow-[0_0_15px_rgba(168,85,247,0.1)]',
+  },
+  success: {
+    emerald: 'bg-emerald-500',
+    emeraldLight: 'bg-emerald-400',
+    emeraldHover: 'hover:bg-emerald-600',
+    emeraldHoverBase: 'hover:bg-emerald-500',
+    emeraldText: 'text-emerald-400',
+    emeraldBg: 'bg-emerald-500/20',
+    emeraldBorder: 'border-emerald-500/30',
+    emeraldShadow: 'shadow-[0_0_15px_rgba(16,185,129,0.5)]',
+  },
+  info: {
+    cyan: 'bg-cyan-500',
+    cyanLight: 'bg-cyan-400',
+    cyanText: 'text-cyan-400',
+    cyanBg: 'bg-cyan-500/10',
+    cyanBorder: 'border-cyan-500/20',
+  },
+  warning: {
+    amber: 'bg-amber-500',
+    amberText: 'text-amber-500',
+    amberBg: 'bg-amber-500/20',
+    amberBorder: 'border-amber-500/30',
+  },
+  danger: {
+    rose: 'bg-rose-500',
+    roseText: 'text-rose-500',
+    roseBg: 'bg-rose-500/20',
+    roseBorder: 'border-rose-500/30',
+  },
+  neutral: {
+    // 深色主题
+    white: 'bg-white',
+    whiteText: 'text-white',
+    whiteText80: 'text-white/80',
+    whiteText85: 'text-white/85',
+    whiteText70: 'text-white/70',
+    whiteText60: 'text-white/60',
+    whiteText40: 'text-white/40',
+    whiteText30: 'text-white/30',
+    whiteText20: 'text-white/20',
+    whiteBg: 'bg-white/5',
+    whiteBg10: 'bg-white/10',
+    whiteBg20: 'bg-white/20',
+    whiteBg40: 'bg-white/40',
+    whiteBg80: 'bg-white/80',
+    whiteBg90: 'bg-white/90',
+    whiteBg92: 'bg-white/92',
+    whiteBg95: 'bg-white/95',
+    whiteHoverBg10: 'hover:bg-white/10',
+    whiteHoverBg20: 'hover:bg-white/20',
+    whiteHoverText: 'hover:text-white',
+    whiteBorder: 'border-white/10',
+    whiteBorderSolid: 'border-white',
+    whiteBorder15: 'border-white/15',
+    whiteBorder20: 'border-white/20',
+    whiteBorder40: 'border-white/40',
+    whiteBorder60: 'border-white/60',
+    slate: 'bg-slate-900',
+    slateText: 'text-slate-400',
+    slateBg: 'bg-slate-900/40',
+    slateBg50: 'bg-slate-900/50',
+    slateBg80: 'bg-slate-900/80',
+    slateBorder: 'border-slate-800/50',
+    slateBorder30: 'border-slate-800/30',
+    blackBg40: 'bg-black/40',
+    blackBg55: 'bg-black/55',
+    blackBg60: 'bg-black/60',
+    blackHoverBg60: 'hover:bg-black/60',
+    slate100: 'bg-slate-100',
+    slate200: 'bg-slate-200',
+    slate500: 'text-slate-500',
+    slate600: 'text-slate-600',
+    // 浅色主题（用于报告等明亮区域）
+    light: {
+      bg: 'bg-white',
+      bgSoft: 'bg-slate-50',
+      text: 'text-slate-900',
+      textSoft: 'text-slate-800',
+      textMuted: 'text-slate-600',
+      textLight: 'text-slate-400',
+      border: 'border-slate-200',
+      borderSubtle: 'border-slate-200/80',
+      borderSoft: 'border-slate-100',
+      borderStrong: 'border-slate-300',
+      ring: 'ring-slate-200',
+      hover: 'hover:bg-slate-50',
+      hoverText: 'hover:text-slate-900',
+      selected: 'bg-slate-100',
+      // 按钮状态
+      buttonDisabled: 'bg-slate-700 text-slate-500 cursor-not-allowed',
+      buttonInactive: 'text-slate-400 hover:text-slate-600 hover:bg-slate-50',
+      // 指示器
+      indicator: 'bg-slate-600',
+      indicatorActive: 'animate-pulse',
+    }
+  },
+  antey: {
+    primary: 'bg-brand-primary',
+    primaryText: 'text-brand-primary',
+    primaryBg: 'bg-brand-soft',
+    primaryBorder: 'border-brand-primary/30',
+    primaryShadow: 'shadow-brand-primary/40',
+    accent: 'bg-brand-mid',
+    accentText: 'text-brand-mid',
+    accentBg: 'bg-brand-light/25',
+    accentBorder: 'border-brand-mid/30',
+    accentShadow: 'shadow-brand-mid/40',
+  },
+};
+
+export const SIZES = {
+  // 间距
+  gap: {
+    xs: 'gap-1',
+    sm: 'gap-2',
+    md: 'gap-3',
+    lg: 'gap-4',
+    xl: 'gap-6',
+    xxl: 'gap-8',
+  },
+  // 内边距
+  padding: {
+    xs: 'px-2 py-0.5',
+    sm: 'px-3 py-1',
+    md: 'px-4 py-1.5',
+    lg: 'px-6 py-3',
+    xl: 'px-8 py-4',
+    xxl: 'px-10 py-5',
+  },
+  // 圆角
+  radius: {
+    sm: 'rounded-lg',
+    md: 'rounded-xl',
+    lg: 'rounded-2xl',
+    xl: 'rounded-3xl',
+    full: 'rounded-full',
+    pill: 'rounded-[2rem]',
+    pillLg: 'rounded-[2.5rem]',
+    pillXl: 'rounded-[3.5rem]',
+  },
+  // 字体大小
+  font: {
+    xs: 'text-[8px]',
+    sm: 'text-[9px]',
+    md: 'text-[10px]',
+    lg: 'text-[11px]',
+    xl: 'text-sm',
+    xxl: 'text-lg',
+    xxxl: 'text-2xl',
+    xxxxl: 'text-4xl',
+    xxxxxl: 'text-5xl',
+    xxxxxxl: 'text-7xl',
+  },
+  // 尺寸
+  size: {
+    xs: 'w-1.5 h-1.5',
+    sm: 'w-2 h-2',
+    md: 'w-10 h-10',
+    lg: 'w-48 h-48',
+    xl: 'w-64 h-96',
+    xxl: 'w-80',
+    xxxl: 'w-16 h-16',
+  },
+};
+
+export const ANIMATIONS = {
+  fadeIn: 'animate-in fade-in duration-500',
+  slideInTop: 'animate-in slide-in-from-top-8 duration-700',
+  slideInRight: 'animate-in slide-in-from-right-4 duration-500',
+  slideInLeft: 'animate-in slide-in-from-left-4 duration-500',
+  slideInBottom: 'animate-in slide-in-from-bottom-12 duration-1000',
+  zoomIn: 'animate-in zoom-in-95 duration-500',
+  pulse: 'animate-pulse',
+  pulseSubtle: 'animate-pulse-subtle',
+  ping: 'animate-ping',
+  spin: 'animate-spin',
+  spinSlow: 'animate-spin duration-[3000ms]',
+  scan: 'animate-scan',
+};
+
+export const TRANSITIONS = {
+  default: 'transition-all duration-200',
+  slow: 'transition-all duration-300',
+  medium: 'transition-all duration-500',
+};
+
+export const SHADOWS = {
+  sm: 'shadow-sm',
+  md: 'shadow-xl',
+  lg: 'shadow-2xl',
+  inner: 'shadow-inner',
+};
+
+export const BACKDROP = {
+  sm: 'backdrop-blur-sm',
+  md: 'backdrop-blur-xl',
+  lg: 'backdrop-blur-3xl',
+};
+
+export default {
+  COLORS,
+  SIZES,
+  ANIMATIONS,
+  TRANSITIONS,
+  SHADOWS,
+  BACKDROP,
+};
